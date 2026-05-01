@@ -1,0 +1,11 @@
+# grill-me
+- Ask questions one at a time during interviews. Confidence: 0.85
+- Explore the codebase to answer questions instead of asking when possible. Confidence: 0.85
+- Provide a recommended answer with each question. Confidence: 0.80
+- Walk through design dependencies systematically, one-by-one. Confidence: 0.75
+- Interview relentlessly until reaching shared understanding. Confidence: 0.75
+- Update PRD.md with decisions when user agrees or explicitly requests. Confidence: 0.85
+- Prioritize minimal, frictionless UX focused on getting things done quickly. Confidence: 0.85
+- Prefer subtle, understated UI elements over prominent or obtrusive ones. Confidence: 0.75
+- Prioritize minimal file size and memory footprint for mobile apps. Confidence: 0.80
+- Prefer bare React Native over Expo for apps requiring native audio modules. Confidence: 0.60
