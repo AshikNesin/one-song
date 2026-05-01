@@ -1,0 +1,177 @@
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { State } from 'react-native-track-player';
+import { Song } from '../types';
+import { getSong, getSleepTimer, saveSleepTimer } from '../services/StorageService';
+import {
+  setupPlayer,
+  loadSong,
+  play,
+  pause,
+  getPlaybackState,
+  setSleepTimer,
+  clearSleepTimer,
+} from '../services/AudioService';
+import ProgressBar from '../components/ProgressBar';
+import PlayPauseButton from '../components/PlayPauseButton';
+import SleepTimerButton from '../components/SleepTimerButton';
+
+export default function PlayerScreen() {
+  const [song, setSong] = useState<Song | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [timerMinutes, setTimerMinutes] = useState<number | null>(null);
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const init = async () => {
+      await setupPlayer();
+
+      const savedSong = await getSong();
+      const savedTimer = await getSleepTimer();
+
+      if (!mounted) return;
+
+      setSong(savedSong);
+      setTimerMinutes(savedTimer);
+
+      if (savedSong) {
+        await loadSong(savedSong);
+        await play();
+      }
+
+      const state = await getPlaybackState();
+      setIsPlaying(state === State.Playing);
+      setIsReady(true);
+    };
+
+    init();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const state = await getPlaybackState();
+      setIsPlaying(state === State.Playing);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const togglePlay = async () => {
+    if (isPlaying) {
+      await pause();
+    } else {
+      await play();
+    }
+    const state = await getPlaybackState();
+    setIsPlaying(state === State.Playing);
+  };
+
+  const handleTimerChange = async (minutes: number | null) => {
+    setTimerMinutes(minutes);
+    await saveSleepTimer(minutes);
+    clearSleepTimer();
+    setSleepTimer(minutes);
+  };
+
+  if (!isReady) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.loading}>Loading...</Text>
+      </View>
+    );
+  }
+
+  if (!song) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.error}>No song found. Please reselect.</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.artwork}>
+        <Text style={styles.artworkIcon}>🎵</Text>
+      </View>
+
+      <Text style={styles.title} numberOfLines={1}>
+        {song.title}
+      </Text>
+      <Text style={styles.artist} numberOfLines={1}>
+        {song.artist}
+      </Text>
+
+      <View style={styles.spacer} />
+
+      <ProgressBar />
+
+      <View style={styles.controls}>
+        <PlayPauseButton isPlaying={isPlaying} onPress={togglePlay} />
+      </View>
+
+      <View style={styles.footer}>
+        <SleepTimerButton currentMinutes={timerMinutes} onSelect={handleTimerChange} />
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#000',
+    alignItems: 'center',
+    paddingTop: 60,
+    paddingBottom: 40,
+    paddingHorizontal: 24,
+  },
+  loading: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  error: {
+    color: '#ff4444',
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  artwork: {
+    width: 240,
+    height: 240,
+    borderRadius: 12,
+    backgroundColor: '#1a1a1a',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  artworkIcon: {
+    fontSize: 80,
+  },
+  title: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  artist: {
+    color: '#999',
+    fontSize: 16,
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  spacer: {
+    flex: 1,
+  },
+  controls: {
+    marginTop: 32,
+    marginBottom: 24,
+  },
+  footer: {
+    marginTop: 16,
+  },
+});

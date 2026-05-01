@@ -1,0 +1,78 @@
+import TrackPlayer, {
+  Capability,
+  Event,
+  RepeatMode,
+  State,
+  useTrackPlayerEvents,
+} from 'react-native-track-player';
+import { Song } from '../types';
+
+let sleepTimerId: ReturnType<typeof setTimeout> | null = null;
+
+export async function setupPlayer(): Promise<void> {
+  await TrackPlayer.setupPlayer();
+  await TrackPlayer.updateOptions({
+    capabilities: [Capability.Play, Capability.Pause, Capability.SeekTo],
+    notificationCapabilities: [Capability.Play, Capability.Pause],
+  });
+  await TrackPlayer.setRepeatMode(RepeatMode.Track);
+}
+
+export async function loadSong(song: Song): Promise<void> {
+  await TrackPlayer.reset();
+  await TrackPlayer.add({
+    id: song.id,
+    url: song.url,
+    title: song.title,
+    artist: song.artist,
+    artwork: song.artwork,
+    duration: song.duration,
+  });
+}
+
+export async function play(): Promise<void> {
+  await TrackPlayer.play();
+}
+
+export async function pause(): Promise<void> {
+  await TrackPlayer.pause();
+}
+
+export async function seekTo(seconds: number): Promise<void> {
+  await TrackPlayer.seekTo(seconds);
+}
+
+export async function getProgress(): Promise<{ position: number; duration: number }> {
+  const progress = await TrackPlayer.getProgress();
+  return { position: progress.position, duration: progress.duration };
+}
+
+export async function getPlaybackState(): Promise<State> {
+  const playbackState = await TrackPlayer.getPlaybackState();
+  return playbackState.state;
+}
+
+export function setSleepTimer(minutes: number | null): void {
+  if (sleepTimerId) {
+    clearTimeout(sleepTimerId);
+    sleepTimerId = null;
+  }
+  if (minutes && minutes > 0) {
+    sleepTimerId = setTimeout(() => {
+      TrackPlayer.pause();
+    }, minutes * 60 * 1000);
+  }
+}
+
+export function clearSleepTimer(): void {
+  if (sleepTimerId) {
+    clearTimeout(sleepTimerId);
+    sleepTimerId = null;
+  }
+}
+
+export function usePlaybackState(callback: (state: State) => void): void {
+  useTrackPlayerEvents([Event.PlaybackState], async event => {
+    callback(event.state);
+  });
+}
