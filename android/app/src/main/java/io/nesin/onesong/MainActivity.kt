@@ -1,4 +1,4 @@
-package com.onesong
+package io.nesin.onesong
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

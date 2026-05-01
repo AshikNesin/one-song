@@ -1,4 +1,4 @@
-package com.onesong
+package io.nesin.onesong
 
 import android.app.Application
 import com.facebook.react.PackageList

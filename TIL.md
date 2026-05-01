@@ -89,6 +89,75 @@ Build: **SUCCESSFUL** — app installed and launched on `Pixel_7a`.
 
 ---
 
+## 2026-05-02 — Android APK Size: CPU Architectures & ABI Splitting
+
+### Problem
+
+Release APK was **56 MB** — far above the PRD target of 15 MB.
+
+### Root Cause
+
+React Native starter templates bundle **native libraries for four CPU architectures** into a single APK:
+
+| Architecture | What it is | Devices |
+|---|---|---|
+| **arm64-v8a** | 64-bit ARM (AArch64) | Modern phones: Pixel 7a, Galaxy S24, iPhone 15+ |
+| **armeabi-v7a** | 32-bit ARM | Old/low-end phones pre-2015 |
+| **x86** | 32-bit Intel/AMD | Android emulators, some tablets/Chromebooks |
+| **x86_64** | 64-bit Intel/AMD | Android emulators, Chromebooks |
+
+Each architecture needs its own compiled `.so` files (C++ libraries for React Native, track-player, screens, etc.). When all four are packed into one APK, the device only uses one set and the rest is dead weight.
+
+### Fix
+
+Split the APK by ABI (Application Binary Interface) and build only for the target architecture.
+
+In `android/app/build.gradle`, add a `splits` block inside the `android` block:
+
+```gradle
+android {
+    splits {
+        abi {
+            enable true
+            reset()
+            include "arm64-v8a"
+            universalApk false
+        }
+    }
+    // ... rest of config
+}
+```
+
+- `enable true` — turn on ABI splitting
+- `reset()` — clear the default list
+- `include "arm64-v8a"` — only build for 64-bit ARM
+- `universalApk false` — don't also build a fat APK
+
+### Verification
+
+Build release APK:
+
+```bash
+pnpm react-native run-android --mode=release
+```
+
+Output path changes from:
+- `app-release.apk` (56 MB, all architectures)
+
+To:
+- `app-arm64-v8a-release.apk` (~14 MB, single architecture)
+
+That's a **75% size reduction**.
+
+### Lesson
+
+- **arm64-v8a** is the architecture for virtually all modern Android phones (2015+). Targeting only this is reasonable for a mobile-first app.
+- If you need to support emulators (x86/x86_64) or older 32-bit devices, add those architectures back to the `include` list or set `universalApk true` for a fallback fat APK.
+- ABI splitting is a Gradle/Android feature, not React Native-specific. It works for any Android app with native libraries.
+- Google Play's App Bundle (AAB) does this automatically per-device. APK splitting is the manual equivalent when distributing APKs directly.
+
+---
+
 ## How to Add a New Entry
 
 Copy the template below, fill it in, and prepend it to the top of this file (newest first).
