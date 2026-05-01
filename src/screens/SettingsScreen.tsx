@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { getSleepTimer, saveSleepTimer, clearAll } from '../services/StorageService';
+import { getSong, getSleepTimer, saveSleepTimer, clearAll } from '../services/StorageService';
 import { SLEEP_TIMER_PRESETS } from '../utils/constants';
 import { clearSleepTimer } from '../services/AudioService';
 
@@ -12,9 +12,11 @@ interface Props {
 export default function SettingsScreen({ onChangeSong }: Props) {
   const navigation = useNavigation();
   const [defaultTimer, setDefaultTimer] = useState<number | null>(null);
+  const [currentSong, setCurrentSong] = useState<string | null>(null);
 
   useEffect(() => {
     getSleepTimer().then(setDefaultTimer);
+    getSong().then(song => setCurrentSong(song?.title ?? null));
   }, []);
 
   const handleTimerSelect = async (minutes: number | null) => {
@@ -69,6 +71,14 @@ export default function SettingsScreen({ onChangeSong }: Props) {
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <Section title="Song">
+          {currentSong && (
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Current</Text>
+              <Text style={styles.infoValue} numberOfLines={1}>
+                {currentSong}
+              </Text>
+            </View>
+          )}
           <SettingRow label="Change Song" onPress={handleChangeSong} />
         </Section>
 
@@ -112,7 +122,7 @@ export default function SettingsScreen({ onChangeSong }: Props) {
           </View>
           <View style={styles.aboutRow}>
             <Text style={styles.aboutLabel}>Version</Text>
-            <Text style={styles.aboutValue}>1.0.0</Text>
+            <Text style={styles.aboutValue}>0.0.1</Text>
           </View>
         </Section>
 
@@ -233,6 +243,26 @@ const styles = StyleSheet.create({
   timerChipTextActive: {
     color: '#000',
     fontWeight: '600',
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#2a2a2a',
+  },
+  infoLabel: {
+    color: '#ccc',
+    fontSize: 16,
+    marginRight: 16,
+  },
+  infoValue: {
+    color: '#999',
+    fontSize: 16,
+    flex: 1,
+    textAlign: 'right',
   },
   aboutRow: {
     flexDirection: 'row',
