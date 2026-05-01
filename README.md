@@ -1,97 +1,178 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# One Song
 
-# Getting Started
+A minimal Android music player that plays exactly one song — on repeat, with a sleep timer, and background playback.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## What It Is
 
-## Step 1: Start Metro
+One Song is intentionally simple. Pick one audio file from your device, and the app plays it continuously. No playlists, no libraries, no complexity. Just your song, always ready.
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## Features
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+- **One Song Only** — Pick a single audio file. The app remembers it forever (or until you change it).
+- **Auto-Play on Open** — The song starts playing as soon as you open the app.
+- **Repeat Forever** — The song loops automatically. No settings needed.
+- **Sleep Timer** — Set a timer (5–60 minutes) and the app pauses automatically when time is up. Configure a default timer in Settings.
+- **Background Playback** — Music keeps playing when you switch apps or lock your screen. Control it from the notification shade.
+- **Seekable Progress Bar** — Tap or drag anywhere on the bar to jump to a different part of the song.
+- **Change Song Anytime** — Go to Settings → Change Song to pick a different track.
+- **Clean Start on Reopen** — If you force-close the app, it starts the song from the beginning next time. No state to worry about.
 
-```sh
-# Using npm
-npm start
+## Tech Stack
 
-# OR using Yarn
-yarn start
+| Layer | Technology |
+|---|---|
+| Framework | React Native 0.85 |
+| Language | TypeScript |
+| Audio Engine | react-native-track-player |
+| Navigation | React Navigation (Native Stack) |
+| State Persistence | AsyncStorage |
+| File Picker | @react-native-documents/picker |
+| Permissions | react-native-permissions |
+| Build System | Gradle (Android) |
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js ≥ 22.11.0
+- pnpm (or npm/yarn)
+- Android Studio with SDK installed
+- OpenJDK 17 (React Native's Android build does not yet support Java 25)
+- A running Android emulator or a physical device with USB debugging enabled
+
+### 1. Clone and Install
+
+```bash
+git clone <repo-url>
+cd one-song
+pnpm install
 ```
 
-## Step 2: Build and run your app
+### 2. Configure Java for Android
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+The Android build requires OpenJDK 17. If your system default is Java 25, set this environment variable before building:
 
-### Android
-
-```sh
-# Using npm
-npm run android
-
-# OR using Yarn
-yarn android
+```bash
+export JAVA_HOME=/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
 ```
 
-### iOS
+On Apple Silicon Macs, the path is typically `/opt/homebrew/opt/openjdk@17`. On Intel Macs, use `/usr/local/opt/openjdk@17`.
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+### 3. Add Android SDK Tools to PATH
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
+```bash
+export ANDROID_HOME="$HOME/Library/Android/sdk"
+export PATH="$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$PATH"
 ```
 
-Then, and every time you update your native dependencies, run:
+### 4. Start Metro (the JS bundler)
 
-```sh
-bundle exec pod install
+```bash
+pnpm start
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+Leave this running in a separate terminal.
 
-```sh
-# Using npm
-npm run ios
+### 5. Run on Android
 
-# OR using Yarn
-yarn ios
+With an emulator running or a device connected:
+
+```bash
+pnpm android
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+Or explicitly:
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+```bash
+pnpm react-native run-android
+```
 
-## Step 3: Modify your app
+For a release build:
 
-Now that you have successfully run the app, let's make changes!
+```bash
+pnpm react-native run-android --mode=release
+```
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+## Project Structure
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+```
+OneSong/
+├── android/                         # Android native project
+│   ├── app/src/main/
+│   │   ├── AndroidManifest.xml      # Permissions & services
+│   │   └── java/io/nesin/onesong/   # MainActivity.kt, MainApplication.kt
+│   └── ...
+├── src/
+│   ├── types/
+│   │   └── index.ts                 # TypeScript interfaces (Song, TimerPreset, etc.)
+│   ├── utils/
+│   │   └── constants.ts             # Storage keys, timer presets, UI strings
+│   ├── services/
+│   │   ├── AudioService.ts          # Track player setup, playback, sleep timer, audio focus
+│   │   ├── StorageService.ts        # AsyncStorage wrapper (song, timer, onboarding state)
+│   │   └── PermissionService.ts     # Android storage permission requests
+│   ├── components/
+│   │   ├── ProgressBar.tsx          # Seekable playback progress bar
+│   │   ├── PlayPauseButton.tsx      # Geometric play/pause icon button
+│   │   └── SleepTimerButton.tsx     # Timer preset selector modal
+│   ├── screens/
+│   │   ├── OnboardingScreen.tsx     # First launch: pick song & grant permission
+│   │   ├── PlayerScreen.tsx         # Main screen: song info, controls, progress
+│   │   └── SettingsScreen.tsx       # Change song, timer default, reset data
+│   ├── navigation/
+│   │   └── AppNavigator.tsx         # Stack navigator (Onboarding → Player → Settings)
+│   └── App.tsx                      # Entry point: initializes track player
+├── TIL.md                           # Running log of bugs, fixes, and lessons learned
+├── PLAN.md                          # Original implementation plan
+└── package.json
+```
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+## Architecture Notes
 
-## Congratulations! :tada:
+### Why Only arm64-v8a?
 
-You've successfully run and modified your React Native App. :partying_face:
+The release APK targets only the `arm64-v8a` architecture. This covers virtually all modern Android phones (2015+) and keeps the APK at ~14 MB instead of 56 MB. If you need to support emulators (x86/x86_64) or older 32-bit devices, add those architectures back in `android/app/build.gradle` under the `splits.abi.include` list.
 
-### Now what?
+### Audio Focus Handling
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+The app listens to audio focus events via `react-native-track-player`. When a phone call comes in or another app takes audio focus, playback pauses automatically and resumes when focus returns. The UI play/pause button stays in sync.
 
-# Troubleshooting
+### Song File Persistence
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+The app copies the picked file to its own cache directory using `@react-native-documents/picker`'s `keepLocalCopy()` API. This avoids `SecurityException` when the original file is moved or the app loses persistent URI permission after reinstall.
 
-# Learn More
+### Sleep Timer
 
-To learn more about React Native, take a look at the following resources:
+The timer is implemented with `setTimeout` in `AudioService.ts`. When it fires, it calls `TrackPlayer.pause()` and clears the timer state. The timer is saved to AsyncStorage so it survives app restarts and auto-applies when the player initializes.
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+### App-Killed Behavior
+
+Playback stops and the notification is removed when the app is swiped away from recents. This is configured via `AppKilledPlaybackBehavior.StopPlaybackAndRemoveNotification` in `updateOptions()`.
+
+## Troubleshooting
+
+| Problem | Cause | Fix |
+|---|---|---|
+| `JAVA_HOME is set to an invalid directory` | Java 25 is not supported by the Android NDK/CMake toolchain | Set `JAVA_HOME` to OpenJDK 17 before building |
+| `adb: command not found` | Android SDK `platform-tools` not in PATH | Add `$ANDROID_HOME/platform-tools` to PATH |
+| `No connected devices!` | No emulator running or device not connected | Start an emulator or connect a device with USB debugging |
+| `The player has already been initialized` | `setupPlayer()` called multiple times | Already handled in `AudioService.ts` — the error is caught and ignored |
+| `SecurityException` on playback | File URI lost permission after reinstall | File is copied to app cache on pick; use `keepLocalCopy()` |
+| Song keeps playing after app is closed | Default track player behavior | Already fixed — `AppKilledPlaybackBehavior` is set to stop playback |
+
+See [`TIL.md`](./TIL.md) for detailed write-ups of every bug and fix encountered during development.
+
+## Building for Production
+
+The release APK is built with ABI splitting for `arm64-v8a` only:
+
+```bash
+cd android
+./gradlew assembleRelease
+```
+
+Output: `android/app/build/outputs/apk/release/app-arm64-v8a-release.apk`
+
+## License
+
+ISC
