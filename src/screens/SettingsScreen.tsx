@@ -141,7 +141,9 @@ export default function SettingsScreen({ onChangeSong }: Props) {
           </Pressable>
         </Section>
 
-        <Text style={styles.footer}>Built by Nesin Technologies LLP</Text>
+        <Pressable onPress={() => Linking.openURL('https://nesin.io?ref=onesong')}>
+          <Text style={styles.footer}>Built by Nesin Technologies LLP</Text>
+        </Pressable>
       </ScrollView>
     </View>
   );
