@@ -10,7 +10,15 @@ import { Song } from '../types';
 let sleepTimerId: ReturnType<typeof setTimeout> | null = null;
 
 export async function setupPlayer(): Promise<void> {
-  await TrackPlayer.setupPlayer();
+  try {
+    await TrackPlayer.setupPlayer();
+  } catch (e: any) {
+    if (e.message?.includes('already been initialized')) {
+      // Player already set up, continue with options update
+    } else {
+      throw e;
+    }
+  }
   await TrackPlayer.updateOptions({
     capabilities: [Capability.Play, Capability.Pause, Capability.SeekTo],
     notificationCapabilities: [Capability.Play, Capability.Pause],

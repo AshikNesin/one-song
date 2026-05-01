@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { pick } from '@react-native-documents/picker';
+import { pick, keepLocalCopy } from '@react-native-documents/picker';
 import { Song } from '../types';
 import { requestStoragePermission } from '../services/PermissionService';
 import { saveSong, setOnboardingComplete } from '../services/StorageService';
@@ -24,17 +24,27 @@ export default function OnboardingScreen({ onComplete }: Props) {
     try {
       const result = await pick({
         type: ['audio/*'],
-        copyTo: 'cachesDirectory',
       });
 
       if (result.length === 0) return;
 
       const file = result[0];
+
+      const localCopy = await keepLocalCopy({
+        files: [{ uri: file.uri, fileName: file.name ?? 'song.mp3' }],
+        destination: 'cachesDirectory',
+      });
+
+      if (localCopy[0].status === 'error') {
+        setError('Failed to copy file locally. Please try again.');
+        return;
+      }
+
       const song: Song = {
-        id: file.uri,
+        id: localCopy[0].localUri,
         title: file.name ?? 'Unknown Song',
         artist: 'Unknown Artist',
-        url: file.uri,
+        url: localCopy[0].localUri,
         duration: 0,
       };
 

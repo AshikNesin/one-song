@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { State } from 'react-native-track-player';
 import { Song } from '../types';
 import { getSong, getSleepTimer, saveSleepTimer } from '../services/StorageService';
@@ -17,6 +18,7 @@ import PlayPauseButton from '../components/PlayPauseButton';
 import SleepTimerButton from '../components/SleepTimerButton';
 
 export default function PlayerScreen() {
+  const navigation = useNavigation();
   const [song, setSong] = useState<Song | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [timerMinutes, setTimerMinutes] = useState<number | null>(null);
@@ -96,6 +98,15 @@ export default function PlayerScreen() {
 
   return (
     <View style={styles.container}>
+      <View style={styles.topBar}>
+        <View style={styles.topSpacer} />
+        <Pressable
+          style={styles.settingsButton}
+          onPress={() => navigation.navigate('Settings' as never)}>
+          <Text style={styles.settingsIcon}>⚙</Text>
+        </Pressable>
+      </View>
+
       <View style={styles.artwork}>
         <Text style={styles.artworkIcon}>🎵</Text>
       </View>
@@ -127,9 +138,26 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#000',
     alignItems: 'center',
-    paddingTop: 60,
+    paddingTop: 48,
     paddingBottom: 40,
     paddingHorizontal: 24,
+  },
+  topBar: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  topSpacer: {
+    flex: 1,
+  },
+  settingsButton: {
+    padding: 8,
+  },
+  settingsIcon: {
+    fontSize: 22,
+    color: '#999',
   },
   loading: {
     color: '#fff',
