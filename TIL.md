@@ -4,6 +4,67 @@ A running log of bugs, fixes, and lessons from building One Song.
 
 ---
 
+## 2026-05-02 — Renamed Android Bundle ID from com.onesong to io.nesin.onesong
+
+### Problem
+
+The app used the default `com.onesong` bundle ID. The owner owns `nesin.io` and wanted the package name to reflect their domain.
+
+### Root Cause
+
+Starter templates (like React Native CLI init) generate a placeholder bundle ID. It's meant to be changed before shipping.
+
+### Fix
+
+Changed every reference from `com.onesong` to `io.nesin.onesong`:
+
+**1. `android/app/build.gradle`**
+```gradle
+android {
+    namespace "io.nesin.onesong"
+    defaultConfig {
+        applicationId "io.nesin.onesong"
+    }
+}
+```
+
+**2. `MainApplication.kt`** — updated package declaration:
+```kotlin
+package io.nesin.onesong
+```
+
+**3. `MainActivity.kt`** — updated package declaration:
+```kotlin
+package io.nesin.onesong
+```
+
+**4. Directory structure** — moved files to match the new package:
+```
+android/app/src/main/java/
+  com/onesong/          → deleted
+  io/nesin/onesong/     → created
+    MainApplication.kt
+    MainActivity.kt
+```
+
+### Verification
+
+```bash
+grep -r "com\.onesong" android/
+# No output — no stale references remain.
+```
+
+Build: **SUCCESSFUL** — app installs and runs with the new bundle ID.
+
+### Lesson
+
+- The Android package name must match the directory structure exactly. Moving files without updating the `package` declaration (or vice versa) causes a build error.
+- `namespace` (for Gradle's build system) and `applicationId` (for the Play Store / device) are separate fields. For most apps they should be identical, but they can differ if needed (e.g., flavor-specific IDs).
+- Reverse-domain notation (`io.nesin.onesong`) is the Android convention. It ensures global uniqueness.
+- iOS uses a separate bundle identifier. If building for iOS later, update `ios/OneSong/Info.plist` → `CFBundleIdentifier` to match.
+
+---
+
 ## 2026-05-01 — Android Build Failures: Java Version & Missing SDK Tools
 
 ### Problem
