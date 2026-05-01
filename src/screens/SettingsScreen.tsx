@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { getSong, getSleepTimer, saveSleepTimer, clearAll } from '../services/StorageService';
 import { SLEEP_TIMER_PRESETS } from '../utils/constants';
@@ -126,11 +126,22 @@ export default function SettingsScreen({ onChangeSong }: Props) {
           </View>
         </Section>
 
+        <Section title="Feedback">
+          <Pressable
+            style={styles.row}
+            onPress={() => Linking.openURL('mailto:hi@nesin.io')}>
+            <Text style={styles.rowLabel}>Report a Bug or Share Feedback</Text>
+            <Text style={styles.rowArrow}>›</Text>
+          </Pressable>
+        </Section>
+
         <Section title="Danger Zone">
           <Pressable style={styles.dangerRow} onPress={handleResetAll}>
             <Text style={styles.dangerText}>Reset All Data</Text>
           </Pressable>
         </Section>
+
+        <Text style={styles.footer}>Built by Nesin Technologies LLP</Text>
       </ScrollView>
     </View>
   );
@@ -288,5 +299,12 @@ const styles = StyleSheet.create({
   dangerText: {
     color: '#ff4444',
     fontSize: 16,
+  },
+  footer: {
+    color: '#555',
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 8,
+    marginBottom: 32,
   },
 });
