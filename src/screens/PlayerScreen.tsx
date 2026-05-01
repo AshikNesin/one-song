@@ -13,6 +13,7 @@ import {
   setSleepTimer,
   clearSleepTimer,
   useAudioFocus,
+  useRemotePlayPause,
 } from '../services/AudioService';
 import ProgressBar from '../components/ProgressBar';
 import PlayPauseButton from '../components/PlayPauseButton';
@@ -83,6 +84,17 @@ export default function PlayerScreen() {
       setIsPlaying(true);
     }
   });
+
+  useRemotePlayPause(
+    async () => {
+      await play();
+      setIsPlaying(true);
+    },
+    async () => {
+      await pause();
+      setIsPlaying(false);
+    },
+  );
 
   const togglePlay = async () => {
     if (isPlaying) {

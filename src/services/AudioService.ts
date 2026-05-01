@@ -94,6 +94,19 @@ export function usePlaybackState(callback: (state: State) => void): void {
   });
 }
 
+export function useRemotePlayPause(
+  onPlay: () => void,
+  onPause: () => void,
+): void {
+  useTrackPlayerEvents([Event.RemotePlay, Event.RemotePause], async event => {
+    if (event.type === Event.RemotePlay) {
+      onPlay();
+    } else if (event.type === Event.RemotePause) {
+      onPause();
+    }
+  });
+}
+
 export function useAudioFocus(callback: (event: AudioFocusEvent) => void): void {
   useTrackPlayerEvents([Event.RemoteDuck], async event => {
     if (event.permanent) {
