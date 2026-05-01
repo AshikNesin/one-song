@@ -1,4 +1,5 @@
 import TrackPlayer, {
+  AppKilledPlaybackBehavior,
   Capability,
   Event,
   RepeatMode,
@@ -22,6 +23,9 @@ export async function setupPlayer(): Promise<void> {
   await TrackPlayer.updateOptions({
     capabilities: [Capability.Play, Capability.Pause, Capability.SeekTo],
     notificationCapabilities: [Capability.Play, Capability.Pause],
+    android: {
+      appKilledPlaybackBehavior: AppKilledPlaybackBehavior.StopPlaybackAndRemoveNotification,
+    },
   });
   await TrackPlayer.setRepeatMode(RepeatMode.Track);
 }
