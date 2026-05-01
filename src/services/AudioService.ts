@@ -10,6 +10,11 @@ import { Song } from '../types';
 
 let sleepTimerId: ReturnType<typeof setTimeout> | null = null;
 
+export interface AudioFocusEvent {
+  type: 'focus_lost' | 'focus_gained';
+  permanent: boolean;
+}
+
 export async function setupPlayer(): Promise<void> {
   try {
     await TrackPlayer.setupPlayer();
@@ -86,5 +91,15 @@ export function clearSleepTimer(): void {
 export function usePlaybackState(callback: (state: State) => void): void {
   useTrackPlayerEvents([Event.PlaybackState], async event => {
     callback(event.state);
+  });
+}
+
+export function useAudioFocus(callback: (event: AudioFocusEvent) => void): void {
+  useTrackPlayerEvents([Event.RemoteDuck], async event => {
+    if (event.permanent) {
+      callback({ type: 'focus_lost', permanent: true });
+    } else {
+      callback({ type: event.paused ? 'focus_lost' : 'focus_gained', permanent: false });
+    }
   });
 }

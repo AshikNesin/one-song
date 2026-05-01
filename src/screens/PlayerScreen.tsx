@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { State } from 'react-native-track-player';
 import { Song } from '../types';
-import { getSong, getSleepTimer, saveSleepTimer } from '../services/StorageService';
+import { getSong, getSleepTimer, saveSleepTimer, clearAll } from '../services/StorageService';
 import {
   setupPlayer,
   loadSong,
@@ -12,6 +12,7 @@ import {
   getPlaybackState,
   setSleepTimer,
   clearSleepTimer,
+  useAudioFocus,
 } from '../services/AudioService';
 import ProgressBar from '../components/ProgressBar';
 import PlayPauseButton from '../components/PlayPauseButton';
@@ -39,8 +40,20 @@ export default function PlayerScreen() {
       setTimerMinutes(savedTimer);
 
       if (savedSong) {
-        await loadSong(savedSong);
-        await play();
+        try {
+          await loadSong(savedSong);
+          if (savedTimer) {
+            setSleepTimer(savedTimer);
+          }
+          await play();
+        } catch {
+          await clearAll();
+          setSong(null);
+          setIsReady(true);
+          // @ts-ignore
+          navigation.navigate('Onboarding');
+          return;
+        }
       }
 
       const state = await getPlaybackState();
@@ -62,6 +75,14 @@ export default function PlayerScreen() {
     }, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  useAudioFocus(event => {
+    if (event.type === 'focus_lost' && event.permanent) {
+      setIsPlaying(false);
+    } else if (event.type === 'focus_gained') {
+      setIsPlaying(true);
+    }
+  });
 
   const togglePlay = async () => {
     if (isPlaying) {

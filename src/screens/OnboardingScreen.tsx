@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { pick, keepLocalCopy } from '@react-native-documents/picker';
 import { Song } from '../types';
-import { requestStoragePermission } from '../services/PermissionService';
+import { requestStoragePermission, isPermissionBlocked, openAppSettings } from '../services/PermissionService';
 import { saveSong, setOnboardingComplete } from '../services/StorageService';
 
 interface Props {
@@ -17,7 +17,19 @@ export default function OnboardingScreen({ onComplete }: Props) {
     setError(null);
     const hasPermission = await requestStoragePermission();
     if (!hasPermission) {
-      setError('Storage permission is required to select a song.');
+      const blocked = await isPermissionBlocked();
+      if (blocked) {
+        Alert.alert(
+          'Permission Required',
+          'Storage permission is permanently denied. Please enable it in app settings to select a song.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Open Settings', onPress: openAppSettings },
+          ],
+        );
+      } else {
+        setError('Storage permission is required to select a song.');
+      }
       return;
     }
 

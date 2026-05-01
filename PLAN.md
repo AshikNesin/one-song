@@ -450,7 +450,7 @@ Screens are full-page views. Each screen combines components and services.
 1. Fresh install → Onboarding → Select song → Plays automatically
 2. Kill app → Reopen → Song plays (no onboarding)
 3. Set sleep timer → Wait → Song pauses
-4. Kill app during playback → Reopen → Resumes from where left off
+4. Kill app during playback → Reopen → Starts from beginning
 5. Get phone call → Song pauses → Call ends → Song resumes
 6. Background app → Notification shows → Can pause/play from notification
 
