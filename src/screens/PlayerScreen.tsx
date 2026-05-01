@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { State } from 'react-native-track-player';
 import { Song } from '../types';
-import { getSong, getSleepTimer, saveSleepTimer, clearAll } from '../services/StorageService';
+import { getSong, getSleepTimer, saveSleepTimer, clearAll, getAutoPlayEnabled } from '../services/StorageService';
 import {
   setupPlayer,
   loadSong,
@@ -46,7 +46,10 @@ export default function PlayerScreen() {
           if (savedTimer) {
             setSleepTimer(savedTimer);
           }
-          await play();
+          const autoPlay = await getAutoPlayEnabled();
+          if (autoPlay) {
+            await play();
+          }
         } catch {
           await clearAll();
           setSong(null);

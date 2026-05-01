@@ -12,6 +12,7 @@ export const STORAGE_KEYS = {
   ONBOARDING_COMPLETE: '@onesong:onboarding_complete',
   SELECTED_SONG: '@onesong:selected_song',
   SLEEP_TIMER: '@onesong:sleep_timer',
+  AUTOPLAY_ENABLED: '@onesong:autoplay_enabled',
 } as const;
 
 export const DEFAULT_SONG_TITLE = 'Unknown Song';

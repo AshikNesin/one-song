@@ -18,7 +18,7 @@ And it has a minimal setting page
 
 ## App Launch Behavior
 - First launch: Show onboarding screen to select song and grant permissions
-- Subsequent launches: Auto-play the previously selected song immediately
+- Subsequent launches: Auto-play the previously selected song immediately (unless auto-play is disabled in settings)
 - Sleep timer: Auto-applies previous setting if it was enabled
 
 ## Sleep Timer Behavior
@@ -44,6 +44,7 @@ And it has a minimal setting page
 
 ## Settings Screen
 - Change song: Available anytime (replaces current song)
+- Auto-play on launch: Toggle to enable/disable automatic playback when app starts
 - Sleep timer presets: 5, 10, 15, 30, 45, 60 minutes
 - No custom timer input
 - No volume control (use system volume)

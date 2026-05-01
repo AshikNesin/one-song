@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Linking, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { getSong, getSleepTimer, saveSleepTimer, clearAll } from '../services/StorageService';
+import { getSong, getSleepTimer, saveSleepTimer, clearAll, getAutoPlayEnabled, saveAutoPlayEnabled } from '../services/StorageService';
 import { SLEEP_TIMER_PRESETS } from '../utils/constants';
 import { clearSleepTimer } from '../services/AudioService';
 
@@ -13,16 +13,23 @@ export default function SettingsScreen({ onChangeSong }: Props) {
   const navigation = useNavigation();
   const [defaultTimer, setDefaultTimer] = useState<number | null>(null);
   const [currentSong, setCurrentSong] = useState<string | null>(null);
+  const [autoPlay, setAutoPlay] = useState(true);
 
   useEffect(() => {
     getSleepTimer().then(setDefaultTimer);
     getSong().then(song => setCurrentSong(song?.title ?? null));
+    getAutoPlayEnabled().then(setAutoPlay);
   }, []);
 
   const handleTimerSelect = async (minutes: number | null) => {
     setDefaultTimer(minutes);
     await saveSleepTimer(minutes);
     clearSleepTimer();
+  };
+
+  const handleAutoPlayToggle = async (enabled: boolean) => {
+    setAutoPlay(enabled);
+    await saveAutoPlayEnabled(enabled);
   };
 
   const handleChangeSong = () => {
@@ -80,6 +87,18 @@ export default function SettingsScreen({ onChangeSong }: Props) {
             </View>
           )}
           <SettingRow label="Change Song" onPress={handleChangeSong} />
+        </Section>
+
+        <Section title="Playback">
+          <View style={styles.row}>
+            <Text style={styles.rowLabel}>Auto-play on launch</Text>
+            <Switch
+              value={autoPlay}
+              onValueChange={handleAutoPlayToggle}
+              trackColor={{ false: '#333', true: '#fff' }}
+              thumbColor={autoPlay ? '#000' : '#ccc'}
+            />
+          </View>
         </Section>
 
         <Section title="Sleep Timer Default">

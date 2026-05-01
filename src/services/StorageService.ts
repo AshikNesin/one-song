@@ -33,10 +33,20 @@ export async function hasCompletedOnboarding(): Promise<boolean> {
   return value === 'true';
 }
 
+export async function saveAutoPlayEnabled(enabled: boolean): Promise<void> {
+  await AsyncStorage.setItem(STORAGE_KEYS.AUTOPLAY_ENABLED, String(enabled));
+}
+
+export async function getAutoPlayEnabled(): Promise<boolean> {
+  const value = await AsyncStorage.getItem(STORAGE_KEYS.AUTOPLAY_ENABLED);
+  return value !== 'false';
+}
+
 export async function clearAll(): Promise<void> {
   await AsyncStorage.multiRemove([
     STORAGE_KEYS.ONBOARDING_COMPLETE,
     STORAGE_KEYS.SELECTED_SONG,
     STORAGE_KEYS.SLEEP_TIMER,
+    STORAGE_KEYS.AUTOPLAY_ENABLED,
   ]);
 }
