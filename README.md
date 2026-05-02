@@ -1,5 +1,9 @@
 # One Song
 
+<p align="center">
+  <img src="assets/logo.svg" alt="One Song Logo" width="120" height="120">
+</p>
+
 A minimal Android music player that plays exactly one song — on repeat, with a sleep timer, and background playback.
 
 ## What It Is
