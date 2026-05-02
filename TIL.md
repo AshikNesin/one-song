@@ -3,6 +3,85 @@
 A running log of bugs, fixes, and lessons from building One Song.
 
 ---
+## 2026-05-02 — Android 12+ Double Splash Screen: System Splash vs Custom SplashActivity
+
+### Problem
+
+The Android launch screen showed the app logo **twice** in quick succession — a "double splash" effect. Previous fixes (changing `windowBackground` to solid black, deleting old drawables, running `./gradlew clean`) had no effect.
+
+### Root Cause
+
+Android 12+ (API 31+) **mandates a system splash screen** that automatically displays the app's launcher icon (`ic_launcher`) before any app code runs. This is controlled by the OS, not by the app.
+
+Our architecture had two independent splash mechanisms:
+1. **System splash screen** (Android 12+ mandatory) — shows `ic_launcher` icon automatically
+2. **Custom `SplashActivity`** — renders `launch_screen.xml` with `@mipmap/ic_launcher_foreground` (same icon)
+
+Both showed the same logo, creating the double flash.
+
+### Why Previous Fixes Failed
+
+- `windowBackground` changes only affect the preview window, not the Android 12+ system splash
+- `./gradlew clean` doesn't help — the system splash is generated at runtime by the OS
+- The Android 12+ system splash is **mandatory and cannot be disabled**
+
+### Fix
+
+Removed `SplashActivity` entirely and made `MainActivity` the launcher. The Android 12+ system splash now shows the icon once (customized with black background). `MainActivity` loads directly after.
+
+**Files changed:**
+
+1. **Deleted** `SplashActivity.kt` and `res/layout/launch_screen.xml`
+2. **Updated `AndroidManifest.xml`** — `MainActivity` is now the launcher with `SplashTheme`:
+   ```xml
+   <activity
+     android:name=".MainActivity"
+     android:theme="@style/SplashTheme"
+     ...>
+     <intent-filter>
+       <action android:name="android.intent.action.MAIN" />
+       <category android:name="android.intent.category.LAUNCHER" />
+     </intent-filter>
+   </activity>
+   ```
+3. **Updated `MainActivity.kt`** — switches from `SplashTheme` to `AppTheme` in `onCreate()`:
+   ```kotlin
+   override fun onCreate(savedInstanceState: Bundle?) {
+       setTheme(R.style.AppTheme)
+       super.onCreate(savedInstanceState)
+   }
+   ```
+4. **Created `values-v31/styles.xml`** — customizes the Android 12+ system splash:
+   ```xml
+   <style name="SplashTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+       <item name="android:windowSplashScreenBackground">@color/splash_background</item>
+       <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+       <item name="android:windowSplashScreenIconBackgroundColor">@color/splash_background</item>
+       <item name="android:windowSplashScreenAnimationDuration">300</item>
+   </style>
+   ```
+5. **Updated `values/styles.xml`** — added `windowBackground` to `AppTheme` for seamless transition from splash to app
+
+### Trade-off
+
+The Android 12+ system splash screen **cannot render text**. "One Song" text that was previously shown below the logo in `SplashActivity` must now be shown in the React Native app's initial loading/landing screen instead.
+
+### Verification
+
+1. `./gradlew clean`
+2. Rebuild and install
+3. Launch — logo appears **once** on black background, then transitions to the app
+4. No double logo flash
+
+### Lesson
+
+- Android 12+ introduced a **mandatory system splash screen** that uses the app's launcher icon. It appears before `onCreate()` runs and cannot be disabled.
+- Having both a system splash AND a custom `SplashActivity` that shows the same icon causes an unavoidable double splash on Android 12+ devices.
+- The standard Android 12+ pattern is: customize the system splash (background color, icon) via `values-v31/styles.xml`, then let `MainActivity` load directly. No separate `SplashActivity` needed.
+- System splash attributes (`windowSplashScreenBackground`, `windowSplashScreenAnimatedIcon`, etc.) only exist on API 31+. Use `values-v31/styles.xml` so they don't break builds on older devices.
+- `MainActivity` must call `setTheme(R.style.AppTheme)` before `super.onCreate()` when using `SplashTheme` as the launcher theme, or the splash background will persist after the app loads.
+
+---
 ## 2026-05-02 — Custom Launch Screen with Black Background and Logo
 
 ### Problem
