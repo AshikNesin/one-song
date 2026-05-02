@@ -134,17 +134,6 @@ export default function SettingsScreen({ onChangeSong }: Props) {
           </View>
         </Section>
 
-        <Section title="About">
-          <View style={styles.aboutRow}>
-            <Text style={styles.aboutLabel}>App</Text>
-            <Text style={styles.aboutValue}>One Song</Text>
-          </View>
-          <View style={styles.aboutRow}>
-            <Text style={styles.aboutLabel}>Version</Text>
-            <Text style={styles.aboutValue}>0.0.1</Text>
-          </View>
-        </Section>
-
         <Section title="Feedback">
           <Pressable
             style={styles.row}
@@ -161,7 +150,7 @@ export default function SettingsScreen({ onChangeSong }: Props) {
         </Section>
 
         <Pressable onPress={() => Linking.openURL('https://nesin.io?ref=onesong')}>
-          <Text style={styles.footer}>Built by Nesin Technologies LLP</Text>
+          <Text style={styles.footer}>One Song v{require('../../package.json').version} · Built by Nesin Technologies LLP</Text>
         </Pressable>
       </ScrollView>
     </View>
@@ -295,23 +284,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     flex: 1,
     textAlign: 'right',
-  },
-  aboutRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#2a2a2a',
-  },
-  aboutLabel: {
-    color: '#ccc',
-    fontSize: 16,
-  },
-  aboutValue: {
-    color: '#999',
-    fontSize: 16,
   },
   dangerRow: {
     paddingVertical: 14,
