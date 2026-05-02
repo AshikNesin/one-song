@@ -149,14 +149,16 @@ export function parseId3Metadata(bytes: Uint8Array): ExtractedMetadata {
   const tag = parse(bytes);
   const metadata: ExtractedMetadata = {};
 
-  if (tag?.title) {
+  if (!tag) return metadata;
+
+  if (tag.title) {
     metadata.title = String(tag.title);
   }
-  if (tag?.artist) {
+  if (tag.artist) {
     metadata.artist = String(tag.artist);
   }
 
-  if (tag?.image?.data && tag.image.mime) {
+  if (tag.image?.data && tag.image.mime) {
     const imageBytes = Array.from(tag.image.data);
     const imageBase64 = Buffer.from(imageBytes).toString('base64');
     metadata.artwork = { mime: tag.image.mime, base64: imageBase64 };

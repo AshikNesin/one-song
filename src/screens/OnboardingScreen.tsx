@@ -39,7 +39,7 @@ export default function OnboardingScreen() {
       return;
     }
 
-    setSelectedSong(result.song);
+    setSelectedSong(result);
   };
 
   const handleContinue = async () => {
