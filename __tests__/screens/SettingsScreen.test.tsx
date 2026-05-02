@@ -3,24 +3,25 @@ import ReactTestRenderer from 'react-test-renderer';
 import SettingsScreen from '../../src/screens/SettingsScreen';
 
 const mockGetSong = jest.fn().mockResolvedValue({ title: 'Test Song' });
-const mockGetSleepTimer = jest.fn().mockResolvedValue(null);
 const mockGetAutoPlayEnabled = jest.fn().mockResolvedValue(true);
-const mockSaveSleepTimer = jest.fn().mockResolvedValue(undefined);
 const mockSaveAutoPlayEnabled = jest.fn().mockResolvedValue(undefined);
 const mockClearAll = jest.fn().mockResolvedValue(undefined);
+const mockGetDefaultSleepTimer = jest.fn().mockResolvedValue(null);
+const mockSetDefaultSleepTimer = jest.fn().mockResolvedValue(undefined);
 const mockClearSleepTimer = jest.fn();
 
 jest.mock('../../src/services/StorageService', () => ({
   getSong: (...args: any[]) => mockGetSong(...args),
-  getSleepTimer: (...args: any[]) => mockGetSleepTimer(...args),
   getAutoPlayEnabled: (...args: any[]) => mockGetAutoPlayEnabled(...args),
-  saveSleepTimer: (...args: any[]) => mockSaveSleepTimer(...args),
   saveAutoPlayEnabled: (...args: any[]) => mockSaveAutoPlayEnabled(...args),
   clearAll: (...args: any[]) => mockClearAll(...args),
 }));
 
-jest.mock('../../src/services/AudioService', () => ({
+jest.mock('../../src/services/SleepTimer', () => ({
+  getDefaultSleepTimer: (...args: any[]) => mockGetDefaultSleepTimer(...args),
+  setDefaultSleepTimer: (...args: any[]) => mockSetDefaultSleepTimer(...args),
   clearSleepTimer: (...args: any[]) => mockClearSleepTimer(...args),
+  setSleepTimer: jest.fn(),
 }));
 
 import { Alert, Linking } from 'react-native';
@@ -29,7 +30,7 @@ describe('SettingsScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetSong.mockResolvedValue({ title: 'Test Song' });
-    mockGetSleepTimer.mockResolvedValue(null);
+    mockGetDefaultSleepTimer.mockResolvedValue(null);
     mockGetAutoPlayEnabled.mockResolvedValue(true);
   });
 

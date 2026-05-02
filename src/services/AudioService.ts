@@ -8,8 +8,6 @@ import TrackPlayer, {
 } from 'react-native-track-player';
 import { Song } from '../types';
 
-let sleepTimerId: ReturnType<typeof setTimeout> | null = null;
-
 export interface AudioFocusEvent {
   type: 'focus_lost' | 'focus_gained';
   permanent: boolean;
@@ -67,25 +65,6 @@ export async function getProgress(): Promise<{ position: number; duration: numbe
 export async function getPlaybackState(): Promise<State> {
   const playbackState = await TrackPlayer.getPlaybackState();
   return playbackState.state;
-}
-
-export function setSleepTimer(minutes: number | null): void {
-  if (sleepTimerId) {
-    clearTimeout(sleepTimerId);
-    sleepTimerId = null;
-  }
-  if (minutes && minutes > 0) {
-    sleepTimerId = setTimeout(() => {
-      TrackPlayer.pause();
-    }, minutes * 60 * 1000);
-  }
-}
-
-export function clearSleepTimer(): void {
-  if (sleepTimerId) {
-    clearTimeout(sleepTimerId);
-    sleepTimerId = null;
-  }
 }
 
 export function usePlaybackState(callback: (state: State) => void): void {

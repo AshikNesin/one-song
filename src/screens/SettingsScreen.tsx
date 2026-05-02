@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Linking, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { getSong, getSleepTimer, saveSleepTimer, clearAll, getAutoPlayEnabled, saveAutoPlayEnabled } from '../services/StorageService';
+import { getSong, clearAll, getAutoPlayEnabled, saveAutoPlayEnabled } from '../services/StorageService';
 import { SLEEP_TIMER_PRESETS } from '../utils/constants';
-import { clearSleepTimer } from '../services/AudioService';
+import { getDefaultSleepTimer, setDefaultSleepTimer, clearSleepTimer } from '../services/SleepTimer';
 
 interface Props {
   onChangeSong: () => void;
@@ -16,14 +16,14 @@ export default function SettingsScreen({ onChangeSong }: Props) {
   const [autoPlay, setAutoPlay] = useState(true);
 
   useEffect(() => {
-    getSleepTimer().then(setDefaultTimer);
+    getDefaultSleepTimer().then(setDefaultTimer);
     getSong().then(song => setCurrentSong(song?.title ?? null));
     getAutoPlayEnabled().then(setAutoPlay);
   }, []);
 
   const handleTimerSelect = async (minutes: number | null) => {
     setDefaultTimer(minutes);
-    await saveSleepTimer(minutes);
+    await setDefaultSleepTimer(minutes);
     clearSleepTimer();
   };
 

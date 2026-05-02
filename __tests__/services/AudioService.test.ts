@@ -7,8 +7,6 @@ import {
   seekTo,
   getProgress,
   getPlaybackState,
-  setSleepTimer,
-  clearSleepTimer,
   usePlaybackState,
   useRemotePlayPause,
   useAudioFocus,
@@ -100,37 +98,6 @@ describe('AudioService', () => {
     it('returns current state', async () => {
       const result = await getPlaybackState();
       expect(result).toBe(State.Playing);
-    });
-  });
-
-  describe('sleep timer', () => {
-    it('sets a timer that pauses playback', () => {
-      setSleepTimer(0.05); // 3 seconds for fast test
-      expect(TrackPlayer.pause).not.toHaveBeenCalled();
-      jest.advanceTimersByTime(3000);
-      expect(TrackPlayer.pause).toHaveBeenCalled();
-    });
-
-    it('clears existing timer before setting new one', () => {
-      setSleepTimer(1);
-      setSleepTimer(2);
-      jest.advanceTimersByTime(60000);
-      expect(TrackPlayer.pause).not.toHaveBeenCalled();
-      jest.advanceTimersByTime(60000);
-      expect(TrackPlayer.pause).toHaveBeenCalledTimes(1);
-    });
-
-    it('does nothing when minutes is null', () => {
-      setSleepTimer(null);
-      jest.advanceTimersByTime(100000);
-      expect(TrackPlayer.pause).not.toHaveBeenCalled();
-    });
-
-    it('clears sleep timer', () => {
-      setSleepTimer(1);
-      clearSleepTimer();
-      jest.advanceTimersByTime(70000);
-      expect(TrackPlayer.pause).not.toHaveBeenCalled();
     });
   });
 

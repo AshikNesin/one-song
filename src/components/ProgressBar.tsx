@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { LayoutChangeEvent, StyleSheet, Text, View, GestureResponderEvent } from 'react-native';
-import { getProgress, seekTo } from '../services/AudioService';
 
 function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60);
@@ -13,33 +12,16 @@ interface BarLayout {
   width: number;
 }
 
-export default function ProgressBar() {
-  const [position, setPosition] = useState(0);
-  const [duration, setDuration] = useState(0);
+interface Props {
+  position: number;
+  duration: number;
+  onSeek: (time: number) => void;
+}
+
+export default function ProgressBar({ position, duration, onSeek }: Props) {
   const [isDragging, setIsDragging] = useState(false);
   const [dragPosition, setDragPosition] = useState(0);
   const barLayout = useRef<BarLayout | null>(null);
-
-  useEffect(() => {
-    let active = true;
-    const tick = async () => {
-      try {
-        const { position: pos, duration: dur } = await getProgress();
-        if (active) {
-          setPosition(pos);
-          setDuration(dur);
-        }
-      } catch {
-        // Player not ready yet
-      }
-    };
-    const interval = setInterval(tick, 1000);
-    tick();
-    return () => {
-      active = false;
-      clearInterval(interval);
-    };
-  }, []);
 
   const handleLayout = useCallback((event: LayoutChangeEvent) => {
     const { x, width } = event.nativeEvent.layout;
@@ -70,8 +52,7 @@ export default function ProgressBar() {
   const handleTouchEnd = (event: GestureResponderEvent) => {
     setIsDragging(false);
     const time = calculateSeekTime(event);
-    seekTo(time);
-    setPosition(time);
+    onSeek(time);
   };
 
   const currentProgress = isDragging ? dragPosition : position;

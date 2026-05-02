@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
-import { pick, keepLocalCopy } from '@react-native-documents/picker';
 import { Song } from '../types';
-import { requestStoragePermission, isPermissionBlocked, openAppSettings } from '../services/PermissionService';
-import { saveSong, setOnboardingComplete } from '../services/StorageService';
+import { pickSong, completeOnboarding, openAppSettings } from '../services/OnboardingFlow';
 
 interface Props {
   onComplete: () => void;
@@ -15,61 +13,36 @@ export default function OnboardingScreen({ onComplete }: Props) {
 
   const handlePickSong = async () => {
     setError(null);
-    const hasPermission = await requestStoragePermission();
-    if (!hasPermission) {
-      const blocked = await isPermissionBlocked();
-      if (blocked) {
-        Alert.alert(
-          'Permission Required',
-          'Storage permission is permanently denied. Please enable it in app settings to select a song.',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Open Settings', onPress: openAppSettings },
-          ],
-        );
+    const result = await pickSong();
+
+    if ('type' in result) {
+      if (result.type === 'permission_denied') {
+        if (result.blocked) {
+          Alert.alert(
+            'Permission Required',
+            'Storage permission is permanently denied. Please enable it in app settings to select a song.',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Open Settings', onPress: openAppSettings },
+            ],
+          );
+        } else {
+          setError('Storage permission is required to select a song.');
+        }
+      } else if (result.type === 'copy_failed') {
+        setError('Failed to copy file locally. Please try again.');
       } else {
-        setError('Storage permission is required to select a song.');
+        setError('Failed to pick a file. Please try again.');
       }
       return;
     }
 
-    try {
-      const result = await pick({
-        type: ['audio/*'],
-      });
-
-      if (result.length === 0) return;
-
-      const file = result[0];
-
-      const localCopy = await keepLocalCopy({
-        files: [{ uri: file.uri, fileName: file.name ?? 'song.mp3' }],
-        destination: 'cachesDirectory',
-      });
-
-      if (localCopy[0].status === 'error') {
-        setError('Failed to copy file locally. Please try again.');
-        return;
-      }
-
-      const song: Song = {
-        id: localCopy[0].localUri,
-        title: file.name ?? 'Unknown Song',
-        artist: 'Unknown Artist',
-        url: localCopy[0].localUri,
-        duration: 0,
-      };
-
-      setSelectedSong(song);
-    } catch (err) {
-      setError('Failed to pick a file. Please try again.');
-    }
+    setSelectedSong(result.song);
   };
 
   const handleContinue = async () => {
     if (!selectedSong) return;
-    await saveSong(selectedSong);
-    await setOnboardingComplete();
+    await completeOnboarding(selectedSong);
     onComplete();
   };
 

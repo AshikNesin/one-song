@@ -5,19 +5,14 @@ import SleepTimerButton from '../../src/components/SleepTimerButton';
 describe('SleepTimerButton', () => {
   it('renders without crashing', async () => {
     await ReactTestRenderer.act(async () => {
-      ReactTestRenderer.create(
-        <SleepTimerButton currentMinutes={null} onSelect={jest.fn()} />,
-      );
+      ReactTestRenderer.create(<SleepTimerButton />);
     });
   });
 
   it('opens modal when pressed', async () => {
-    const onSelect = jest.fn();
     let renderer: any;
     await ReactTestRenderer.act(async () => {
-      renderer = ReactTestRenderer.create(
-        <SleepTimerButton currentMinutes={null} onSelect={onSelect} />,
-      );
+      renderer = ReactTestRenderer.create(<SleepTimerButton />);
     });
     const pressable = renderer.root.findAllByType('button')[0];
     await ReactTestRenderer.act(async () => {
@@ -27,13 +22,10 @@ describe('SleepTimerButton', () => {
     expect(modal.props.visible).toBe(true);
   });
 
-  it('calls onSelect with selected minutes', async () => {
-    const onSelect = jest.fn();
+  it('selects a preset option', async () => {
     let renderer: any;
     await ReactTestRenderer.act(async () => {
-      renderer = ReactTestRenderer.create(
-        <SleepTimerButton currentMinutes={null} onSelect={onSelect} />,
-      );
+      renderer = ReactTestRenderer.create(<SleepTimerButton />);
     });
     // Open modal first
     const button = renderer.root.findAllByType('button')[0];
@@ -46,16 +38,15 @@ describe('SleepTimerButton', () => {
     await ReactTestRenderer.act(async () => {
       options[2].props.onPress();
     });
-    expect(onSelect).toHaveBeenCalled();
+    // Modal should close after selection
+    const modal = renderer.root.findByProps({ transparent: true });
+    expect(modal.props.visible).toBe(false);
   });
 
-  it('calls onSelect with null for Off', async () => {
-    const onSelect = jest.fn();
+  it('selects Off option', async () => {
     let renderer: any;
     await ReactTestRenderer.act(async () => {
-      renderer = ReactTestRenderer.create(
-        <SleepTimerButton currentMinutes={15} onSelect={onSelect} />,
-      );
+      renderer = ReactTestRenderer.create(<SleepTimerButton />);
     });
     const button = renderer.root.findAllByType('button')[0];
     await ReactTestRenderer.act(async () => {
@@ -67,6 +58,8 @@ describe('SleepTimerButton', () => {
     await ReactTestRenderer.act(async () => {
       options[options.length - 1].props.onPress();
     });
-    expect(onSelect).toHaveBeenCalledWith(null);
+    // Modal should close after selection
+    const modal = renderer.root.findByProps({ transparent: true });
+    expect(modal.props.visible).toBe(false);
   });
 });

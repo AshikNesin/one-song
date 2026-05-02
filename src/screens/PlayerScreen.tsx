@@ -1,120 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { State } from 'react-native-track-player';
-import { Song } from '../types';
-import { getSong, getSleepTimer, saveSleepTimer, clearAll, getAutoPlayEnabled } from '../services/StorageService';
-import {
-  setupPlayer,
-  loadSong,
-  play,
-  pause,
-  getPlaybackState,
-  setSleepTimer,
-  clearSleepTimer,
-  useAudioFocus,
-  useRemotePlayPause,
-} from '../services/AudioService';
+import { usePlaybackController } from '../services/PlaybackController';
 import ProgressBar from '../components/ProgressBar';
 import PlayPauseButton from '../components/PlayPauseButton';
 import SleepTimerButton from '../components/SleepTimerButton';
 
 export default function PlayerScreen() {
   const navigation = useNavigation();
-  const [song, setSong] = useState<Song | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [timerMinutes, setTimerMinutes] = useState<number | null>(null);
-  const [isReady, setIsReady] = useState(false);
-
-  useEffect(() => {
-    let mounted = true;
-
-    const init = async () => {
-      await setupPlayer();
-
-      const savedSong = await getSong();
-      const savedTimer = await getSleepTimer();
-
-      if (!mounted) return;
-
-      setSong(savedSong);
-      setTimerMinutes(savedTimer);
-
-      if (savedSong) {
-        try {
-          await loadSong(savedSong);
-          if (savedTimer) {
-            setSleepTimer(savedTimer);
-          }
-          const autoPlay = await getAutoPlayEnabled();
-          if (autoPlay) {
-            await play();
-          }
-        } catch {
-          await clearAll();
-          setSong(null);
-          setIsReady(true);
-          // @ts-ignore
-          navigation.navigate('Onboarding');
-          return;
-        }
-      }
-
-      const state = await getPlaybackState();
-      setIsPlaying(state === State.Playing);
-      setIsReady(true);
-    };
-
-    init();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      const state = await getPlaybackState();
-      setIsPlaying(state === State.Playing);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useAudioFocus(event => {
-    if (event.type === 'focus_lost' && event.permanent) {
-      setIsPlaying(false);
-    } else if (event.type === 'focus_gained') {
-      setIsPlaying(true);
-    }
-  });
-
-  useRemotePlayPause(
-    async () => {
-      await play();
-      setIsPlaying(true);
-    },
-    async () => {
-      await pause();
-      setIsPlaying(false);
-    },
-  );
-
-  const togglePlay = async () => {
-    if (isPlaying) {
-      await pause();
-    } else {
-      await play();
-    }
-    const state = await getPlaybackState();
-    setIsPlaying(state === State.Playing);
-  };
-
-  const handleTimerChange = async (minutes: number | null) => {
-    setTimerMinutes(minutes);
-    await saveSleepTimer(minutes);
-    clearSleepTimer();
-    setSleepTimer(minutes);
-  };
+  const { isPlaying, position, duration, isReady, hasSong, song, togglePlay, seek } =
+    usePlaybackController();
 
   if (!isReady) {
     return (
@@ -124,7 +19,7 @@ export default function PlayerScreen() {
     );
   }
 
-  if (!song) {
+  if (!hasSong || !song) {
     return (
       <View style={styles.container}>
         <Text style={styles.error}>No song found. Please reselect.</Text>
@@ -156,14 +51,14 @@ export default function PlayerScreen() {
 
       <View style={styles.spacer} />
 
-      <ProgressBar />
+      <ProgressBar position={position} duration={duration} onSeek={seek} />
 
       <View style={styles.controls}>
         <PlayPauseButton isPlaying={isPlaying} onPress={togglePlay} />
       </View>
 
       <View style={styles.footer}>
-        <SleepTimerButton currentMinutes={timerMinutes} onSelect={handleTimerChange} />
+        <SleepTimerButton />
       </View>
     </View>
   );
