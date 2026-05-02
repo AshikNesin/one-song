@@ -5,23 +5,25 @@ import SettingsScreen from '../../src/screens/SettingsScreen';
 const mockGetSong = jest.fn().mockResolvedValue({ title: 'Test Song' });
 const mockGetAutoPlayEnabled = jest.fn().mockResolvedValue(true);
 const mockSaveAutoPlayEnabled = jest.fn().mockResolvedValue(undefined);
-const mockClearAll = jest.fn().mockResolvedValue(undefined);
-const mockGetDefaultSleepTimer = jest.fn().mockResolvedValue(null);
-const mockSetDefaultSleepTimer = jest.fn().mockResolvedValue(undefined);
-const mockClearSleepTimer = jest.fn();
+const mockClearSongData = jest.fn().mockResolvedValue(undefined);
+const mockGetDefaultTimer = jest.fn().mockResolvedValue(null);
+const mockSetDefaultTimer = jest.fn().mockResolvedValue(undefined);
+const mockClearTimer = jest.fn().mockResolvedValue(undefined);
 
-jest.mock('../../src/services/StorageService', () => ({
+jest.mock('../../src/services/SongIntake', () => ({
   getSong: (...args: any[]) => mockGetSong(...args),
+  clearSongData: (...args: any[]) => mockClearSongData(...args),
+}));
+
+jest.mock('../../src/services/Playback', () => ({
   getAutoPlayEnabled: (...args: any[]) => mockGetAutoPlayEnabled(...args),
   saveAutoPlayEnabled: (...args: any[]) => mockSaveAutoPlayEnabled(...args),
-  clearAll: (...args: any[]) => mockClearAll(...args),
 }));
 
 jest.mock('../../src/services/SleepTimer', () => ({
-  getDefaultSleepTimer: (...args: any[]) => mockGetDefaultSleepTimer(...args),
-  setDefaultSleepTimer: (...args: any[]) => mockSetDefaultSleepTimer(...args),
-  clearSleepTimer: (...args: any[]) => mockClearSleepTimer(...args),
-  setSleepTimer: jest.fn(),
+  getDefaultTimer: (...args: any[]) => mockGetDefaultTimer(...args),
+  setDefaultTimer: (...args: any[]) => mockSetDefaultTimer(...args),
+  clearTimer: (...args: any[]) => mockClearTimer(...args),
 }));
 
 import { Alert, Linking } from 'react-native';
@@ -30,13 +32,13 @@ describe('SettingsScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetSong.mockResolvedValue({ title: 'Test Song' });
-    mockGetDefaultSleepTimer.mockResolvedValue(null);
+    mockGetDefaultTimer.mockResolvedValue(null);
     mockGetAutoPlayEnabled.mockResolvedValue(true);
   });
 
   it('renders without crashing', async () => {
     await ReactTestRenderer.act(async () => {
-      ReactTestRenderer.create(<SettingsScreen onChangeSong={jest.fn()} />);
+      ReactTestRenderer.create(<SettingsScreen />);
     });
   });
 
@@ -44,7 +46,7 @@ describe('SettingsScreen', () => {
     let renderer: any;
     await ReactTestRenderer.act(async () => {
       renderer = ReactTestRenderer.create(
-        <SettingsScreen onChangeSong={jest.fn()} />,
+        <SettingsScreen />,
       );
     });
     const switchComponent = renderer.root.findByType('input');
@@ -58,7 +60,7 @@ describe('SettingsScreen', () => {
     let renderer: any;
     await ReactTestRenderer.act(async () => {
       renderer = ReactTestRenderer.create(
-        <SettingsScreen onChangeSong={jest.fn()} />,
+        <SettingsScreen />,
       );
     });
     const pressables = renderer.root.findAllByType('button');
@@ -78,9 +80,9 @@ describe('SettingsScreen', () => {
     }
   });
 
-  it('calls clearAll on reset', async () => {
+  it('calls clearSongData on reset', async () => {
     await ReactTestRenderer.act(async () => {
-      ReactTestRenderer.create(<SettingsScreen onChangeSong={jest.fn()} />);
+      ReactTestRenderer.create(<SettingsScreen />);
     });
     const alertCalls = (Alert.alert as jest.Mock).mock.calls;
     const resetAlert = alertCalls.find((call: any) => call[0] === 'Reset Everything');
@@ -90,7 +92,7 @@ describe('SettingsScreen', () => {
       );
       if (destructiveAction?.onPress) {
         await destructiveAction.onPress();
-        expect(mockClearAll).toHaveBeenCalled();
+        expect(mockClearSongData).toHaveBeenCalled();
       }
     }
   });

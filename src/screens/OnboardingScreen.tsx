@@ -1,19 +1,21 @@
 import React, { useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { RootStackParamList } from '../types/navigation';
 import { Song } from '../types';
-import { pickSong, completeOnboarding, openAppSettings } from '../services/OnboardingFlow';
+import { intake, complete, openAppSettings } from '../services/SongIntake';
 
-interface Props {
-  onComplete: () => void;
-}
-
-export default function OnboardingScreen({ onComplete }: Props) {
+export default function OnboardingScreen() {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isPicking, setIsPicking] = useState(false);
 
   const handlePickSong = async () => {
     setError(null);
-    const result = await pickSong();
+    setIsPicking(true);
+    const result = await intake();
+    setIsPicking(false);
 
     if ('type' in result) {
       if (result.type === 'permission_denied') {
@@ -42,8 +44,8 @@ export default function OnboardingScreen({ onComplete }: Props) {
 
   const handleContinue = async () => {
     if (!selectedSong) return;
-    await completeOnboarding(selectedSong);
-    onComplete();
+    await complete(selectedSong);
+    navigation.navigate('Player');
   };
 
   return (
@@ -51,11 +53,15 @@ export default function OnboardingScreen({ onComplete }: Props) {
       <Text style={styles.title}>One Song</Text>
       <Text style={styles.subtitle}>Pick a single song to play on repeat.</Text>
 
-      <Pressable style={styles.pickButton} onPress={handlePickSong}>
+      <Pressable style={styles.pickButton} onPress={handlePickSong} disabled={isPicking}>
         <Text style={styles.pickButtonText}>
           {selectedSong ? 'Change Song' : 'Select Song'}
         </Text>
       </Pressable>
+
+      {isPicking && (
+        <ActivityIndicator style={styles.pickingIndicator} size="small" color="rgba(255,255,255,0.4)" />
+      )}
 
       {selectedSong && (
         <Text style={styles.songName} numberOfLines={1}>
@@ -105,6 +111,9 @@ const styles = StyleSheet.create({
     color: '#000',
     fontSize: 16,
     fontWeight: '600',
+  },
+  pickingIndicator: {
+    marginBottom: 24,
   },
   songName: {
     color: '#ccc',

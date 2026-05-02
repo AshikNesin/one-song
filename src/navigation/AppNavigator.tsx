@@ -1,42 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator, NativeStackScreenProps } from '@react-navigation/native-stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import OnboardingScreen from '../screens/OnboardingScreen';
 import PlayerScreen from '../screens/PlayerScreen';
 import SettingsScreen from '../screens/SettingsScreen';
-import { hasCompletedOnboarding } from '../services/StorageService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { STORAGE_KEYS } from '../utils/constants';
 import { RootStackParamList } from '../types/navigation';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
-
-type OnboardingProps = NativeStackScreenProps<RootStackParamList, 'Onboarding'>;
-type SettingsProps = NativeStackScreenProps<RootStackParamList, 'Settings'>;
-
-function OnboardingScreenWrapper({ navigation }: OnboardingProps) {
-  return (
-    <OnboardingScreen
-      onComplete={() => {
-        navigation.navigate('Player');
-      }}
-    />
-  );
-}
-
-function SettingsScreenWrapper({ navigation }: SettingsProps) {
-  return (
-    <SettingsScreen
-      onChangeSong={() => {
-        navigation.navigate('Onboarding');
-      }}
-    />
-  );
-}
 
 export default function AppNavigator() {
   const [onboardingDone, setOnboardingDone] = useState<boolean | null>(null);
 
   useEffect(() => {
-    hasCompletedOnboarding().then(setOnboardingDone);
+    AsyncStorage.getItem(STORAGE_KEYS.ONBOARDING_COMPLETE).then(
+      value => setOnboardingDone(value === 'true'),
+    );
   }, []);
 
   if (onboardingDone === null) {
@@ -48,9 +28,9 @@ export default function AppNavigator() {
       <Stack.Navigator
         initialRouteName={onboardingDone ? 'Player' : 'Onboarding'}
         screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Onboarding" component={OnboardingScreenWrapper} />
+        <Stack.Screen name="Onboarding" component={OnboardingScreen} />
         <Stack.Screen name="Player" component={PlayerScreen} />
-        <Stack.Screen name="Settings" component={SettingsScreenWrapper} />
+        <Stack.Screen name="Settings" component={SettingsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

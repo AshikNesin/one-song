@@ -1,14 +1,13 @@
-import { read, readFile, writeFile, CachesDirectoryPath } from 'react-native-fs';
 import { Buffer } from 'buffer';
 import parse from 'id3-parser';
 
 export interface ExtractedMetadata {
   title?: string;
   artist?: string;
-  artwork?: string;
+  artwork?: { mime: string; base64: string };
 }
 
-function getImageExtension(mime: string): string {
+export function getImageExtension(mime: string): string {
   const map: Record<string, string> = {
     'image/jpeg': 'jpg',
     'image/jpg': 'jpg',
@@ -93,11 +92,7 @@ function getMp4ImageMimeType(typeByte: number): string {
   }
 }
 
-async function parseMp4Metadata(filePath: string): Promise<ExtractedMetadata> {
-  const base64Data = await readFile(filePath, 'base64');
-  const buffer = Buffer.from(base64Data, 'base64');
-  const data = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
-
+export function parseMp4Metadata(data: Uint8Array): ExtractedMetadata {
   const fileAtoms = parseAtoms(data);
   const moov = findAtom(fileAtoms, 'moov');
   if (!moov) return {};
@@ -106,12 +101,10 @@ async function parseMp4Metadata(filePath: string): Promise<ExtractedMetadata> {
   const udta = findAtom(moovAtoms, 'udta');
   if (!udta) return {};
 
-  // udta is a regular container atom - no header skip
   const udtaAtoms = parseAtoms(udta.data);
   const meta = findAtom(udtaAtoms, 'meta');
   if (!meta) return {};
 
-  // meta is a "full box" - has 4-byte version/flags header before children
   const metaAtoms = parseAtoms(meta.data, 4);
   const ilst = findAtom(metaAtoms, 'ilst');
   if (!ilst) return {};
@@ -119,7 +112,6 @@ async function parseMp4Metadata(filePath: string): Promise<ExtractedMetadata> {
   const ilstAtoms = parseAtoms(ilst.data);
   const metadata: ExtractedMetadata = {};
 
-  // Extract title (©nam)
   const nam = findAtom(ilstAtoms, '\u00A9nam');
   if (nam) {
     const dataAtom = findAtom(parseAtoms(nam.data), 'data');
@@ -129,7 +121,6 @@ async function parseMp4Metadata(filePath: string): Promise<ExtractedMetadata> {
     }
   }
 
-  // Extract artist (©ART)
   const art = findAtom(ilstAtoms, '\u00A9ART');
   if (art) {
     const dataAtom = findAtom(parseAtoms(art.data), 'data');
@@ -139,69 +130,39 @@ async function parseMp4Metadata(filePath: string): Promise<ExtractedMetadata> {
     }
   }
 
-  // Extract cover art (covr)
   const covr = findAtom(ilstAtoms, 'covr');
   if (covr) {
     const dataAtom = findAtom(parseAtoms(covr.data), 'data');
     if (dataAtom) {
       const typeByte = dataAtom.data[0];
       const mime = getMp4ImageMimeType(typeByte);
-      const imageData = dataAtom.data.slice(8); // skip version/flags + reserved
+      const imageData = dataAtom.data.slice(8);
       const imageBase64 = Buffer.from(imageData).toString('base64');
-      const ext = getImageExtension(mime);
-      const artworkFileName = `artwork-${Date.now()}.${ext}`;
-      const artworkPath = `${CachesDirectoryPath}/${artworkFileName}`;
-      await writeFile(artworkPath, imageBase64, 'base64');
-      metadata.artwork = `file://${artworkPath}`;
+      metadata.artwork = { mime, base64: imageBase64 };
     }
   }
 
   return metadata;
 }
 
-export async function extractMetadata(
-  filePath: string,
-): Promise<ExtractedMetadata> {
-  // Try ID3 tags first (MP3 files)
-  try {
-    const CHUNK_SIZE = 256 * 1024;
-    const base64Data = await read(filePath, CHUNK_SIZE, 0, 'base64');
-    const buffer = Buffer.from(base64Data, 'base64');
-    const bytes = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
-    const tag = parse(bytes);
+export function parseId3Metadata(bytes: Uint8Array): ExtractedMetadata {
+  const tag = parse(bytes);
+  const metadata: ExtractedMetadata = {};
 
-    const metadata: ExtractedMetadata = {};
-
-    if (tag?.title) {
-      metadata.title = String(tag.title);
-    }
-    if (tag?.artist) {
-      metadata.artist = String(tag.artist);
-    }
-
-    if (tag?.image?.data && tag.image.mime) {
-      const imageBytes = Array.from(tag.image.data);
-      const imageBase64 = Buffer.from(imageBytes).toString('base64');
-      const ext = getImageExtension(tag.image.mime);
-      const artworkFileName = `artwork-${Date.now()}.${ext}`;
-      const artworkPath = `${CachesDirectoryPath}/${artworkFileName}`;
-      await writeFile(artworkPath, imageBase64, 'base64');
-      metadata.artwork = `file://${artworkPath}`;
-    }
-
-    if (metadata.title || metadata.artist || metadata.artwork) {
-      return metadata;
-    }
-  } catch {
-    // ID3 parsing failed, will try MP4
+  if (tag?.title) {
+    metadata.title = String(tag.title);
+  }
+  if (tag?.artist) {
+    metadata.artist = String(tag.artist);
   }
 
-  // Try MP4 metadata (M4A files)
-  try {
-    return await parseMp4Metadata(filePath);
-  } catch {
-    return {};
+  if (tag?.image?.data && tag.image.mime) {
+    const imageBytes = Array.from(tag.image.data);
+    const imageBase64 = Buffer.from(imageBytes).toString('base64');
+    metadata.artwork = { mime: tag.image.mime, base64: imageBase64 };
   }
+
+  return metadata;
 }
 
 export function parseFilename(filename: string): {

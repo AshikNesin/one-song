@@ -2,30 +2,27 @@ import React, { useEffect, useState } from 'react';
 import { Alert, Linking, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../types/navigation';
-import { getSong, clearAll, getAutoPlayEnabled, saveAutoPlayEnabled } from '../services/StorageService';
-import { SLEEP_TIMER_PRESETS } from '../utils/constants';
-import { getDefaultSleepTimer, setDefaultSleepTimer, clearSleepTimer } from '../services/SleepTimer';
+import { getSong, clearSongData } from '../services/SongIntake';
+import { getAutoPlayEnabled, saveAutoPlayEnabled } from '../services/Playback';
+import { getDefaultTimer, setDefaultTimer, clearTimer } from '../services/SleepTimer';
+import TimerPresetPicker from '../components/TimerPresetPicker';
 
-interface Props {
-  onChangeSong: () => void;
-}
-
-export default function SettingsScreen({ onChangeSong }: Props) {
+export default function SettingsScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [defaultTimer, setDefaultTimer] = useState<number | null>(null);
   const [currentSong, setCurrentSong] = useState<string | null>(null);
   const [autoPlay, setAutoPlay] = useState(true);
 
   useEffect(() => {
-    getDefaultSleepTimer().then(setDefaultTimer);
+    getDefaultTimer().then(setDefaultTimer);
     getSong().then(song => setCurrentSong(song?.title ?? null));
     getAutoPlayEnabled().then(setAutoPlay);
   }, []);
 
   const handleTimerSelect = async (minutes: number | null) => {
     setDefaultTimer(minutes);
-    await setDefaultSleepTimer(minutes);
-    clearSleepTimer();
+    await setDefaultTimer(minutes);
+    await clearTimer();
   };
 
   const handleAutoPlayToggle = async (enabled: boolean) => {
@@ -42,7 +39,7 @@ export default function SettingsScreen({ onChangeSong }: Props) {
         {
           text: 'Change',
           style: 'destructive',
-          onPress: onChangeSong,
+          onPress: () => navigation.navigate('Onboarding'),
         },
       ],
     );
@@ -58,9 +55,9 @@ export default function SettingsScreen({ onChangeSong }: Props) {
           text: 'Reset',
           style: 'destructive',
           onPress: async () => {
-            await clearAll();
-            clearSleepTimer();
-            onChangeSong();
+            await clearSongData();
+            await clearTimer();
+            navigation.navigate('Onboarding');
           },
         },
       ],
@@ -104,34 +101,7 @@ export default function SettingsScreen({ onChangeSong }: Props) {
 
         <Section title="Sleep Timer Default">
           <View style={styles.timerRow}>
-            {SLEEP_TIMER_PRESETS.map(preset => (
-              <Pressable
-                key={preset.minutes}
-                style={[
-                  styles.timerChip,
-                  defaultTimer === preset.minutes && styles.timerChipActive,
-                ]}
-                onPress={() => handleTimerSelect(preset.minutes)}>
-                <Text
-                  style={[
-                    styles.timerChipText,
-                    defaultTimer === preset.minutes && styles.timerChipTextActive,
-                  ]}>
-                  {preset.label}
-                </Text>
-              </Pressable>
-            ))}
-            <Pressable
-              style={[styles.timerChip, defaultTimer === null && styles.timerChipActive]}
-              onPress={() => handleTimerSelect(null)}>
-              <Text
-                style={[
-                  styles.timerChipText,
-                  defaultTimer === null && styles.timerChipTextActive,
-                ]}>
-                Off
-              </Text>
-            </Pressable>
+            <TimerPresetPicker selectedMinutes={defaultTimer} onSelect={handleTimerSelect} />
           </View>
         </Section>
 

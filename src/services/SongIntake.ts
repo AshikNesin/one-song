@@ -1,20 +1,18 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Linking } from 'react-native';
 import { pick, keepLocalCopy } from '@react-native-documents/picker';
 import { Song } from '../types';
-import { DEFAULT_SONG_TITLE, DEFAULT_ARTIST } from '../utils/constants';
-import { extractMetadata, parseFilename } from '../utils/metadata';
-import { requestStoragePermission, isPermissionBlocked, openAppSettings } from './PermissionService';
-import { saveSong, setOnboardingComplete } from './StorageService';
+import { STORAGE_KEYS, DEFAULT_SONG_TITLE, DEFAULT_ARTIST } from '../utils/constants';
+import { parseFilename } from '../utils/metadata';
+import { extractMetadata } from './MetadataAdapter';
+import { requestStoragePermission, isPermissionBlocked } from './PermissionService';
 
-export type OnboardingError =
+export type IntakeError =
   | { type: 'permission_denied'; blocked: boolean }
   | { type: 'pick_failed' }
   | { type: 'copy_failed' };
 
-export interface OnboardingResult {
-  song: Song;
-}
-
-export async function pickSong(): Promise<OnboardingResult | OnboardingError> {
+export async function intake(): Promise<Song | IntakeError> {
   const hasPermission = await requestStoragePermission();
   if (!hasPermission) {
     const blocked = await isPermissionBlocked();
@@ -53,15 +51,34 @@ export async function pickSong(): Promise<OnboardingResult | OnboardingError> {
       duration: 0,
     };
 
-    return { song };
+    return song;
   } catch {
     return { type: 'pick_failed' };
   }
 }
 
-export async function completeOnboarding(song: Song): Promise<void> {
-  await saveSong(song);
-  await setOnboardingComplete();
+export async function complete(song: Song): Promise<void> {
+  await AsyncStorage.setItem(STORAGE_KEYS.SELECTED_SONG, JSON.stringify(song));
+  await AsyncStorage.setItem(STORAGE_KEYS.ONBOARDING_COMPLETE, 'true');
 }
 
-export { openAppSettings };
+export async function getSong(): Promise<Song | null> {
+  const data = await AsyncStorage.getItem(STORAGE_KEYS.SELECTED_SONG);
+  return data ? JSON.parse(data) : null;
+}
+
+export async function hasCompletedOnboarding(): Promise<boolean> {
+  const value = await AsyncStorage.getItem(STORAGE_KEYS.ONBOARDING_COMPLETE);
+  return value === 'true';
+}
+
+export async function clearSongData(): Promise<void> {
+  await AsyncStorage.multiRemove([
+    STORAGE_KEYS.ONBOARDING_COMPLETE,
+    STORAGE_KEYS.SELECTED_SONG,
+  ]);
+}
+
+export function openAppSettings(): void {
+  Linking.openSettings();
+}

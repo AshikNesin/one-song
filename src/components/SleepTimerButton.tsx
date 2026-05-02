@@ -1,23 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import { SLEEP_TIMER_PRESETS } from '../utils/constants';
-import { getDefaultSleepTimer, setDefaultSleepTimer, setSleepTimer, clearSleepTimer } from '../services/SleepTimer';
+import { getDefaultTimer, setDefaultTimer, setTimer, clearTimer } from '../services/SleepTimer';
+import TimerPresetPicker from './TimerPresetPicker';
 
 export default function SleepTimerButton() {
   const [visible, setVisible] = useState(false);
   const [currentMinutes, setCurrentMinutes] = useState<number | null>(null);
 
   useEffect(() => {
-    getDefaultSleepTimer().then(setCurrentMinutes);
+    getDefaultTimer().then(setCurrentMinutes);
   }, []);
 
   const label = currentMinutes ? `Timer: ${currentMinutes}m` : 'Sleep Timer';
 
   const handleSelect = async (minutes: number | null) => {
     setCurrentMinutes(minutes);
-    await setDefaultSleepTimer(minutes);
-    clearSleepTimer();
-    setSleepTimer(minutes);
+    await setDefaultTimer(minutes);
+    await clearTimer();
+    await setTimer(minutes);
     setVisible(false);
   };
 
@@ -31,19 +31,7 @@ export default function SleepTimerButton() {
         <Pressable style={styles.overlay} onPress={() => setVisible(false)}>
           <View style={styles.content}>
             <Text style={styles.title}>Sleep Timer</Text>
-            {SLEEP_TIMER_PRESETS.map(preset => (
-              <Pressable
-                key={preset.minutes}
-                style={styles.option}
-                onPress={() => handleSelect(preset.minutes)}>
-                <Text style={[styles.optionText, currentMinutes === preset.minutes && styles.activeOption]}>
-                  {preset.label}
-                </Text>
-              </Pressable>
-            ))}
-            <Pressable style={styles.option} onPress={() => handleSelect(null)}>
-              <Text style={styles.optionText}>Off</Text>
-            </Pressable>
+            <TimerPresetPicker selectedMinutes={currentMinutes} onSelect={handleSelect} />
           </View>
         </Pressable>
       </Modal>
@@ -81,17 +69,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 16,
     textAlign: 'center',
-  },
-  option: {
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  optionText: {
-    color: '#ccc',
-    fontSize: 16,
-  },
-  activeOption: {
-    color: '#fff',
-    fontWeight: '600',
   },
 });

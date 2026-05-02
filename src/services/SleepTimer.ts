@@ -1,17 +1,10 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import TrackPlayer from 'react-native-track-player';
-import { getSleepTimer, saveSleepTimer } from './StorageService';
+import { STORAGE_KEYS } from '../utils/constants';
 
 let activeTimerId: ReturnType<typeof setTimeout> | null = null;
 
-export async function getDefaultSleepTimer(): Promise<number | null> {
-  return getSleepTimer();
-}
-
-export async function setDefaultSleepTimer(minutes: number | null): Promise<void> {
-  await saveSleepTimer(minutes);
-}
-
-export function setSleepTimer(minutes: number | null): void {
+export async function setTimer(minutes: number | null): Promise<void> {
   if (activeTimerId) {
     clearTimeout(activeTimerId);
     activeTimerId = null;
@@ -23,14 +16,29 @@ export function setSleepTimer(minutes: number | null): void {
   }
 }
 
-export function clearSleepTimer(): void {
+export async function clearTimer(): Promise<void> {
   if (activeTimerId) {
     clearTimeout(activeTimerId);
     activeTimerId = null;
   }
 }
 
-export function getRemainingMinutes(): number | null {
-  // Not currently tracked; could be extended if needed
-  return null;
+export async function getDefaultTimer(): Promise<number | null> {
+  const data = await AsyncStorage.getItem(STORAGE_KEYS.SLEEP_TIMER);
+  return data ? Number(data) : null;
+}
+
+export async function setDefaultTimer(minutes: number | null): Promise<void> {
+  if (minutes === null) {
+    await AsyncStorage.removeItem(STORAGE_KEYS.SLEEP_TIMER);
+  } else {
+    await AsyncStorage.setItem(STORAGE_KEYS.SLEEP_TIMER, String(minutes));
+  }
+}
+
+export async function restoreTimer(): Promise<void> {
+  const minutes = await getDefaultTimer();
+  if (minutes) {
+    await setTimer(minutes);
+  }
 }
