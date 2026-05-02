@@ -4,6 +4,55 @@ A running log of bugs, fixes, and lessons from building One Song.
 
 ---
 
+## 2026-05-02 — App display name shows "OneSong" instead of "One Song"
+
+### Problem
+
+After installing the app on a device, the launcher label showed **"OneSong"** (no space) instead of the intended **"One Song"**.
+
+### Root Cause
+
+The app name was set to the camelCase project name in three places:
+
+1. `app.json` — `displayName` field used by React Native CLI
+2. `ios/OneSong/Info.plist` — `CFBundleDisplayName` (iOS launcher label)
+3. `android/app/src/main/res/values/strings.xml` — `app_name` (Android launcher label)
+
+### Fix
+
+Updated all three files to include the space:
+
+**`app.json`**
+```json
+{
+  "name": "OneSong",
+  "displayName": "One Song"
+}
+```
+
+**`ios/OneSong/Info.plist`**
+```xml
+<key>CFBundleDisplayName</key>
+<string>One Song</string>
+```
+
+**`android/app/src/main/res/values/strings.xml`**
+```xml
+<string name="app_name">One Song</string>
+```
+
+### Verification
+
+Rebuilt and reinstalled the app. Launcher now shows **"One Song"** correctly on both iOS and Android.
+
+### Lesson
+
+- `name` (internal project name) and `displayName` (user-facing label) are separate in React Native. Only `displayName` needs the space.
+- iOS and Android store their launcher labels in separate files. Both must be updated manually — changing `app.json` alone does not sync to native projects after they've been generated.
+- Always verify the actual installed app label, not just the project name in code.
+
+---
+
 ## 2026-05-02 — Build failure: invalid JAVA_HOME + stale autolinking cache + install timeout
 
 ### Problem
