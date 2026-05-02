@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SLEEP_TIMER_PRESETS } from '../utils/constants';
 import { getDefaultSleepTimer, setDefaultSleepTimer, setSleepTimer, clearSleepTimer } from '../services/SleepTimer';
@@ -7,7 +7,7 @@ export default function SleepTimerButton() {
   const [visible, setVisible] = useState(false);
   const [currentMinutes, setCurrentMinutes] = useState<number | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     getDefaultSleepTimer().then(setCurrentMinutes);
   }, []);
 

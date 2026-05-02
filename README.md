@@ -110,7 +110,10 @@ OneSong/
 │   ├── utils/
 │   │   └── constants.ts             # Storage keys, timer presets, UI strings
 │   ├── services/
-│   │   ├── AudioService.ts          # Track player setup, playback, sleep timer, audio focus
+│   │   ├── AudioService.ts          # Track player setup, playback controls, audio focus
+│   │   ├── PlaybackController.ts  # Orchestrates player init, state polling, remote events
+│   │   ├── SleepTimer.ts           # Active timer + persisted default preference
+│   │   ├── OnboardingFlow.ts       # Permission, file pick, copy, and song persistence
 │   │   ├── StorageService.ts        # AsyncStorage wrapper (song, timer, onboarding state)
 │   │   └── PermissionService.ts     # Android storage permission requests
 │   ├── components/
@@ -118,7 +121,7 @@ OneSong/
 │   │   ├── PlayPauseButton.tsx      # Geometric play/pause icon button
 │   │   └── SleepTimerButton.tsx     # Timer preset selector modal
 │   ├── screens/
-│   │   ├── OnboardingScreen.tsx     # First launch: pick song & grant permission
+│   │   ├── OnboardingScreen.tsx     # First launch: pick song UI (delegates to OnboardingFlow)
 │   │   ├── PlayerScreen.tsx         # Main screen: song info, controls, progress
 │   │   └── SettingsScreen.tsx       # Change song, timer default, reset data
 │   ├── navigation/

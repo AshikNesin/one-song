@@ -14,7 +14,7 @@ The app copies the picked file to its own cache directory using `@react-native-d
 
 ## Sleep Timer
 
-The timer is implemented with `setTimeout` in `AudioService.ts`. When it fires, it calls `TrackPlayer.pause()` and clears the timer state. The timer is saved to AsyncStorage so it survives app restarts and auto-applies when the player initializes.
+The timer is implemented with `setTimeout` in `SleepTimer.ts`. When it fires, it calls `TrackPlayer.pause()` and clears the timer state. The default timer preference is saved to AsyncStorage so it survives app restarts and auto-applies when the player initializes.
 
 ## App-Killed Behavior
 
