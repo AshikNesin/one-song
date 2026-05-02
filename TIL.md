@@ -4,6 +4,76 @@ A running log of bugs, fixes, and lessons from building One Song.
 
 ---
 
+## 2026-05-02 — `ReferenceError: Property 'window' doesn't exist` on app launch (Hermes + RN 0.85)
+
+### Problem
+
+App crashed on launch with a red screen:
+
+```
+ReferenceError: Property 'window' doesn't exist
+```
+
+Stack trace pointed to `anonymous@65807:26` — a minified Metro bundle location.
+
+### Root Cause
+
+React Native 0.85's `Libraries/Core/setUpReactDevTools.js` contains this line in debug mode:
+
+```javascript
+if (!window.document) {
+```
+
+Hermes (the default JS engine) does **not** define `window` as a global binding. Unlike JSC or browsers, accessing an undeclared identifier in Hermes throws a `ReferenceError` rather than returning `undefined`.
+
+The code only runs when:
+1. `__DEV__` is `true` (debug builds)
+2. The React DevTools initialization path is hit
+
+This is a **latent upstream bug** in React Native 0.85 — it was always present but may have been masked by:
+- Metro serving a stale cached bundle
+- Testing release builds (this code is stripped in release)
+- The dev server failing to connect, bypassing the DevTools setup
+
+### Fix
+
+Guard the `window` access with a `typeof` check before dereferencing it:
+
+**File:** `node_modules/react-native/Libraries/Core/setUpReactDevTools.js` (line 133)
+
+```javascript
+// Before
+if (!window.document) {
+
+// After
+if (typeof window === 'undefined' || !window.document) {
+```
+
+### Persisting the fix
+
+Since this is a `node_modules` change, it will be lost on reinstall. Applied the fix via `pnpm patch`:
+
+```bash
+pnpm patch react-native@0.85.2
+# edit the file in the temp patch directory
+pnpm patch-commit '/Users/ashiknesin/Code/one-song/node_modules/.pnpm_patches/react-native@0.85.2'
+```
+
+This creates `patches/react-native@0.85.2.patch` and registers it in `pnpm-workspace.yaml`. The patch auto-applies on every `pnpm install`.
+
+### Verification
+
+Rebuilt the debug APK, installed via `adb`, and launched. Logcat showed no `ReferenceError` — app starts cleanly.
+
+### Lesson
+
+- Hermes handles undeclared globals differently from JSC. Always use `typeof foo !== 'undefined'` before accessing a global that may not exist.
+- React Native debug-only code paths (DevTools, Fast Refresh, etc.) can contain bugs that never surface in release builds.
+- When a crash appears "suddenly" with no code changes, suspect: Metro cache invalidation, dev server state changes, or a previously bypassed code path finally executing.
+- `pnpm patch` (or `patch-package` for npm/yarn) is the standard way to persist `node_modules` fixes. Don't leave them as manual edits.
+
+---
+
 ## 2026-05-02 — App display name shows "OneSong" instead of "One Song"
 
 ### Problem

@@ -6,6 +6,6 @@
 - Interview relentlessly until reaching shared understanding. Confidence: 0.75
 - Update PRD.md with decisions when user agrees or explicitly requests. Confidence: 0.85
 - Prioritize minimal, frictionless UX focused on getting things done quickly. Confidence: 0.85
-- Prefer subtle, understated UI elements over prominent or obtrusive ones. Confidence: 0.75
+- Prefer subtle, understated UI elements over prominent or obtrusive ones. Confidence: 0.80
 - Prioritize minimal file size and memory footprint for mobile apps. Confidence: 0.80
 - Prefer bare React Native over Expo for apps requiring native audio modules. Confidence: 0.60
