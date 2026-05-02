@@ -1,6 +1,7 @@
 import { pick, keepLocalCopy } from '@react-native-documents/picker';
 import { Song } from '../types';
 import { DEFAULT_SONG_TITLE, DEFAULT_ARTIST } from '../utils/constants';
+import { extractMetadata, parseFilename } from '../utils/metadata';
 import { requestStoragePermission, isPermissionBlocked, openAppSettings } from './PermissionService';
 import { saveSong, setOnboardingComplete } from './StorageService';
 
@@ -40,10 +41,14 @@ export async function pickSong(): Promise<OnboardingResult | OnboardingError> {
       return { type: 'copy_failed' };
     }
 
+    const metadata = await extractMetadata(localCopy[0].localUri);
+    const parsedFilename = parseFilename(file.name ?? '');
+
     const song: Song = {
       id: localCopy[0].localUri,
-      title: file.name ?? DEFAULT_SONG_TITLE,
-      artist: DEFAULT_ARTIST,
+      title: metadata.title || parsedFilename.title || file.name || DEFAULT_SONG_TITLE,
+      artist: metadata.artist || parsedFilename.artist || DEFAULT_ARTIST,
+      artwork: metadata.artwork,
       url: localCopy[0].localUri,
       duration: 0,
     };

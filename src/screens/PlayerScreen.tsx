@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../types/navigation';
 import { usePlaybackController } from '../services/PlaybackController';
@@ -46,7 +46,11 @@ export default function PlayerScreen() {
       </View>
 
       <View style={styles.artwork}>
-        <Text style={styles.artworkIcon}>🎵</Text>
+        {song.artwork ? (
+          <Image source={{ uri: song.artwork }} style={styles.artworkImage} />
+        ) : (
+          <Text style={styles.artworkIcon}>🎵</Text>
+        )}
       </View>
 
       <Text style={styles.title} numberOfLines={1}>
@@ -116,6 +120,11 @@ const styles = StyleSheet.create({
   },
   artworkIcon: {
     fontSize: 80,
+  },
+  artworkImage: {
+    width: 240,
+    height: 240,
+    borderRadius: 12,
   },
   title: {
     color: '#fff',

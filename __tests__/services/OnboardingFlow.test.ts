@@ -2,14 +2,21 @@ import { pick, keepLocalCopy } from '@react-native-documents/picker';
 import { pickSong, completeOnboarding } from '../../src/services/OnboardingFlow';
 import { requestStoragePermission, isPermissionBlocked } from '../../src/services/PermissionService';
 import { saveSong, setOnboardingComplete } from '../../src/services/StorageService';
+import { extractMetadata, parseFilename } from '../../src/utils/metadata';
 
 jest.mock('@react-native-documents/picker');
 jest.mock('../../src/services/PermissionService');
 jest.mock('../../src/services/StorageService');
+jest.mock('../../src/utils/metadata');
 
 describe('OnboardingFlow', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (extractMetadata as jest.Mock).mockResolvedValue({});
+    (parseFilename as jest.Mock).mockImplementation((filename: string) => {
+      const nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
+      return { title: nameWithoutExt || undefined };
+    });
   });
 
   describe('pickSong', () => {
@@ -59,7 +66,7 @@ describe('OnboardingFlow', () => {
 
       expect('song' in result).toBe(true);
       if ('song' in result) {
-        expect(result.song.title).toBe('test.mp3');
+        expect(result.song.title).toBe('test');
         expect(result.song.url).toBe('file:///cache/test.mp3');
       }
     });
