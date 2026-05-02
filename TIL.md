@@ -77,6 +77,53 @@ Rewrote the storyboard to use a pure black background (`#000`), centered logo im
 - Reuse existing assets when possible — the iOS launch logo is the same 1024x1024 PNG used for App Store, just referenced in a new image set.
 
 ---
+## 2026-05-02 — Kotlin Build Error: Missing `android.os.Bundle` Import in `MainActivity.kt`
+
+### Problem
+
+Android build failed with two Kotlin compilation errors:
+
+```
+e: MainActivity.kt:10:3 'onCreate' overrides nothing. Potential signatures for overriding:
+    fun onCreate(p0: Bundle?): Unit
+    fun onCreate(p0: Bundle?, p1: PersistableBundle?): Unit
+e: MainActivity.kt:10:45 Unresolved reference 'Bundle'.
+```
+
+### Root Cause
+
+When adding a custom `onCreate()` override to `MainActivity.kt` (to switch from `SplashTheme` to `AppTheme`), the `android.os.Bundle` import was missing. Kotlin couldn't resolve the `Bundle` type in the method signature, so it failed to match the override against `ReactActivity.onCreate(savedInstanceState: Bundle?)`.
+
+### Fix
+
+Added the missing import at the top of `MainActivity.kt`:
+
+```kotlin
+import android.os.Bundle
+```
+
+Full corrected file header:
+```kotlin
+package io.nesin.onesong
+
+import android.os.Bundle
+import com.facebook.react.ReactActivity
+import com.facebook.react.ReactActivityDelegate
+import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
+import com.facebook.react.defaults.DefaultReactActivityDelegate
+```
+
+### Verification
+
+Rebuilt the debug APK. Compilation succeeded and the app launched with the splash theme switching correctly.
+
+### Lesson
+
+- Kotlin's `override` keyword is strict — if the parameter types don't resolve, the compiler treats it as a new method, not an override. The error `'onCreate' overrides nothing` is actually caused by the unresolved `Bundle` type, not a wrong signature.
+- When overriding Android lifecycle methods (`onCreate`, `onResume`, etc.), always verify the required `android.os.*` imports are present. IDE auto-import usually handles this, but manual edits can miss it.
+- The two errors are linked: `Unresolved reference 'Bundle'` is the root cause, and `'onCreate' overrides nothing` is the symptom.
+
+---
 ## 2026-05-02 — Generate App Logos from SVG
 
 ### Problem
