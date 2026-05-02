@@ -31,3 +31,13 @@ Read it as `data[0]`, not as a big-endian uint32 (`readUInt32BE` gives `0x010000
 ## Artwork as `file://` path > base64 data URI
 
 Both React Native `<Image>` and `react-native-track-player` support `file://` URIs. Saving extracted artwork to the cache directory as a file and storing the path is more reliable than base64 data URIs (no AsyncStorage bloat, no encoding overhead).
+
+## Path aliases in React Native (Metro + TypeScript + Jest)
+
+To use `@/` aliases across the entire RN toolchain, you need three separate configs — they don't share resolution:
+
+1. **TypeScript** (`tsconfig.json`) — `baseUrl` + `paths` for type-checking and IDE autocomplete
+2. **Metro** (`metro.config.js`) — custom `resolveRequest` in `resolver` for runtime bundling (Metro doesn't read tsconfig paths)
+3. **Jest** (`jest.config.js`) — `moduleNameMapper` for test resolution
+
+No extra dependency needed if you're on RN 0.72+ (Metro has native alias support). For Jest, map `@/(.*)` to `<rootDir>/src/$1` and add a special case for `@/App` if it lives outside `src/`.
