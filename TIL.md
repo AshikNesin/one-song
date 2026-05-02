@@ -3,6 +3,80 @@
 A running log of bugs, fixes, and lessons from building One Song.
 
 ---
+## 2026-05-02 — Custom Launch Screen with Black Background and Logo
+
+### Problem
+
+The default launch screen showed a gray background with "OneSong" text and "Powered by React Native" at the bottom. The app uses a dark theme (`#000` backgrounds, white text) so the gray launch screen felt jarring and off-brand.
+
+### Root Cause
+
+React Native's iOS template generates a `LaunchScreen.storyboard` with `systemBackgroundColor` (white/light gray) and default labels. Android uses the app theme's default window background (also light gray on most devices). Neither matches the app's dark aesthetic.
+
+### Fix
+
+**iOS — `LaunchScreen.storyboard`**
+
+Rewrote the storyboard to use a pure black background (`#000`), centered logo image, and "One Song" text in white below it:
+
+1. Added a `LaunchLogo` image set to `Images.xcassets/` (reused the 1024x1024 App Store artwork)
+2. Set view background to black: `<color key="backgroundColor" white="0.0" alpha="1" .../>`
+3. Replaced default labels with an `imageView` (logo, 120x120pt) and a `label` ("One Song", bold 36pt, white)
+4. Centered both vertically with Auto Layout constraints
+
+**Android — `launch_screen.xml` + theme**
+
+1. Created `res/values/colors.xml` with splash background color:
+   ```xml
+   <color name="splash_background">#000000</color>
+   ```
+
+2. Created `res/drawable/launch_screen.xml` — a layer-list with black background and centered launcher icon:
+   ```xml
+   <layer-list>
+       <item android:drawable="@color/splash_background" />
+       <item android:width="120dp" android:height="120dp" android:gravity="center">
+           <bitmap android:src="@mipmap/ic_launcher_foreground" />
+       </item>
+   </layer-list>
+   ```
+
+3. Added `SplashTheme` to `styles.xml` that uses the drawable as `windowBackground`:
+   ```xml
+   <style name="SplashTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+       <item name="android:windowBackground">@drawable/launch_screen</item>
+       <item name="android:statusBarColor">@color/splash_background</item>
+       <item name="android:navigationBarColor">@color/splash_background</item>
+   </style>
+   ```
+
+4. Applied `SplashTheme` to `MainActivity` in `AndroidManifest.xml`:
+   ```xml
+   <activity android:theme="@style/SplashTheme" ... />
+   ```
+
+5. Switched back to `AppTheme` after React Native takes over in `MainActivity.kt`:
+   ```kotlin
+   override fun onCreate(savedInstanceState: Bundle?) {
+       setTheme(R.style.AppTheme)
+       super.onCreate(savedInstanceState)
+   }
+   ```
+
+### Verification
+
+- **iOS:** Build and launch — black screen with white logo and "One Song" text appears during app startup.
+- **Android:** Build and launch — black screen with centered app icon appears, then transitions seamlessly into the React Native app.
+
+### Lesson
+
+- Launch screens are native-only — React Native's JS bundle hasn't loaded yet, so you can't use JS components.
+- iOS storyboards are XML under the hood — editing them manually is faster than opening Xcode for simple layouts.
+- Android's `windowBackground` theme attribute is the standard way to show a splash before `onCreate()` runs. The drawable must be a layer-list or solid color, not a layout.
+- Always switch back to the normal app theme in `onCreate()` before calling `super.onCreate()`, or the splash background will persist after the app loads.
+- Reuse existing assets when possible — the iOS launch logo is the same 1024x1024 PNG used for App Store, just referenced in a new image set.
+
+---
 ## 2026-05-02 — Generate App Logos from SVG
 
 ### Problem
