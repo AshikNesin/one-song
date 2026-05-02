@@ -1,6 +1,5 @@
-import jsmediatags from 'jsmediatags';
-
-declare function btoa(data: string): string;
+import { read } from 'react-native-fs';
+import parse from 'id3-parser';
 
 export interface ExtractedMetadata {
   title?: string;
@@ -8,27 +7,23 @@ export interface ExtractedMetadata {
   artwork?: string;
 }
 
-function formatArtwork(picture: {
-  format: string;
-  data: number[] | Uint8Array | ArrayBuffer;
-}): string {
-  let bytes: number[];
-  if (Array.isArray(picture.data)) {
-    bytes = picture.data;
-  } else if (picture.data instanceof Uint8Array) {
-    bytes = Array.from(picture.data);
-  } else if (picture.data instanceof ArrayBuffer) {
-    bytes = Array.from(new Uint8Array(picture.data));
-  } else {
-    bytes = Array.from(picture.data as any);
+function base64ToUint8Array(base64: string): Uint8Array {
+  const binaryString = atob(base64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
   }
+  return bytes;
+}
 
+function formatArtwork(mime: string, data: ArrayLike<number>): string {
+  const bytes = Array.from(data);
   let binary = '';
   for (let i = 0; i < bytes.length; i++) {
     binary += String.fromCharCode(bytes[i]);
   }
   const base64 = btoa(binary);
-  return `data:${picture.format};base64,${base64}`;
+  return `data:${mime};base64,${base64}`;
 }
 
 export async function extractMetadata(
@@ -36,29 +31,27 @@ export async function extractMetadata(
 ): Promise<ExtractedMetadata> {
   const cleanPath = filePath.replace(/^file:\/\//, '');
 
-  return new Promise(resolve => {
-    jsmediatags.read(cleanPath, {
-      onSuccess: tag => {
-        const tags = tag.tags;
-        const metadata: ExtractedMetadata = {};
+  try {
+    const base64Data = await read(cleanPath, 0, 0, 'base64');
+    const buffer = base64ToUint8Array(base64Data);
+    const tag = parse(buffer);
 
-        if (tags.title) {
-          metadata.title = String(tags.title);
-        }
-        if (tags.artist) {
-          metadata.artist = String(tags.artist);
-        }
-        if (tags.picture) {
-          metadata.artwork = formatArtwork(tags.picture);
-        }
+    const metadata: ExtractedMetadata = {};
 
-        resolve(metadata);
-      },
-      onError: () => {
-        resolve({});
-      },
-    });
-  });
+    if (tag?.title) {
+      metadata.title = String(tag.title);
+    }
+    if (tag?.artist) {
+      metadata.artist = String(tag.artist);
+    }
+    if (tag?.image?.data && tag.image.mime) {
+      metadata.artwork = formatArtwork(tag.image.mime, tag.image.data);
+    }
+
+    return metadata;
+  } catch {
+    return {};
+  }
 }
 
 export function parseFilename(filename: string): {

@@ -28,9 +28,9 @@ importers:
       '@react-navigation/native-stack':
         specifier: ^7.14.12
         version: 7.14.12(aadd9004d37730885dbcc5b57048fcdd)
-      jsmediatags:
-        specifier: ^3.9.7
-        version: 3.9.7
+      id3-parser:
+        specifier: ^3.0.0
+        version: 3.0.0
       react:
         specifier: 19.2.3
         version: 19.2.3
@@ -95,9 +95,6 @@ importers:
       '@types/jest':
         specifier: ^29.5.13
         version: 29.5.14
-      '@types/jsmediatags':
-        specifier: ^3.9.6
-        version: 3.9.6
       '@types/react':
         specifier: ^19.2.14
         version: 19.2.14
@@ -1203,9 +1200,6 @@ packages:
   '@types/jest@29.5.14':
     resolution: {integrity: sha512-ZN+4sdnLUbo8EVvVc2ao0GFW6oVrQRPn4K2lglySj7APvSrgzxHiNNK99us4WDMi57xxA2yggblIAMNhXOotLQ==}
 
-  '@types/jsmediatags@3.9.6':
-    resolution: {integrity: sha512-a2IVxVGXBCCVzONBFKGBb2mnTNMAt0shl+Mb5+wM5YVxymhgqNilr/7/x+XePYM2DnmWwCYlBRjq+8q7nsp2PA==}
-
   '@types/node@25.6.0':
     resolution: {integrity: sha512-+qIYRKdNYJwY3vRCZMdJbPLJAtGjQBudzZzdzwQYkEPQd+PJGixUL5QfvCLDaULoLv+RhT3LDkwEfKaAkgSmNQ==}
 
@@ -2266,6 +2260,10 @@ packages:
     resolution: {integrity: sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==}
     engines: {node: '>=0.10.0'}
 
+  id3-parser@3.0.0:
+    resolution: {integrity: sha512-ubxxh6inGy2VM4N3L1F8uFQXKgKoFgFuT3BSEg7e+5bbSu7pw91tQqxVhUdJVg3jbzZYZJFaej29o8shfJ/GGg==}
+    engines: {node: '>=16'}
+
   ieee754@1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
 
@@ -2660,10 +2658,6 @@ packages:
     resolution: {integrity: sha512-/sM3dO2FOzXjKQhJuo0Q173wf2KOo8t4I8vHy6lF9poUp7bKT0/NHE8fPX23PwfhnykfqnC2xRxOnVw5XuGIaA==}
     engines: {node: '>=6'}
     hasBin: true
-
-  jsmediatags@3.9.7:
-    resolution: {integrity: sha512-xCAO8C3li3t5hYkXqn8iv8zQQUB4T1QqRN2aSONHMls21ICdEvXi4xtb6W70/fAFYSDwMHd32hIqvo4YuXoNcQ==}
-    engines: {node: '>=4.0.0'}
 
   json-buffer@3.0.1:
     resolution: {integrity: sha512-4bV5BfR2mqfQTJm+V5tPPdf+ZpuhiIvTuAB5g8kcrXOZpTT/QwwVRWBywX1ozr6lEuPdbHxwaJlm9G6mI2sfSQ==}
@@ -3798,10 +3792,6 @@ packages:
         optional: true
       utf-8-validate:
         optional: true
-
-  xhr2@0.1.4:
-    resolution: {integrity: sha512-3QGhDryRzTbIDj+waTRvMBe8SyPhW79kz3YnNb+HQt/6LPYQT3zT3Jt0Y8pBofZqQX26x8Ecfv0FXR72uH5VpA==}
-    engines: {node: '>= 0.6'}
 
   y18n@4.0.3:
     resolution: {integrity: sha512-JKhqTOwSrqNA1NY5lSztJ1GrBiUodLMmIZuLiDaMRJ+itFd+ABVE8XBjOvIWL+rSqNDC74LCSFmlb/U4UZ4hJQ==}
@@ -5407,8 +5397,6 @@ snapshots:
       expect: 29.7.0
       pretty-format: 29.7.0
 
-  '@types/jsmediatags@3.9.6': {}
-
   '@types/node@25.6.0':
     dependencies:
       undici-types: 7.19.2
@@ -6694,6 +6682,8 @@ snapshots:
     dependencies:
       safer-buffer: 2.1.2
 
+  id3-parser@3.0.0: {}
+
   ieee754@1.2.1: {}
 
   ignore@5.3.2: {}
@@ -7287,10 +7277,6 @@ snapshots:
   jsc-safe-url@0.2.4: {}
 
   jsesc@3.1.0: {}
-
-  jsmediatags@3.9.7:
-    dependencies:
-      xhr2: 0.1.4
 
   json-buffer@3.0.1: {}
 
@@ -8588,8 +8574,6 @@ snapshots:
       async-limiter: 1.0.1
 
   ws@7.5.10: {}
-
-  xhr2@0.1.4: {}
 
   y18n@4.0.3: {}
 
