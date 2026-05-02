@@ -4,6 +4,58 @@ A running log of bugs, fixes, and lessons from building One Song.
 
 ---
 
+## 2026-05-02 — PlayerScreen loading state: why it exists and how to make it subtle
+
+### Problem
+
+`PlayerScreen` showed a bold **"Loading..."** text at the top of the screen while the app initialized. It felt jarring and out of place for a minimal app.
+
+### Root Cause
+
+The `isReady` flag gates rendering until three async init steps complete:
+
+1. `setupPlayer()` — initializes react-native-track-player's native audio session (the slowest step)
+2. `getSong()` + `getSleepTimer()` — reads persisted state from AsyncStorage
+3. `loadSong()` + `getPlaybackState()` — restores the last track and playback state
+
+`setupPlayer()` in particular has native overhead, so the screen can't render in a valid state immediately.
+
+### Fix
+
+Replaced the text with a small, semi-transparent `ActivityIndicator`:
+
+**`src/screens/PlayerScreen.tsx`**
+```tsx
+import { ActivityIndicator, ... } from 'react-native';
+
+if (!isReady) {
+  return (
+    <View style={[styles.container, styles.loadingContainer]}>
+      <ActivityIndicator size="small" color="rgba(255,255,255,0.4)" />
+    </View>
+  );
+}
+```
+
+Styles:
+```tsx
+loadingContainer: {
+  justifyContent: 'center',
+},
+```
+
+### Verification
+
+Launched the app. The spinner appears centered and fades into the black background instead of shouting "Loading..." at the user.
+
+### Lesson
+
+- Native module initialization (`setupPlayer()`) is the main reason a loader is unavoidable in audio apps. You can't render playable controls before the engine is ready.
+- `ActivityIndicator` with low-opacity white (`rgba(255,255,255,0.4)`) and `size="small"` is a standard, subtle pattern for dark-themed apps.
+- If even the spinner feels like too much, the next step would be to render the full UI skeleton immediately but keep controls disabled until `isReady` flips. That's more work but eliminates the blank-screen phase entirely.
+
+---
+
 ## 2026-05-02 — `ReferenceError: Property 'window' doesn't exist` on app launch (Hermes + RN 0.85)
 
 ### Problem

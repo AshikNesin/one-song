@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { State } from 'react-native-track-player';
 import { Song } from '../types';
@@ -118,8 +118,8 @@ export default function PlayerScreen() {
 
   if (!isReady) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.loading}>Loading...</Text>
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ActivityIndicator size="small" color="rgba(255,255,255,0.4)" />
       </View>
     );
   }
@@ -195,9 +195,8 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: '#999',
   },
-  loading: {
-    color: '#fff',
-    fontSize: 16,
+  loadingContainer: {
+    justifyContent: 'center',
   },
   error: {
     color: '#ff4444',
