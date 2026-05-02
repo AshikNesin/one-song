@@ -16,6 +16,14 @@ And it has a minimal setting page
 - Supported formats: MP3, M4A
 - No streaming, no bundled default songs
 
+## File Handling
+When a song is selected, the app **copies the file into its own cache directory** using `keepLocalCopy()`. The app plays this cached copy, not the original file. This means:
+- Renaming, moving, or deleting the original file does not affect playback
+- The app continues to work even if the original file is no longer accessible
+- The trade-off is extra storage used for the duplicate copy
+
+This prevents `SecurityException` when the original file is moved or when the app loses persistent URI permission after reinstall.
+
 ## App Launch Behavior
 - First launch: Show onboarding screen to select song and grant permissions
 - Subsequent launches: Auto-play the previously selected song immediately (unless auto-play is disabled in settings)
