@@ -24,43 +24,46 @@ Rewrote the storyboard to use a pure black background (`#000`), centered logo im
 3. Replaced default labels with an `imageView` (logo, 120x120pt) and a `label` ("One Song", bold 36pt, white)
 4. Centered both vertically with Auto Layout constraints
 
-**Android — `launch_screen.xml` + theme**
+**Android — `SplashActivity` with layout (needed for text)**
 
-1. Created `res/values/colors.xml` with splash background color:
+Android `windowBackground` drawables (layer-lists, bitmaps, colors) cannot render text. To show "One Song" below the logo, a full layout + dedicated `SplashActivity` is required:
+
+1. Created `res/layout/launch_screen.xml` — black background with centered logo and text:
    ```xml
-   <color name="splash_background">#000000</color>
+   <RelativeLayout android:background="#000000" ...>
+       <ImageView android:src="@mipmap/ic_launcher_foreground" ... />
+       <TextView android:text="One Song" android:textColor="#FFFFFF" ... />
+   </RelativeLayout>
    ```
 
-2. Created `res/drawable/launch_screen.xml` — a layer-list with black background and centered launcher icon:
-   ```xml
-   <layer-list>
-       <item android:drawable="@color/splash_background" />
-       <item android:width="120dp" android:height="120dp" android:gravity="center">
-           <bitmap android:src="@mipmap/ic_launcher_foreground" />
-       </item>
-   </layer-list>
-   ```
-
-3. Added `SplashTheme` to `styles.xml` that uses the drawable as `windowBackground`:
-   ```xml
-   <style name="SplashTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
-       <item name="android:windowBackground">@drawable/launch_screen</item>
-       <item name="android:statusBarColor">@color/splash_background</item>
-       <item name="android:navigationBarColor">@color/splash_background</item>
-   </style>
-   ```
-
-4. Applied `SplashTheme` to `MainActivity` in `AndroidManifest.xml`:
-   ```xml
-   <activity android:theme="@style/SplashTheme" ... />
-   ```
-
-5. Switched back to `AppTheme` after React Native takes over in `MainActivity.kt`:
+2. Created `SplashActivity.kt` — shows the layout and hands off to `MainActivity` after a short delay so the text is actually visible:
    ```kotlin
-   override fun onCreate(savedInstanceState: Bundle?) {
-       setTheme(R.style.AppTheme)
-       super.onCreate(savedInstanceState)
+   class SplashActivity : AppCompatActivity() {
+       override fun onCreate(savedInstanceState: Bundle?) {
+           super.onCreate(savedInstanceState)
+           setContentView(R.layout.launch_screen)
+
+           Handler(Looper.getMainLooper()).postDelayed({
+               startActivity(Intent(this, MainActivity::class.java))
+               finish()
+           }, 800)
+       }
    }
+   ```
+
+3. Made `SplashActivity` the launcher entry point in `AndroidManifest.xml`:
+   ```xml
+   <activity android:name=".SplashActivity" android:theme="@style/SplashTheme" ...>
+       <intent-filter>
+           <action android:name="android.intent.action.MAIN" />
+           <category android:name="android.intent.category.LAUNCHER" />
+       </intent-filter>
+   </activity>
+   ```
+
+4. Kept `MainActivity` with `singleTask` so it doesn't duplicate when the app is already running:
+   ```xml
+   <activity android:name=".MainActivity" android:launchMode="singleTask" ... />
    ```
 
 ### Verification
@@ -73,6 +76,8 @@ Rewrote the storyboard to use a pure black background (`#000`), centered logo im
 - Launch screens are native-only — React Native's JS bundle hasn't loaded yet, so you can't use JS components.
 - iOS storyboards are XML under the hood — editing them manually is faster than opening Xcode for simple layouts.
 - Android's `windowBackground` theme attribute is the standard way to show a splash before `onCreate()` runs. The drawable must be a layer-list or solid color, not a layout.
+- **Critical:** If using a `SplashActivity` to show text (since drawables can't render text), you must delay the handoff to `MainActivity`. Calling `startActivity()` + `finish()` immediately in `onCreate()` destroys the activity before the layout ever draws to the screen. Use `Handler.postDelayed()` or `ViewTreeObserver.OnPreDrawListener` to ensure the splash is visible.
+- **Avoid double splash:** The `SplashTheme`'s `windowBackground` and the `SplashActivity`'s layout both render. If `windowBackground` contains the same logo as the layout, the logo flashes twice. Set `windowBackground` to a solid color (`@color/splash_background`) and let the `SplashActivity` layout be the only visual.
 - Always switch back to the normal app theme in `onCreate()` before calling `super.onCreate()`, or the splash background will persist after the app loads.
 - Reuse existing assets when possible — the iOS launch logo is the same 1024x1024 PNG used for App Store, just referenced in a new image set.
 
