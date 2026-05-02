@@ -3,6 +3,53 @@
 A running log of bugs, fixes, and lessons from building One Song.
 
 ---
+## 2026-05-02 — Metro Bundler Spawns in macOS Terminal Instead of Warp
+
+### Problem
+
+Running `pnpm react-native run-android` spawned the Metro bundler in a new **macOS Terminal.app** window instead of a new tab in the current **Warp** terminal.
+
+### Root Cause
+
+React Native CLI's `startServerInNewWindow()` uses `open -a $TERM_PROGRAM` on macOS to launch the packager. `TERM_PROGRAM` is `Warp` when running inside Warp, but Warp doesn't support `open -a` for opening new tabs. macOS falls back to the default app for `.command` files, which is Terminal.app.
+
+The CLI also has a `--terminal` flag, but Warp doesn't expose a CLI-friendly way to open new tabs from outside the app.
+
+### Fix
+
+Split the workflow into two separate commands and disable auto-packager spawn:
+
+1. **Renamed `"start"` to `"dev"`** in `package.json` — `pnpm dev` starts Metro manually in a Warp tab.
+2. **Updated `scripts/run-android.sh`** — added `--no-packager` flag so `react-native run-android` never spawns a separate terminal.
+3. **Updated `"android"` script** in `package.json` to use `scripts/run-android.sh` instead of calling `react-native run-android` directly.
+
+**`package.json`**
+```json
+{
+  "scripts": {
+    "dev": "react-native start",
+    "android": "scripts/run-android.sh"
+  }
+}
+```
+
+**`scripts/run-android.sh`**
+```bash
+pnpm react-native run-android --no-packager "$@"
+```
+
+### Verification
+
+- Tab 1: `pnpm dev` — Metro starts in the current Warp tab
+- Tab 2: `pnpm android` — builds and installs the APK without spawning a new terminal
+
+### Lesson
+
+- React Native CLI's auto-packager spawn is convenient for beginners but problematic for power users who run custom terminals (Warp, iTerm2, Alacritty, etc.).
+- `--no-packager` is the escape hatch. Always pair it with a manual `react-native start` (or `pnpm dev`) in another tab.
+- Shell scripts (`scripts/run-android.sh`) are the right place to set environment variables (Java 17, Android SDK PATH) and CLI flags (`--no-packager`) together, keeping `package.json` clean.
+
+---
 ## 2026-05-02 — Android 12+ Double Splash Screen: System Splash vs Custom SplashActivity
 
 ### Problem

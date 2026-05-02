@@ -71,25 +71,23 @@ export PATH="$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$PATH"
 
 ### 4. Start Metro (the JS bundler)
 
+In one terminal tab:
+
 ```bash
-pnpm start
+pnpm dev
 ```
 
-Leave this running in a separate terminal.
+Leave this running. Metro watches your JS files and serves the bundle.
 
 ### 5. Run on Android
 
-With an emulator running or a device connected:
+In a second terminal tab, with an emulator running or a device connected:
 
 ```bash
 pnpm android
 ```
 
-Or explicitly:
-
-```bash
-pnpm react-native run-android
-```
+This builds the APK and installs it without spawning a separate packager window.
 
 For a release build:
 
