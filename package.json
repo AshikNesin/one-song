@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "android": "scripts/run-android.sh",
-    "android:release": "scripts/release-android-aab.sh",
+    "android:release": "scripts/build-android-signed.sh",
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "dev": "react-native start",

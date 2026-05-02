@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Linking, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { RootStackParamList } from '../types/navigation';
 import { getSong, clearAll, getAutoPlayEnabled, saveAutoPlayEnabled } from '../services/StorageService';
 import { SLEEP_TIMER_PRESETS } from '../utils/constants';
 import { getDefaultSleepTimer, setDefaultSleepTimer, clearSleepTimer } from '../services/SleepTimer';
@@ -10,7 +11,7 @@ interface Props {
 }
 
 export default function SettingsScreen({ onChangeSong }: Props) {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [defaultTimer, setDefaultTimer] = useState<number | null>(null);
   const [currentSong, setCurrentSong] = useState<string | null>(null);
   const [autoPlay, setAutoPlay] = useState(true);

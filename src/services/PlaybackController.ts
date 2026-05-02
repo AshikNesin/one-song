@@ -12,7 +12,7 @@ import {
   useAudioFocus,
   useRemotePlayPause,
 } from './AudioService';
-import { getSong, getSleepTimer, getAutoPlayEnabled } from './StorageService';
+import { getSong, getSleepTimer, getAutoPlayEnabled, clearAll } from './StorageService';
 
 export interface PlaybackState {
   isPlaying: boolean;
@@ -21,6 +21,7 @@ export interface PlaybackState {
   isReady: boolean;
   hasSong: boolean;
   song: Song | null;
+  initError: boolean;
 }
 
 export function usePlaybackController() {
@@ -31,10 +32,18 @@ export function usePlaybackController() {
     isReady: false,
     hasSong: false,
     song: null,
+    initError: false,
   });
 
   const stateRef = useRef(state);
   stateRef.current = state;
+  const mountedRef = useRef(true);
+
+  const safeSetState = useCallback((updater: (s: PlaybackState) => PlaybackState) => {
+    if (mountedRef.current) {
+      setState(updater);
+    }
+  }, []);
 
   const init = useCallback(async () => {
     await setupPlayer();
@@ -43,29 +52,36 @@ export function usePlaybackController() {
     const savedTimer = await getSleepTimer();
 
     if (savedSong) {
-      await loadSong(savedSong);
-      if (savedTimer) {
-        const { setSleepTimer } = await import('./SleepTimer');
-        setSleepTimer(savedTimer);
-      }
-      const autoPlay = await getAutoPlayEnabled();
-      if (autoPlay) {
-        await play();
+      try {
+        await loadSong(savedSong);
+        if (savedTimer) {
+          const { setSleepTimer } = await import('./SleepTimer');
+          setSleepTimer(savedTimer);
+        }
+        const autoPlay = await getAutoPlayEnabled();
+        if (autoPlay) {
+          await play();
+        }
+      } catch {
+        await clearAll();
+        safeSetState(s => ({ ...s, hasSong: false, song: null, isReady: true, initError: true }));
+        return;
       }
     }
 
     const playbackState = await getPlaybackState();
     const { position, duration } = await getProgress();
 
-    setState({
+    safeSetState(s => ({
+      ...s,
       isPlaying: playbackState === State.Playing,
       position,
       duration,
       isReady: true,
       hasSong: !!savedSong,
       song: savedSong,
-    });
-  }, []);
+    }));
+  }, [safeSetState]);
 
   const togglePlay = useCallback(async () => {
     if (stateRef.current.isPlaying) {
@@ -74,52 +90,52 @@ export function usePlaybackController() {
       await play();
     }
     const playbackState = await getPlaybackState();
-    setState(s => ({ ...s, isPlaying: playbackState === State.Playing }));
-  }, []);
+    safeSetState(s => ({ ...s, isPlaying: playbackState === State.Playing }));
+  }, [safeSetState]);
 
   const seek = useCallback(async (time: number) => {
     await seekTo(time);
-    setState(s => ({ ...s, position: time }));
-  }, []);
-
-  const refreshProgress = useCallback(async () => {
-    try {
-      const { position, duration } = await getProgress();
-      setState(s => ({ ...s, position, duration }));
-    } catch {
-      // Player not ready yet
-    }
-  }, []);
+    safeSetState(s => ({ ...s, position: time }));
+  }, [safeSetState]);
 
   useEffect(() => {
+    mountedRef.current = true;
     init();
+    return () => {
+      mountedRef.current = false;
+    };
   }, [init]);
 
   useEffect(() => {
     const interval = setInterval(async () => {
-      const playbackState = await getPlaybackState();
-      const isPlaying = playbackState === State.Playing;
-      setState(s => ({ ...s, isPlaying }));
+      try {
+        const playbackState = await getPlaybackState();
+        const { position, duration } = await getProgress();
+        const isPlaying = playbackState === State.Playing;
+        safeSetState(s => ({ ...s, isPlaying, position, duration }));
+      } catch {
+        // Player not ready yet
+      }
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [safeSetState]);
 
   useAudioFocus(event => {
     if (event.type === 'focus_lost' && event.permanent) {
-      setState(s => ({ ...s, isPlaying: false }));
+      safeSetState(s => ({ ...s, isPlaying: false }));
     } else if (event.type === 'focus_gained') {
-      setState(s => ({ ...s, isPlaying: true }));
+      safeSetState(s => ({ ...s, isPlaying: true }));
     }
   });
 
   useRemotePlayPause(
     async () => {
       await play();
-      setState(s => ({ ...s, isPlaying: true }));
+      safeSetState(s => ({ ...s, isPlaying: true }));
     },
     async () => {
       await pause();
-      setState(s => ({ ...s, isPlaying: false }));
+      safeSetState(s => ({ ...s, isPlaying: false }));
     },
   );
 
@@ -127,6 +143,5 @@ export function usePlaybackController() {
     ...state,
     togglePlay,
     seek,
-    refreshProgress,
   };
 }

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { LayoutChangeEvent, StyleSheet, Text, View, GestureResponderEvent } from 'react-native';
 
 function formatTime(seconds: number): string {

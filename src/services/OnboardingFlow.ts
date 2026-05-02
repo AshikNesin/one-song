@@ -1,5 +1,6 @@
 import { pick, keepLocalCopy } from '@react-native-documents/picker';
 import { Song } from '../types';
+import { DEFAULT_SONG_TITLE, DEFAULT_ARTIST } from '../utils/constants';
 import { requestStoragePermission, isPermissionBlocked, openAppSettings } from './PermissionService';
 import { saveSong, setOnboardingComplete } from './StorageService';
 
@@ -41,8 +42,8 @@ export async function pickSong(): Promise<OnboardingResult | OnboardingError> {
 
     const song: Song = {
       id: localCopy[0].localUri,
-      title: file.name ?? 'Unknown Song',
-      artist: 'Unknown Artist',
+      title: file.name ?? DEFAULT_SONG_TITLE,
+      artist: DEFAULT_ARTIST,
       url: localCopy[0].localUri,
       duration: 0,
     };

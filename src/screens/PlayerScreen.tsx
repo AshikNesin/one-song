@@ -1,15 +1,22 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { RootStackParamList } from '../types/navigation';
 import { usePlaybackController } from '../services/PlaybackController';
 import ProgressBar from '../components/ProgressBar';
 import PlayPauseButton from '../components/PlayPauseButton';
 import SleepTimerButton from '../components/SleepTimerButton';
 
 export default function PlayerScreen() {
-  const navigation = useNavigation();
-  const { isPlaying, position, duration, isReady, hasSong, song, togglePlay, seek } =
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const { isPlaying, position, duration, isReady, hasSong, song, initError, togglePlay, seek } =
     usePlaybackController();
+
+  useEffect(() => {
+    if (initError) {
+      navigation.navigate('Onboarding');
+    }
+  }, [initError, navigation]);
 
   if (!isReady) {
     return (
@@ -33,7 +40,7 @@ export default function PlayerScreen() {
         <View style={styles.topSpacer} />
         <Pressable
           style={styles.settingsButton}
-          onPress={() => navigation.navigate('Settings' as never)}>
+          onPress={() => navigation.navigate('Settings')}>
           <Text style={styles.settingsIcon}>⚙</Text>
         </Pressable>
       </View>
