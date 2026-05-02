@@ -179,4 +179,4 @@ Output: `android/app/build/outputs/apk/release/app-arm64-v8a-release.apk`
 
 ## License
 
-ISC
+MIT
