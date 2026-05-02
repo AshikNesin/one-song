@@ -3,6 +3,97 @@
 A running log of bugs, fixes, and lessons from building One Song.
 
 ---
+## 2026-05-02 — Generate App Logos from SVG
+
+### Problem
+
+Need to convert the app's `logo.svg` into platform-specific launcher/app icons for both iOS and Android. SVG cannot be used directly as a launcher icon — both platforms require PNGs in specific sizes.
+
+### Tool
+
+**https://easyappicon.com/** — upload a single square PNG (or SVG converted to PNG), and it generates the full icon set for both platforms.
+
+### Generated Output
+
+After uploading the logo, the tool produces two folders:
+
+**`assets/android/`**
+- `mipmap-ldpi/` — 36x36 (low-density screens)
+- `mipmap-mdpi/` — 48x48 (baseline)
+- `mipmap-hdpi/` — 72x72 (high-density)
+- `mipmap-xhdpi/` — 96x96 (extra-high)
+- `mipmap-xxhdpi/` — 144x144 (extra-extra-high)
+- `mipmap-xxxhdpi/` — 192x192 (extra-extra-extra-high)
+- `mipmap-anydpi-v26/` — adaptive icon XML configs (Android 8.0+)
+- `values/ic_launcher_background.xml` — background color for adaptive icons
+- `ic_launcher-web.png` — 512x512 Play Store icon
+- `playstore-icon.png` — 512x512 Play Store icon
+
+**`assets/ios/AppIcon.appiconset/`**
+- `Icon-App-20x20@1x.png` through `@3x` — notification icons
+- `Icon-App-29x29@1x.png` through `@3x` — settings icons
+- `Icon-App-40x40@1x.png` through `@3x` — spotlight icons
+- `Icon-App-60x60@2x.png` and `@3x` — app icon on home screen
+- `Icon-App-76x76@1x.png` and `@2x` — iPad app icon
+- `Icon-App-83.5x83.5@2x` — iPad Pro app icon
+- `ItunesArtwork@2x.png` — App Store listing
+- `Contents.json` — Xcode asset catalog manifest
+
+### Where to Place the Files
+
+**Android:** Copy all `mipmap-*` folders and `values/` into:
+```
+android/app/src/main/res/
+```
+
+The directory structure must match exactly:
+```
+android/app/src/main/res/
+  mipmap-hdpi/ic_launcher.png
+  mipmap-hdpi/ic_launcher_round.png
+  mipmap-hdpi/ic_launcher_foreground.png
+  mipmap-mdpi/...
+  mipmap-xhdpi/...
+  mipmap-xxhdpi/...
+  mipmap-xxxhdpi/...
+  mipmap-anydpi-v26/ic_launcher.xml
+  mipmap-anydpi-v26/ic_launcher_round.xml
+  mipmap-ldpi/...
+  values/ic_launcher_background.xml
+```
+
+**iOS:** Copy the entire `AppIcon.appiconset/` folder into:
+```
+ios/OneSong/Images.xcassets/AppIcon.appiconset/
+```
+
+This overwrites the existing `Contents.json` and adds all the PNG files.
+
+### Copy Commands
+
+```bash
+# Android
+for dir in mipmap-hdpi mipmap-mdpi mipmap-xhdpi mipmap-xxhdpi mipmap-xxxhdpi mipmap-ldpi mipmap-anydpi-v26 values; do
+  cp -R assets/android/$dir/* android/app/src/main/res/$dir/
+done
+
+# iOS
+cp -R assets/ios/AppIcon.appiconset/* ios/OneSong/Images.xcassets/AppIcon.appiconset/
+```
+
+Note: `mipmap-anydpi-v26` and `mipmap-ldpi` may not exist in a fresh React Native project — create them first with `mkdir -p`.
+
+### Verification
+
+- **Android:** Rebuild and install. The app icon on the launcher should show the custom logo instead of the default React Native robot.
+- **iOS:** Open `ios/OneSong.xcworkspace` in Xcode, verify the AppIcon asset catalog shows all sizes with the custom logo, then build.
+
+### Lesson
+
+- Launcher icons are a native concern, not a React Native concern. The JS bundle has no control over them.
+- Keep the generated source files in `assets/android/` and `assets/ios/` as a backup/reference, then copy into the native projects. This makes it easy to regenerate and re-apply if the logo changes.
+- Adaptive icons (Android 8.0+) require both a foreground PNG and a background color/XML. The `mipmap-anydpi-v26/` configs reference these layers separately.
+- iOS requires a `Contents.json` manifest that lists every icon size and scale. Xcode uses this to validate the asset catalog — missing entries cause build warnings.
 
 ## 2026-05-02 — PlayerScreen loading state: why it exists and how to make it subtle
 
