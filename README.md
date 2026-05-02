@@ -131,51 +131,13 @@ OneSong/
 └── package.json
 ```
 
-## Architecture Notes
+## Documentation
 
-### Why Only arm64-v8a?
+- [Architecture Notes](./docs/architecture.md) — Technical details about audio focus, file persistence, sleep timer, and app behavior
+- [Troubleshooting](./docs/troubleshooting.md) — Common issues and fixes
+- [Building for Production](./docs/building.md) — Release build instructions
 
-The release APK targets only the `arm64-v8a` architecture. This covers virtually all modern Android phones (2015+) and keeps the APK at ~14 MB instead of 56 MB. If you need to support emulators (x86/x86_64) or older 32-bit devices, add those architectures back in `android/app/build.gradle` under the `splits.abi.include` list.
-
-### Audio Focus Handling
-
-The app listens to audio focus events via `react-native-track-player`. When a phone call comes in or another app takes audio focus, playback pauses automatically and resumes when focus returns. The UI play/pause button stays in sync.
-
-### Song File Persistence
-
-The app copies the picked file to its own cache directory using `@react-native-documents/picker`'s `keepLocalCopy()` API. This avoids `SecurityException` when the original file is moved or the app loses persistent URI permission after reinstall.
-
-### Sleep Timer
-
-The timer is implemented with `setTimeout` in `AudioService.ts`. When it fires, it calls `TrackPlayer.pause()` and clears the timer state. The timer is saved to AsyncStorage so it survives app restarts and auto-applies when the player initializes.
-
-### App-Killed Behavior
-
-Playback stops and the notification is removed when the app is swiped away from recents. This is configured via `AppKilledPlaybackBehavior.StopPlaybackAndRemoveNotification` in `updateOptions()`.
-
-## Troubleshooting
-
-| Problem | Cause | Fix |
-|---|---|---|
-| `JAVA_HOME is set to an invalid directory` | Java 25 is not supported by the Android NDK/CMake toolchain | Set `JAVA_HOME` to OpenJDK 17 before building |
-| `adb: command not found` | Android SDK `platform-tools` not in PATH | Add `$ANDROID_HOME/platform-tools` to PATH |
-| `No connected devices!` | No emulator running or device not connected | Start an emulator or connect a device with USB debugging |
-| `The player has already been initialized` | `setupPlayer()` called multiple times | Already handled in `AudioService.ts` — the error is caught and ignored |
-| `SecurityException` on playback | File URI lost permission after reinstall | File is copied to app cache on pick; use `keepLocalCopy()` |
-| Song keeps playing after app is closed | Default track player behavior | Already fixed — `AppKilledPlaybackBehavior` is set to stop playback |
-
-See [`TIL.md`](./TIL.md) for detailed write-ups of every bug and fix encountered during development.
-
-## Building for Production
-
-The release APK is built with ABI splitting for `arm64-v8a` only:
-
-```bash
-cd android
-./gradlew assembleRelease
-```
-
-Output: `android/app/build/outputs/apk/release/app-arm64-v8a-release.apk`
+See also [`TIL.md`](./TIL.md) for detailed write-ups of every bug and fix encountered during development.
 
 ## License
 
