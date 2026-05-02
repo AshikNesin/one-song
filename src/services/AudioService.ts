@@ -6,7 +6,7 @@ import TrackPlayer, {
   State,
   useTrackPlayerEvents,
 } from 'react-native-track-player';
-import { Song } from '../types';
+import { Song } from '@/types';
 
 export interface AudioFocusEvent {
   type: 'focus_lost' | 'focus_gained';

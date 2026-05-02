@@ -5,7 +5,7 @@ import {
   requestStoragePermission,
   isPermissionBlocked,
   openAppSettings,
-} from '../../src/services/PermissionService';
+} from '@/services/PermissionService';
 
 describe('PermissionService', () => {
   beforeEach(() => {

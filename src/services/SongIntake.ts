@@ -1,9 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Linking } from 'react-native';
 import { pick, keepLocalCopy } from '@react-native-documents/picker';
-import { Song } from '../types';
-import { STORAGE_KEYS, DEFAULT_SONG_TITLE, DEFAULT_ARTIST } from '../utils/constants';
-import { parseFilename } from '../utils/metadata';
+import { Song } from '@/types';
+import { STORAGE_KEYS, DEFAULT_SONG_TITLE, DEFAULT_ARTIST } from '@/utils/constants';
+import { parseFilename } from '@/utils/metadata';
 import { extractMetadata } from './MetadataAdapter';
 import { requestStoragePermission, isPermissionBlocked } from './PermissionService';
 

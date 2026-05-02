@@ -6,8 +6,8 @@ import {
   getDefaultTimer,
   setDefaultTimer,
   restoreTimer,
-} from '../../src/services/SleepTimer';
-import { STORAGE_KEYS } from '../../src/utils/constants';
+} from '@/services/SleepTimer';
+import { STORAGE_KEYS } from '@/utils/constants';
 
 describe('SleepTimer', () => {
   beforeEach(() => {

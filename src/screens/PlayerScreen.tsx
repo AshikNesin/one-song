@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { RootStackParamList } from '../types/navigation';
-import { usePlaybackController } from '../services/PlaybackController';
-import ProgressBar from '../components/ProgressBar';
-import PlayPauseButton from '../components/PlayPauseButton';
-import SleepTimerButton from '../components/SleepTimerButton';
+import { RootStackParamList } from '@/types/navigation';
+import { usePlaybackController } from '@/services/PlaybackController';
+import ProgressBar from '@/components/ProgressBar';
+import PlayPauseButton from '@/components/PlayPauseButton';
+import SleepTimerButton from '@/components/SleepTimerButton';
 
 export default function PlayerScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();

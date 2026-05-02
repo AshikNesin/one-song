@@ -6,7 +6,7 @@ const mockIntake = jest.fn();
 const mockComplete = jest.fn().mockResolvedValue(undefined);
 const mockOpenAppSettings = jest.fn();
 
-jest.mock('../../src/services/SongIntake', () => ({
+jest.mock('@/services/SongIntake', () => ({
   intake: (...args: any[]) => mockIntake(...args),
   complete: (...args: any[]) => mockComplete(...args),
   openAppSettings: mockOpenAppSettings,

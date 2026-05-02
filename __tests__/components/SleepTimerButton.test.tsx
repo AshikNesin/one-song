@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
-import SleepTimerButton from '../../src/components/SleepTimerButton';
+import SleepTimerButton from '@/components/SleepTimerButton';
 
 describe('SleepTimerButton', () => {
   it('renders without crashing', async () => {

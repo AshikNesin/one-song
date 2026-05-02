@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import { getDefaultTimer, setDefaultTimer, setTimer, clearTimer } from '../services/SleepTimer';
+import { getDefaultTimer, setDefaultTimer, setTimer, clearTimer } from '@/services/SleepTimer';
 import TimerPresetPicker from './TimerPresetPicker';
 
 export default function SleepTimerButton() {

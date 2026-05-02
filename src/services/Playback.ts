@@ -1,5 +1,5 @@
 import { State } from 'react-native-track-player';
-import { Song } from '../types';
+import { Song } from '@/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   setupPlayer,

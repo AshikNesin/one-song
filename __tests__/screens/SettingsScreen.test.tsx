@@ -15,12 +15,12 @@ jest.mock('../../src/services/SongIntake', () => ({
   clearSongData: (...args: any[]) => mockClearSongData(...args),
 }));
 
-jest.mock('../../src/services/Playback', () => ({
+jest.mock('@/services/Playback', () => ({
   getAutoPlayEnabled: (...args: any[]) => mockGetAutoPlayEnabled(...args),
   saveAutoPlayEnabled: (...args: any[]) => mockSaveAutoPlayEnabled(...args),
 }));
 
-jest.mock('../../src/services/SleepTimer', () => ({
+jest.mock('@/services/SleepTimer', () => ({
   getDefaultTimer: (...args: any[]) => mockGetDefaultTimer(...args),
   setDefaultTimer: (...args: any[]) => mockSetDefaultTimer(...args),
   clearTimer: (...args: any[]) => mockClearTimer(...args),

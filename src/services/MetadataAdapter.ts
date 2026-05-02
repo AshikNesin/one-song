@@ -5,7 +5,7 @@ import {
   parseId3Metadata,
   parseMp4Metadata,
   getImageExtension,
-} from '../utils/metadata';
+} from '@/utils/metadata';
 
 export interface SongMetadata {
   title?: string;

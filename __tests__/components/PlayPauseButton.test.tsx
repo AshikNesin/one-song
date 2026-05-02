@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
-import PlayPauseButton from '../../src/components/PlayPauseButton';
+import PlayPauseButton from '@/components/PlayPauseButton';
 
 describe('PlayPauseButton', () => {
   it('renders without crashing', async () => {

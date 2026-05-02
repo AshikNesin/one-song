@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import OnboardingScreen from '../screens/OnboardingScreen';
-import PlayerScreen from '../screens/PlayerScreen';
-import SettingsScreen from '../screens/SettingsScreen';
+import OnboardingScreen from '@/screens/OnboardingScreen';
+import PlayerScreen from '@/screens/PlayerScreen';
+import SettingsScreen from '@/screens/SettingsScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { STORAGE_KEYS } from '../utils/constants';
-import { RootStackParamList } from '../types/navigation';
+import { STORAGE_KEYS } from '@/utils/constants';
+import { RootStackParamList } from '@/types/navigation';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 

@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import TrackPlayer from 'react-native-track-player';
-import { STORAGE_KEYS } from '../utils/constants';
+import { STORAGE_KEYS } from '@/utils/constants';
 
 let activeTimerId: ReturnType<typeof setTimeout> | null = null;
 

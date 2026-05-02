@@ -10,7 +10,7 @@ import {
   usePlaybackState,
   useRemotePlayPause,
   useAudioFocus,
-} from '../../src/services/AudioService';
+} from '@/services/AudioService';
 
 describe('AudioService', () => {
   beforeEach(() => {

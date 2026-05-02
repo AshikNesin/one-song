@@ -6,17 +6,17 @@ import {
   getSong,
   hasCompletedOnboarding,
   clearSongData,
-} from '../../src/services/SongIntake';
-import { requestStoragePermission, isPermissionBlocked } from '../../src/services/PermissionService';
-import { extractMetadata } from '../../src/services/MetadataAdapter';
-import { STORAGE_KEYS } from '../../src/utils/constants';
+} from '@/services/SongIntake';
+import { requestStoragePermission, isPermissionBlocked } from '@/services/PermissionService';
+import { extractMetadata } from '@/services/MetadataAdapter';
+import { STORAGE_KEYS } from '@/utils/constants';
 
 jest.mock('@react-native-documents/picker');
 jest.mock('../../src/services/PermissionService');
 jest.mock('../../src/services/MetadataAdapter');
 
 const mockParseFilename = jest.fn();
-jest.mock('../../src/utils/metadata', () => ({
+jest.mock('@/utils/metadata', () => ({
   parseFilename: (...args: any[]) => mockParseFilename(...args),
 }));
 

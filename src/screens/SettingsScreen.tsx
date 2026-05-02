@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Linking, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { RootStackParamList } from '../types/navigation';
-import { getSong, clearSongData } from '../services/SongIntake';
-import { getAutoPlayEnabled, saveAutoPlayEnabled } from '../services/Playback';
-import { getDefaultTimer, setDefaultTimer, clearTimer } from '../services/SleepTimer';
-import TimerPresetPicker from '../components/TimerPresetPicker';
+import { RootStackParamList } from '@/types/navigation';
+import { getSong, clearSongData } from '@/services/SongIntake';
+import { getAutoPlayEnabled, saveAutoPlayEnabled } from '@/services/Playback';
+import { getDefaultTimer, setDefaultTimer, clearTimer } from '@/services/SleepTimer';
+import TimerPresetPicker from '@/components/TimerPresetPicker';
 
 export default function SettingsScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();

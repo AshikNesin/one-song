@@ -1,4 +1,4 @@
-import { SleepTimerPreset } from '../types';
+import { SleepTimerPreset } from '@/types';
 
 export const SLEEP_TIMER_PRESETS: SleepTimerPreset[] = [
   { label: '5 min', minutes: 5 },
