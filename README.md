@@ -12,14 +12,21 @@ One Song is intentionally simple. Pick one audio file from your device, and the 
 
 ## Features
 
-- **One Song Only** — Pick a single audio file. The app remembers it forever (or until you change it).
-- **Auto-Play on Open** — The song starts playing as soon as you open the app.
-- **Repeat Forever** — The song loops automatically. No settings needed.
-- **Sleep Timer** — Set a timer (5–60 minutes) and the app pauses automatically when time is up. Configure a default timer in Settings.
-- **Background Playback** — Music keeps playing when you switch apps or lock your screen. Control it from the notification shade.
-- **Seekable Progress Bar** — Tap or drag anywhere on the bar to jump to a different part of the song.
+- **Instant Playback** — Open the app and your song starts playing. No taps needed.
+- **Loops Forever** — Your song repeats automatically until you say stop.
+- **Sleep Timer** — Set it and forget it. 5 to 60 minutes, your choice. Configure a default in Settings.
+- **Background Audio** — Music keeps playing while locked or in other apps.
+- **Notification Controls** — Play, pause, or stop from the lock screen and notification shade.
+- **Remembers Your Song** — Even if you move or rename the original file.
+- **Seekable Progress Bar** — Tap or drag to jump anywhere in the song.
 - **Change Song Anytime** — Go to Settings → Change Song to pick a different track.
-- **Clean Start on Reopen** — If you force-close the app, it starts the song from the beginning next time. No state to worry about.
+
+## Screenshots
+
+<p align="center">
+  <img src="media/screenshot-01.png" alt="Main player screen" width="300">
+  <img src="media/screenshot-02.png" alt="Settings screen" width="300">
+</p>
 
 ## Tech Stack
 
