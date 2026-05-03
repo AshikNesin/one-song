@@ -13,6 +13,9 @@
 -keep class com.doublesymmetry.trackplayer.** { *; }
 -keep class com.facebook.react.modules.blob.** { *; }
 
+# react-native-device-info
+-keep class com.learnium.RNDeviceInfo.** { *; }
+
 # sp-react-native-in-app-updates
 -keep class com.sudoplz.rninappupdates.** { *; }
 -keepclassmembers class * {
