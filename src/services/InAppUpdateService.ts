@@ -1,6 +1,8 @@
 import { NativeModules, Platform } from 'react-native';
+import { getBuildNumber } from 'react-native-device-info';
 import SpInAppUpdates, {
   AndroidInstallStatus,
+  IAUAvailabilityStatus,
   IAUUpdateKind,
   NeedsUpdateResponse,
   StartUpdateOptions,
@@ -28,12 +30,31 @@ class InAppUpdateService {
     }
 
     try {
+      const currentVersionCode = getBuildNumber();
       const result: NeedsUpdateResponse =
-        await this.inAppUpdates.checkNeedsUpdate();
+        await this.inAppUpdates.checkNeedsUpdate({
+          curVersion: currentVersionCode,
+        });
+
+      const androidResult = result as NeedsUpdateResponse & {
+        other?: { updateAvailability?: number };
+      };
+      const updateAvailability = androidResult.other?.updateAvailability;
 
       if (!result.shouldUpdate) {
+        if (
+          Platform.OS === 'android' &&
+          updateAvailability === IAUAvailabilityStatus.DEVELOPER_TRIGGERED
+        ) {
+          console.log(
+            'In-app update: update already triggered, continuing flexible update',
+          );
+          this.startFlexibleUpdate();
+        }
         return;
       }
+
+      console.log('In-app update: update available', result);
 
       if (Platform.OS === 'android') {
         this.startFlexibleUpdate();
@@ -47,8 +68,8 @@ class InAppUpdateService {
         };
         await this.inAppUpdates.startUpdate(updateOptions);
       }
-    } catch (_error) {
-      // Silently fail — don't block the app if update check fails
+    } catch (error) {
+      console.error('In-app update check failed:', error);
     }
   }
 

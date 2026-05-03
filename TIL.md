@@ -4,6 +4,75 @@ A running log of bugs, fixes, and lessons from building One Song.
 
 ---
 
+## 2026-05-03 — In-App Update Not Showing Despite Newer Version on Play Store
+
+### Problem
+
+App version 0.0.7 (internal testing) was installed from Google Play Store. Version 0.0.8 was published and available on Play Store, but the in-app update modal never appeared when launching the app.
+
+### Root Cause
+
+`sp-react-native-in-app-updates`'s `checkNeedsUpdate()` internally calls `getVersion()` from `react-native-device-info` to determine the current app version. `getVersion()` returns the **versionName** (e.g., `"0.0.7"`) — a semver string. However, the Google Play in-app update API returns the store version as a **versionCode** (e.g., `8`) — an integer.
+
+The library compares these two values using `semver.compare()`:
+- Store: `semver.coerce("8")` → `8.0.0`
+- Current: `semver.coerce("0.0.7")` → `0.0.7`
+
+While `8.0.0 > 0.0.7` happens to return the correct result in this specific case, the comparison is fundamentally flawed — it's comparing a build number against a semver string. This creates several failure modes:
+
+1. **Silent failures from `getVersion()`:** If `react-native-device-info`'s native module fails to link (ProGuard, architecture mismatch, etc.), `getVersion()` can return `undefined` or throw. The library's `checkNeedsUpdate()` catches this internally and may return `shouldUpdate: false` with no visible error.
+
+2. **Version comparison edge cases:** If versionCode ever diverges from semver ordering (e.g., versionCode `100` for version `1.0.0`), the semver comparison produces wrong results.
+
+3. **No visibility into `updateAvailability` status:** The Play Core API returns statuses like `UNKNOWN`, `UNAVAILABLE`, `AVAILABLE`, or `DEVELOPER_TRIGGERED`. The library swallows these into `result.other.updateAvailability`, but the old code never inspected them — making it impossible to distinguish "no update available" from "update already in progress."
+
+### Fix
+
+**1. Pass `curVersion` explicitly as the versionCode** using `getBuildNumber()` from `react-native-device-info` (returns `versionCode` on Android). This ensures the library compares versionCode to versionCode instead of versionName to versionCode:
+
+```typescript
+import { getBuildNumber } from 'react-native-device-info';
+
+const currentVersionCode = getBuildNumber();
+const result = await this.inAppUpdates.checkNeedsUpdate({
+  curVersion: currentVersionCode,
+});
+```
+
+**2. Handle `DEVELOPER_TRIGGERED` status:** When a flexible update was previously started but the app was killed before installation, Play Core reports `updateAvailability === DEVELOPER_TRIGGERED`. The library returns `shouldUpdate: false` for this status, but the update is still pending. We now detect this and re-attach the status listener + call `startUpdate()` to resume:
+
+```typescript
+if (!result.shouldUpdate) {
+  if (
+    Platform.OS === 'android' &&
+    result.other?.updateAvailability === IAUAvailabilityStatus.DEVELOPER_TRIGGERED
+  ) {
+    this.startFlexibleUpdate();
+  }
+  return;
+}
+```
+
+**3. Add logging** to `checkAndPromptUpdate()` so future debugging doesn't require guessing:
+- Log when `shouldUpdate: false` with the full result object
+- Log when `DEVELOPER_TRIGGERED` is detected
+- Log errors instead of silently swallowing them
+
+### Verification
+
+- Unit tests updated to mock `getBuildNumber()` returning `"7"` and verify `checkNeedsUpdate({ curVersion: '7' })` is called
+- New test verifies `DEVELOPER_TRIGGERED` triggers `startFlexibleUpdate()`
+- All 8 tests pass
+
+### Lesson
+
+- **Always pass `curVersion` explicitly to `checkNeedsUpdate()` on Android.** Relying on the library's internal `getVersion()` call compares versionName against versionCode, which is semantically wrong even when it accidentally works.
+- **`getBuildNumber()` returns `versionCode` on Android** — this is the same integer the Play Store API uses, making it the correct value to pass as `curVersion`.
+- **Inspect `updateAvailability` even when `shouldUpdate` is false.** Play Core has multiple non-availability states (`DEVELOPER_TRIGGERED`, `UNAVAILABLE`, `UNKNOWN`) that require different handling. The library collapses them all into `shouldUpdate: false`.
+- **Never silently swallow errors from native module calls.** The old `catch (_error) { /* silent */ }` pattern made it impossible to distinguish "no update" from "update check crashed."
+
+---
+
 ## 2026-05-03 — FLEXIBLE In-App Update Downloaded But Never Installed
 
 ### Problem

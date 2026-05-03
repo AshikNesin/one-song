@@ -10,6 +10,6 @@
 - Keep Metro bundler and platform build commands as separate npm scripts; do not combine them into a single concurrent command. Confidence: 0.75
 - Avoid patching node_modules; address issues properly through Metro config, alternative libraries, or other proper solutions. Confidence: 0.75
 - Prefer replacing old or unmaintained packages with newer, stable alternatives instead of working around their issues. Confidence: 0.70
-- Use Context7 MCP to search library documentation when debugging issues before attempting fixes. Confidence: 0.75
+- Use Context7 MCP to search library documentation when debugging issues before attempting fixes. Confidence: 0.85
 - Do not import Node.js built-ins like `Buffer` from 'buffer' in React Native; Metro bundler cannot resolve them without explicit polyfill setup. Confidence: 0.90
 - Installing `buffer` as an explicit dependency is not a valid workaround for Metro bundler resolution issues with Node.js built-ins; the root cause is Metro's inability to polyfill them properly. Confidence: 0.85

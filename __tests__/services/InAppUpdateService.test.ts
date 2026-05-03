@@ -1,5 +1,9 @@
-import { NativeModules } from 'react-native';
+import { NativeModules, Platform } from 'react-native';
 import { AndroidInstallStatus } from 'sp-react-native-in-app-updates';
+
+jest.mock('react-native-device-info', () => ({
+  getBuildNumber: jest.fn().mockReturnValue('7'),
+}));
 
 jest.mock('sp-react-native-in-app-updates', () => {
   const mockSpInAppUpdates = jest.fn();
@@ -20,8 +24,14 @@ jest.mock('sp-react-native-in-app-updates', () => {
       CANCELED: 15,
     },
     IAUUpdateKind: {
-      FLEXIBLE: 'flexible',
-      IMMEDIATE: 'immediate',
+      FLEXIBLE: 0,
+      IMMEDIATE: 1,
+    },
+    IAUAvailabilityStatus: {
+      UNKNOWN: 0,
+      UNAVAILABLE: 1,
+      AVAILABLE: 2,
+      DEVELOPER_TRIGGERED: 3,
     },
   };
 });
@@ -75,15 +85,17 @@ describe('InAppUpdateService', () => {
       const [instance] = SpInAppUpdates.mock.instances;
       instance.checkNeedsUpdate.mockResolvedValue({
         shouldUpdate: true,
-        storeVersion: '0.0.7',
+        storeVersion: '8',
       });
 
       await inAppUpdateService.checkAndPromptUpdate();
 
-      expect(instance.checkNeedsUpdate).toHaveBeenCalled();
+      expect(instance.checkNeedsUpdate).toHaveBeenCalledWith({
+        curVersion: '7',
+      });
       expect(instance.addStatusUpdateListener).toHaveBeenCalled();
       expect(instance.startUpdate).toHaveBeenCalledWith({
-        updateType: 'flexible',
+        updateType: 0,
       });
     });
 
@@ -94,16 +106,43 @@ describe('InAppUpdateService', () => {
       const [instance] = SpInAppUpdates.mock.instances;
       instance.checkNeedsUpdate.mockResolvedValue({
         shouldUpdate: false,
-        storeVersion: '0.0.6',
+        storeVersion: '6',
       });
 
       await inAppUpdateService.checkAndPromptUpdate();
 
+      expect(instance.checkNeedsUpdate).toHaveBeenCalledWith({
+        curVersion: '7',
+      });
       expect(instance.addStatusUpdateListener).not.toHaveBeenCalled();
       expect(instance.startUpdate).not.toHaveBeenCalled();
     });
 
-    it('silently catches errors in checkNeedsUpdate', async () => {
+    it('continues flexible update when update was already triggered', async () => {
+      Platform.OS = 'android';
+      createService(false);
+
+      const SpInAppUpdates = require('sp-react-native-in-app-updates').default;
+      const [instance] = SpInAppUpdates.mock.instances;
+      instance.checkNeedsUpdate.mockResolvedValue({
+        shouldUpdate: false,
+        storeVersion: '8',
+        other: { updateAvailability: 3 },
+      });
+
+      await inAppUpdateService.checkAndPromptUpdate();
+
+      expect(instance.checkNeedsUpdate).toHaveBeenCalledWith({
+        curVersion: '7',
+      });
+      expect(instance.addStatusUpdateListener).toHaveBeenCalled();
+      expect(instance.startUpdate).toHaveBeenCalledWith({
+        updateType: 0,
+      });
+    });
+
+    it('logs errors in checkNeedsUpdate without throwing', async () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
       createService(false);
 
       const SpInAppUpdates = require('sp-react-native-in-app-updates').default;
@@ -116,7 +155,13 @@ describe('InAppUpdateService', () => {
         inAppUpdateService.checkAndPromptUpdate(),
       ).resolves.toBeUndefined();
 
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'In-app update check failed:',
+        expect.any(Error),
+      );
       expect(instance.startUpdate).not.toHaveBeenCalled();
+
+      consoleSpy.mockRestore();
     });
 
     it('handles DOWNLOADED status by calling installUpdate', async () => {
@@ -126,7 +171,7 @@ describe('InAppUpdateService', () => {
       const [instance] = SpInAppUpdates.mock.instances;
       instance.checkNeedsUpdate.mockResolvedValue({
         shouldUpdate: true,
-        storeVersion: '0.0.7',
+        storeVersion: '8',
       });
 
       let statusListener: ((status: any) => void) | null = null;
@@ -156,7 +201,7 @@ describe('InAppUpdateService', () => {
       const [instance] = SpInAppUpdates.mock.instances;
       instance.checkNeedsUpdate.mockResolvedValue({
         shouldUpdate: true,
-        storeVersion: '0.0.7',
+        storeVersion: '8',
       });
 
       let statusListener: ((status: any) => void) | null = null;

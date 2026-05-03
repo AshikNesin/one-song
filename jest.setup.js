@@ -17,6 +17,40 @@ jest.mock('@react-native-async-storage/async-storage');
 jest.mock('react-native-permissions');
 jest.mock('@react-native-documents/picker');
 jest.mock('react-native-safe-area-context');
+jest.mock('react-native-device-info', () => ({
+  getBuildNumber: jest.fn().mockReturnValue('1'),
+  getVersion: jest.fn().mockReturnValue('0.0.1'),
+}));
+
+jest.mock('sp-react-native-in-app-updates', () => ({
+  __esModule: true,
+  default: jest.fn().mockImplementation(() => ({
+    checkNeedsUpdate: jest.fn(),
+    startUpdate: jest.fn(),
+    installUpdate: jest.fn(),
+    addStatusUpdateListener: jest.fn(),
+  })),
+  AndroidInstallStatus: {
+    UNKNOWN: 0,
+    PENDING: 1,
+    DOWNLOADING: 2,
+    INSTALLING: 3,
+    INSTALLED: 4,
+    FAILED: 5,
+    CANCELED: 6,
+    DOWNLOADED: 11,
+  },
+  IAUUpdateKind: {
+    FLEXIBLE: 0,
+    IMMEDIATE: 1,
+  },
+  IAUAvailabilityStatus: {
+    UNKNOWN: 0,
+    UNAVAILABLE: 1,
+    AVAILABLE: 2,
+    DEVELOPER_TRIGGERED: 3,
+  },
+}));
 
 jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({
