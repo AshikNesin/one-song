@@ -4,6 +4,99 @@ A running log of bugs, fixes, and lessons from building One Song.
 
 ---
 
+## 2026-05-02 — Android Release Build Signed with Debug Certificate
+
+### Problem
+
+Google Play rejected the release AAB with:
+
+> You uploaded an APK or Android App Bundle that was signed in debug mode. You need to sign your APK or Android App Bundle in release mode.
+
+### Root Cause
+
+In `android/app/build.gradle`, the `release` build type was incorrectly configured to use the debug signing config:
+
+```gradle
+buildTypes {
+    release {
+        signingConfig signingConfigs.debug  // <-- wrong
+        ...
+    }
+}
+```
+
+This meant `bundleRelease` produced an AAB signed with `debug.keystore`, which Play Store rejects.
+
+### Fix
+
+1. **Added a `release` signing config** that reads credentials from environment variables:
+
+```gradle
+signingConfigs {
+    debug { ... }
+    release {
+        storeFile file('upload-keystore.jks')
+        storePassword System.getenv('KEYSTORE_PASSWORD') ?: ''
+        keyAlias System.getenv('KEY_ALIAS') ?: ''
+        keyPassword System.getenv('KEY_PASSWORD') ?: ''
+    }
+}
+```
+
+2. **Pointed the `release` build type to the new signing config:**
+
+```gradle
+buildTypes {
+    release {
+        signingConfig signingConfigs.release
+        minifyEnabled enableProguardInReleaseBuilds
+        proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+    }
+}
+```
+
+3. **Updated `scripts/build-android-signed.sh`** to validate credentials and keystore before building, and use `trap` for guaranteed cleanup:
+
+```bash
+# Validate credentials
+if [ -z "$KEYSTORE_PASSWORD" ] || [ -z "$KEY_ALIAS" ] || [ -z "$KEY_PASSWORD" ]; then
+  echo "❌ Error: Failed to fetch one or more signing credentials from 1Password."
+  exit 1
+fi
+
+# Validate keystore download
+if [ ! -f "$KEYSTORE_PATH" ]; then
+  echo "❌ Error: Failed to download keystore file from 1Password."
+  exit 1
+fi
+
+# Ensure cleanup happens even if build fails
+cleanup() {
+  echo "🧹 Cleaning up keystore..."
+  rm -f "$KEYSTORE_PATH"
+}
+trap cleanup EXIT
+```
+
+### Verification
+
+Ran `scripts/build-android-signed.sh` and confirmed the output AAB is signed with the upload keystore:
+
+```bash
+jarsigner -verify -verbose -certs android/app/build/outputs/bundle/release/app-release.aab
+```
+
+Output shows the certificate is issued by the upload keystore, not the Android debug certificate.
+
+### Lesson
+
+- React Native's starter template defaults `release` builds to `signingConfigs.debug` as a convenience. You **must** change this before shipping to production.
+- The `signingConfigs.release` block should use `System.getenv()` to read secrets, not hardcode them. This pairs well with a build script that fetches credentials from a secrets manager (1Password, etc.).
+- Always validate that credentials and files were actually fetched before starting the Gradle build. Silent failures in `op read` produce empty strings, which Gradle accepts but produces an invalid signature.
+- Use `trap cleanup EXIT` in shell scripts to ensure sensitive files (keystores) are deleted even if the build crashes or is interrupted.
+
+---
+
 ## 2026-05-02 — Metadata Extraction in React Native
 
 ### `react-native-fs.read()` length defaults to 0, not "read all"
