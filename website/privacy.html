@@ -11,84 +11,184 @@
       <a href="index.html" class="back-link">← One Song</a>
 
       <h1>Privacy Policy</h1>
-      <p class="updated">Last updated: May 2026</p>
+      <p class="updated">Last updated: May 3, 2026</p>
 
       <section>
-        <h2>Data Collection</h2>
-        <p>One Song does not collect, store, or transmit any personal data.</p>
-      </section>
-
-      <section>
-        <h2>File Access</h2>
+        <h2>Introduction</h2>
         <p>
-          When you select a song, the app creates a local copy in its private
-          cache directory on your device. This copy is used solely for playback
-          and is never uploaded or shared. All audio files remain entirely on
-          your device.
+          One Song ("the App") is developed and maintained by an individual
+          developer. This privacy policy explains how the App handles
+          information when you use it.
         </p>
       </section>
 
       <section>
-        <h2>App Permissions</h2>
+        <h2>Information We Do Not Collect</h2>
         <p>
-          One Song requests the following permissions for core functionality
-          only:
+          One Song does not collect, store, or transmit any personal
+          information. We do not collect:
+        </p>
+        <ul>
+          <li>Names, email addresses, or account credentials</li>
+          <li>Device identifiers or advertising IDs</li>
+          <li>Location data</li>
+          <li>Usage statistics or analytics</li>
+          <li>Crash logs or diagnostic data</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Information Stored on Your Device</h2>
+        <p>
+          The App stores the following data locally on your device using
+          Android's built-in storage. This data never leaves your device:
         </p>
         <ul>
           <li>
-            <strong>Storage / Media access</strong> — To let you pick an audio
-            file from your device.
+            <strong>Song file copy</strong> — When you select an audio file,
+            the App copies it to its private app-specific cache directory.
+            This copy is used solely for playback. The original file on your
+            device remains untouched.
           </li>
           <li>
-            <strong>Notification</strong> — To show playback controls in the
-            notification shade (Android 13+).
+            <strong>App preferences</strong> — Using AsyncStorage, the App
+            remembers your selected song reference, sleep timer duration,
+            auto-play preference, and whether you have completed onboarding.
+            This data is stored in the App's private storage and is not
+            accessible to other apps.
           </li>
         </ul>
       </section>
 
       <section>
-        <h2>Internet Access</h2>
+        <h2>Permissions</h2>
         <p>
-          One Song works entirely offline. No internet connection is required
-          for playback. The app does not make any network requests or
-          communicate with any servers.
+          One Song requests the following Android permissions. Each is used
+          exclusively for its stated purpose:
         </p>
-      </section>
-
-      <section>
-        <h2>Analytics & Tracking</h2>
-        <p>
-          One Song does not use any analytics, crash reporting, or tracking
-          services. No third-party SDKs with data collection are included.
-        </p>
+        <ul>
+          <li>
+            <strong>READ_MEDIA_AUDIO / READ_EXTERNAL_STORAGE</strong> —
+            Required to let you browse and select an audio file from your
+            device storage. The App only accesses files you explicitly choose.
+          </li>
+          <li>
+            <strong>POST_NOTIFICATIONS</strong> — Required on Android 13+ to
+            display playback controls in the notification shade and lock
+            screen. This is essential for background audio playback.
+          </li>
+          <li>
+            <strong>FOREGROUND_SERVICE / FOREGROUND_SERVICE_MEDIA_PLAYBACK</strong> —
+            Required to keep audio playing when the App is in the background
+            or the device is locked.
+          </li>
+          <li>
+            <strong>WAKE_LOCK</strong> — Ensures the device CPU stays awake
+            during audio playback so your music is not interrupted.
+          </li>
+          <li>
+            <strong>INTERNET</strong> — Used only to check for available app
+            updates through Google Play's In-App Updates API. No other
+            network requests are made. Playback works entirely offline.
+          </li>
+        </ul>
       </section>
 
       <section>
         <h2>Third-Party Services</h2>
-        <p>No third-party services are integrated in One Song.</p>
+        <p>
+          One Song integrates the following third-party services for core
+          functionality:
+        </p>
+        <ul>
+          <li>
+            <strong>Google Play In-App Updates</strong> — Used to check for
+            and prompt App updates. This is a Google Play service that may
+            collect diagnostic information according to
+            <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">
+              Google's Privacy Policy
+            </a>.
+          </li>
+        </ul>
+        <p>
+          No other third-party services, SDKs, or analytics platforms are
+          integrated. There are no advertising networks, no crash reporting
+          services, and no data brokers in this App.
+        </p>
+      </section>
+
+      <section>
+        <h2>Data Sharing</h2>
+        <p>
+          Since the App does not collect any personal data, there is no data
+          to share with third parties. We do not sell, rent, or trade any
+          information.
+        </p>
+      </section>
+
+      <section>
+        <h2>Data Security</h2>
+        <p>
+          All data stored by the App is kept in Android's private
+          app-specific storage, which is sandboxed and not accessible to
+          other apps. The App does not transmit any data over the network
+          (except for the In-App Updates check via Google Play Services).
+        </p>
+      </section>
+
+      <section>
+        <h2>Data Retention and Deletion</h2>
+        <p>
+          All App data is stored locally on your device. You can delete all
+          App data at any time by:
+        </p>
+        <ul>
+          <li>
+            Going to <strong>Settings → Apps → One Song → Clear Data</strong>
+            on your device, or
+          </li>
+          <li>Uninstalling the App</li>
+        </ul>
       </section>
 
       <section>
         <h2>Children's Privacy</h2>
         <p>
           One Song does not collect any personal information from anyone,
-          including children. The app is safe for all ages.
+          including children under the age of 13. The App is safe for users
+          of all ages and contains no ads, in-app purchases, or account
+          requirements.
+        </p>
+      </section>
+
+      <section>
+        <h2>Your Rights</h2>
+        <p>
+          Under data protection laws such as the GDPR and CCPA, you have
+          rights regarding your personal data. Since One Song does not
+          collect any personal data, there is no personal data to access,
+          correct, delete, or port. If you believe otherwise, please contact
+          us using the details below.
         </p>
       </section>
 
       <section>
         <h2>Changes to This Policy</h2>
         <p>
-          If this privacy policy changes, the updated version will be posted
-          here. The "Last updated" date will reflect the revision.
+          If this privacy policy is updated, the revised version will be
+          posted on this page with a new "Last updated" date. We recommend
+          reviewing this policy periodically.
         </p>
       </section>
 
       <section>
         <h2>Contact</h2>
         <p>
-          For questions about this privacy policy, email
-          <a href="mailto:nesin@duck.com">nesin@duck.com</a>.
+          If you have questions about this privacy policy or the App's data
+          practices, please contact:
+        </p>
+        <p>
+          <a href="mailto:one-song@ashik.dev">one-song@ashik.dev</a>
         </p>
       </section>
     </main>
