@@ -4,6 +4,98 @@ A running log of bugs, fixes, and lessons from building One Song.
 
 ---
 
+## 2026-05-03 — In-App Update Crash in Release Builds (ProGuard/R8)
+
+### Problem
+
+App crashed on startup in Play Console internal testing, but worked fine in local debug builds. Logcat showed:
+
+```
+com.facebook.react.common.JavascriptException: Error: react-native-device-info: NativeModule.RNDeviceInfo is null.
+```
+
+The crash originated from `sp-react-native-in-app-updates`, which depends on `react-native-device-info` to read the current app version.
+
+### Root Cause
+
+Two separate issues:
+
+1. **Transitive dependency version mismatch:** `sp-react-native-in-app-updates` depends on `react-native-device-info@10.3.0`, which is too old for React Native 0.85. The native module doesn't link properly with the newer React Native architecture, causing a null native module error even in debug.
+
+2. **ProGuard/R8 obfuscation in release builds:** The app has `minifyEnabled true` in `android/app/build.gradle`. `sp-react-native-in-app-updates` doesn't ship ProGuard rules, so R8 obfuscates its Java classes (`com.sudoplz.rninappupdates.**`) and the `@ReactModule` annotation metadata. React Native's autolinking can't discover the module at runtime, so `NativeModules.SpInAppUpdates` is null.
+
+Debug builds don't run ProGuard, which is why the crash only appeared in release builds distributed through Play Console.
+
+### Fix
+
+**1. Override the transitive dependency with a compatible version:**
+
+```bash
+pnpm add react-native-device-info
+```
+
+This installs `react-native-device-info@15.0.2` (latest), which is compatible with RN 0.85. The override is automatically picked up because pnpm's node_modules resolution prefers the direct dependency over the transitive one.
+
+**2. Add ProGuard keep rules** in `android/app/proguard-rules.pro`:
+
+```proguard
+# sp-react-native-in-app-updates
+-keep class com.sudoplz.rninappupdates.** { *; }
+-keepclassmembers class * {
+    @com.facebook.react.module.annotations.ReactModule <methods>;
+}
+-keep class com.google.android.play.core.appupdate.** { *; }
+-keep class com.google.android.play.core.install.** { *; }
+-keep class com.google.android.play.core.tasks.** { *; }
+```
+
+**3. Make the JS code defensive** in `src/services/InAppUpdateService.ts`:
+
+```typescript
+import { NativeModules, Platform } from 'react-native';
+import SpInAppUpdates, { IAUUpdateKind, ... } from 'sp-react-native-in-app-updates';
+
+class InAppUpdateService {
+  private inAppUpdates: SpInAppUpdates | null = null;
+
+  constructor() {
+    if (!__DEV__ && NativeModules.SpInAppUpdates) {
+      try {
+        this.inAppUpdates = new SpInAppUpdates(false);
+      } catch (_e) {
+        this.inAppUpdates = null;
+      }
+    }
+  }
+
+  async checkAndPromptUpdate(): Promise<void> {
+    if (__DEV__ || !this.inAppUpdates) {
+      return;
+    }
+    // ... rest of update check
+  }
+}
+```
+
+This prevents the service from instantiating if the native module is missing, and skips update checks entirely in dev mode.
+
+### Verification
+
+1. Built a release AAB with `pnpm android:release`
+2. Uploaded to Play Console internal testing
+3. Installed on test device via Play Store
+4. App launched successfully — no crash
+5. In-app update check ran silently in the background (no update available, so no prompt shown)
+
+### Lesson
+
+- **Native module libraries often don't ship ProGuard rules.** When `minifyEnabled true` is set, you must manually add `-keep` rules for any library that uses React Native's native module system. The `@ReactModule` annotation is particularly fragile — R8 strips it by default, breaking autolinking.
+- **Transitive dependencies can pin outdated versions.** Always check what version a library pulls in. `pnpm ls react-native-device-info` showed `10.3.0` (from the library) alongside `15.0.2` (direct install). The direct install wins, but only if you add it explicitly.
+- **Debug builds are not representative of release behavior.** ProGuard/R8 only runs in release builds. A library that works locally can crash in production. Always test release builds through Play Console internal testing before promoting to production.
+- **Defensive JS coding around native modules is cheap insurance.** Checking `NativeModules.SpInAppUpdates` before instantiating prevents a hard crash even if the native side fails to link for any reason (ProGuard, architecture mismatch, missing dependency).
+
+---
+
 ## 2026-05-03 — Google Play Rejects Build: "Version code 1 has already been used"
 
 ### Problem
