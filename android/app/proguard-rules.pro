@@ -12,3 +12,12 @@
 # react-native-track-player
 -keep class com.doublesymmetry.trackplayer.** { *; }
 -keep class com.facebook.react.modules.blob.** { *; }
+
+# sp-react-native-in-app-updates
+-keep class com.sudoplz.rninappupdates.** { *; }
+-keepclassmembers class * {
+    @com.facebook.react.module.annotations.ReactModule <methods>;
+}
+-keep class com.google.android.play.core.appupdate.** { *; }
+-keep class com.google.android.play.core.install.** { *; }
+-keep class com.google.android.play.core.tasks.** { *; }

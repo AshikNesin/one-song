@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+import { NativeModules, Platform } from 'react-native';
 import SpInAppUpdates, {
   IAUUpdateKind,
   NeedsUpdateResponse,
@@ -6,14 +6,20 @@ import SpInAppUpdates, {
 } from 'sp-react-native-in-app-updates';
 
 class InAppUpdateService {
-  private inAppUpdates: SpInAppUpdates;
+  private inAppUpdates: SpInAppUpdates | null = null;
 
   constructor() {
-    this.inAppUpdates = new SpInAppUpdates(__DEV__);
+    if (!__DEV__ && NativeModules.SpInAppUpdates) {
+      try {
+        this.inAppUpdates = new SpInAppUpdates(false);
+      } catch (_e) {
+        this.inAppUpdates = null;
+      }
+    }
   }
 
   async checkAndPromptUpdate(): Promise<void> {
-    if (__DEV__) {
+    if (__DEV__ || !this.inAppUpdates) {
       return;
     }
 

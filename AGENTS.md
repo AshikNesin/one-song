@@ -12,4 +12,4 @@ See @README.md for project overview and @package.json for available npm/pnpm com
 Add important architectural decisions and patterns here.
 
 ## Common Workflows
-Document frequently used workflows and commands here.
+- Use pnpm to install new dependency instead of npm

@@ -40,6 +40,9 @@ importers:
       react-native:
         specifier: 0.85.2
         version: 0.85.2(patch_hash=35d9e4efd5920651531a1e4b6587845c29d072aa312581bdec97dded23401f74)(@babel/core@7.29.0)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/jest-preset@0.85.2(@babel/core@7.29.0)(react@19.2.3))(@react-native/metro-config@0.85.2(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.3)
+      react-native-device-info:
+        specifier: ^15.0.2
+        version: 15.0.2(react-native@0.85.2(patch_hash=35d9e4efd5920651531a1e4b6587845c29d072aa312581bdec97dded23401f74)(@babel/core@7.29.0)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/jest-preset@0.85.2(@babel/core@7.29.0)(react@19.2.3))(@react-native/metro-config@0.85.2(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.3))
       react-native-fs:
         specifier: ^2.20.0
         version: 2.20.0(react-native@0.85.2(patch_hash=35d9e4efd5920651531a1e4b6587845c29d072aa312581bdec97dded23401f74)(@babel/core@7.29.0)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/jest-preset@0.85.2(@babel/core@7.29.0)(react@19.2.3))(@react-native/metro-config@0.85.2(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.3))
@@ -3269,6 +3272,11 @@ packages:
 
   react-native-device-info@10.3.0:
     resolution: {integrity: sha512-/ziZN1sA1REbJTv5mQZ4tXggcTvSbct+u5kCaze8BmN//lbxcTvWsU6NQd4IihLt89VkbX+14IGc9sVApSxd/w==}
+    peerDependencies:
+      react-native: '*'
+
+  react-native-device-info@15.0.2:
+    resolution: {integrity: sha512-dd71eXG2l3Cwp66IvKNadMTB8fhU3PEjyVddI97sYan+D4bgIAUmgGDhbSOFvHcGavksb2U17kiQYaDiK2WK2g==}
     peerDependencies:
       react-native: '*'
 
@@ -8111,6 +8119,10 @@ snapshots:
   react-is@19.2.5: {}
 
   react-native-device-info@10.3.0(react-native@0.85.2(patch_hash=35d9e4efd5920651531a1e4b6587845c29d072aa312581bdec97dded23401f74)(@babel/core@7.29.0)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/jest-preset@0.85.2(@babel/core@7.29.0)(react@19.2.3))(@react-native/metro-config@0.85.2(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.3)):
+    dependencies:
+      react-native: 0.85.2(patch_hash=35d9e4efd5920651531a1e4b6587845c29d072aa312581bdec97dded23401f74)(@babel/core@7.29.0)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/jest-preset@0.85.2(@babel/core@7.29.0)(react@19.2.3))(@react-native/metro-config@0.85.2(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.3)
+
+  react-native-device-info@15.0.2(react-native@0.85.2(patch_hash=35d9e4efd5920651531a1e4b6587845c29d072aa312581bdec97dded23401f74)(@babel/core@7.29.0)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/jest-preset@0.85.2(@babel/core@7.29.0)(react@19.2.3))(@react-native/metro-config@0.85.2(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.3)):
     dependencies:
       react-native: 0.85.2(patch_hash=35d9e4efd5920651531a1e4b6587845c29d072aa312581bdec97dded23401f74)(@babel/core@7.29.0)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/jest-preset@0.85.2(@babel/core@7.29.0)(react@19.2.3))(@react-native/metro-config@0.85.2(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.3)
 
