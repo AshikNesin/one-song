@@ -26,7 +26,8 @@
     "react-native-permissions": "^5.5.1",
     "react-native-safe-area-context": "^5.5.2",
     "react-native-screens": "^4.24.0",
-    "react-native-track-player": "5.0.0-alpha0"
+    "react-native-track-player": "5.0.0-alpha0",
+    "sp-react-native-in-app-updates": "^1.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
