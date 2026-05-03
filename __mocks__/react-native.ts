@@ -1,3 +1,5 @@
+export const NativeModules = {};
+
 export const Platform = {
   OS: 'android',
   Version: 33,
@@ -31,6 +33,7 @@ export const StyleSheet = {
 export const useColorScheme = jest.fn().mockReturnValue('dark');
 
 export default {
+  NativeModules,
   Platform,
   Linking,
   Alert,

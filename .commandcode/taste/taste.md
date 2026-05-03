@@ -6,6 +6,9 @@
 See [react-native/taste.md](react-native/taste.md)
 # grill-me
 See [grill-me/taste.md](grill-me/taste.md)
+# documentation
+- Document non-trivial bug fixes (root cause, fix, lessons learned) in TIL.md using the established Problem/Root Cause/Fix/Verification/Lesson format. Confidence: 0.70
+
 # scripts
 - Don't hardcode absolute user-specific paths in shell scripts; derive paths dynamically so scripts work on any machine. Confidence: 0.75
 - Make shell scripts defensive: check if paths/binaries exist before setting/exporting them, and skip gracefully if missing. Confidence: 0.70

@@ -4,6 +4,63 @@ A running log of bugs, fixes, and lessons from building One Song.
 
 ---
 
+## 2026-05-03 — FLEXIBLE In-App Update Downloaded But Never Installed
+
+### Problem
+
+The in-app update dialog appeared, user tapped "Update", and the update downloaded in the background. But it was never actually installed — the app stayed on the old version. On subsequent cold starts, the update dialog never appeared again. The update was stuck in a downloaded-but-not-installed state.
+
+### Root Cause
+
+`sp-react-native-in-app-updates` with `IAUUpdateKind.FLEXIBLE` on Android uses Google Play Core to download the update in the background. After downloading, you **must** call `installUpdate()` to trigger the actual installation. The old code called `startUpdate()` and then did nothing — fire-and-forget. There was no status listener registered to detect when the download completed.
+
+On subsequent cold starts, `checkNeedsUpdate()` still returned `shouldUpdate: true` (the app was still the old version), but calling `startUpdate()` when a flexible update is already downloaded doesn't show the dialog again — Play Core silently completes and waits for `installUpdate()`.
+
+### Fix
+
+**Register a status listener before calling `startUpdate()`** and call `installUpdate()` when the status reaches `DOWNLOADED`:
+
+```typescript
+private startFlexibleUpdate(): void {
+  if (!this.inAppUpdates) {
+    return;
+  }
+
+  this.inAppUpdates.addStatusUpdateListener(
+    (status: StatusUpdateEvent) => {
+      if (status.status === INSTALL_STATUS.DOWNLOADED) {
+        this.inAppUpdates?.installUpdate();
+      }
+    },
+  );
+
+  const updateOptions: StartUpdateOptions = {
+    updateType: IAUUpdateKind.FLEXIBLE,
+  };
+  this.inAppUpdates.startUpdate(updateOptions);
+}
+```
+
+This handles both scenarios:
+1. **First download:** Listener fires `DOWNLOADED` when the background download finishes → `installUpdate()` triggers installation
+2. **Cold start with already-downloaded update:** `startUpdate()` completes immediately (Play Core detects the update is already downloaded) → listener fires `DOWNLOADED` immediately → `installUpdate()` triggers installation
+
+The listener must be registered **before** calling `startUpdate()` — Play Core sends status callbacks and if you register after, you missed them.
+
+### Verification
+
+- Unit tests confirm the listener calls `installUpdate()` on `DOWNLOADED` and ignores other statuses (`DOWNLOADING`, etc.)
+- Cold start scenario tested manually on device: update downloaded in previous session, app reopened, `installUpdate()` was called immediately
+
+### Lesson
+
+- **FLEXIBLE in-app updates are NOT fire-and-forget.** You must listen for the `DOWNLOADED` status and call `installUpdate()`. Without this, the update downloads to the device but never installs.
+- **`installUpdate()` is a separate API from `startUpdate()`.** Play Core splits download and install into two steps for flexible updates. If you want immediate install, use `IAUUpdateKind.IMMEDIATE` instead (but it blocks the app UI during download).
+- **`startUpdate()` is idempotent for already-downloaded updates.** On cold start, you can safely call `startUpdate()` again — Play Core detects the pending download and fires `DOWNLOADED` immediately rather than re-downloading. This means a properly implemented status listener fixes both the initial download AND cold start scenarios.
+- **Register listeners before the action.** `addStatusUpdateListener` must be called before `startUpdate()` — status callbacks fire synchronously for already-completed states, and you could miss the `DOWNLOADED` event if you register after.
+
+---
+
 ## 2026-05-03 — In-App Update Crash in Release Builds (ProGuard/R8)
 
 ### Problem
