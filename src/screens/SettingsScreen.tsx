@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Linking, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { useNavigation, NavigationProp, CommonActions } from '@react-navigation/native';
 import { RootStackParamList } from '@/types/navigation';
 import { getSong, clearSongData } from '@/services/SongIntake';
 import { getAutoPlayEnabled, saveAutoPlayEnabled } from '@/services/Playback';
@@ -39,7 +39,13 @@ export default function SettingsScreen() {
         {
           text: 'Change',
           style: 'destructive',
-          onPress: () => navigation.navigate('Onboarding'),
+          onPress: () =>
+            navigation.dispatch(
+              CommonActions.reset({
+                index: 0,
+                routes: [{ name: 'Onboarding' }],
+              }),
+            ),
         },
       ],
     );
@@ -57,7 +63,12 @@ export default function SettingsScreen() {
           onPress: async () => {
             await clearSongData();
             await clearTimer();
-            navigation.navigate('Onboarding');
+            navigation.dispatch(
+              CommonActions.reset({
+                index: 0,
+                routes: [{ name: 'Onboarding' }],
+              }),
+            );
           },
         },
       ],

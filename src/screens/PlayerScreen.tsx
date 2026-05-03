@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { useNavigation, NavigationProp, CommonActions } from '@react-navigation/native';
 import { RootStackParamList } from '@/types/navigation';
 import { usePlaybackController } from '@/services/PlaybackController';
 import ProgressBar from '@/components/ProgressBar';
@@ -14,7 +14,12 @@ export default function PlayerScreen() {
 
   useEffect(() => {
     if (initError) {
-      navigation.navigate('Onboarding');
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'Onboarding' }],
+        }),
+      );
     }
   }, [initError, navigation]);
 

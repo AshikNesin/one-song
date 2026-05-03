@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { useNavigation, NavigationProp, CommonActions } from '@react-navigation/native';
 import { RootStackParamList } from '@/types/navigation';
 import { Song } from '@/types';
 import { intake, complete, openAppSettings } from '@/services/SongIntake';
@@ -45,7 +45,12 @@ export default function OnboardingScreen() {
   const handleContinue = async () => {
     if (!selectedSong) return;
     await complete(selectedSong);
-    navigation.navigate('Player');
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: 'Player' }],
+      }),
+    );
   };
 
   return (
