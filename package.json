@@ -1,6 +1,6 @@
 {
   "name": "one-song",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "private": true,
   "scripts": {
     "android": "scripts/run-android.sh",
