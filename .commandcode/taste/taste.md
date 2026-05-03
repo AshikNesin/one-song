@@ -11,3 +11,4 @@ See [grill-me/taste.md](grill-me/taste.md)
 - Make shell scripts defensive: check if paths/binaries exist before setting/exporting them, and skip gracefully if missing. Confidence: 0.70
 - Check if required external tools/binaries exist before using them, and fail with a clear error message if missing. Confidence: 0.75
 - Avoid interactive prompts in shell scripts; use force flags or pre-remove files to prevent hanging. Confidence: 0.75
+- Always bump the minor version for semantic versioning (e.g., 0.0.1 → 0.0.2); bump both versionCode and versionName in Android builds. Confidence: 0.80
