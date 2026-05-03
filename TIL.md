@@ -4,6 +4,44 @@ A running log of bugs, fixes, and lessons from building One Song.
 
 ---
 
+## 2026-05-03 — Google Play Rejects Build: "Version code 1 has already been used"
+
+### Problem
+
+Google Play Console rejected the upload with:
+
+> Version code 1 has already been used. Try another version code.
+
+Even though `versionName` had been bumped from `"0.0.1"` to `"0.0.2"`.
+
+### Root Cause
+
+`versionCode` and `versionName` serve different purposes:
+
+- **`versionCode`** (integer) — Google Play's internal identifier. Must be strictly increasing for every upload. This is what the error refers to.
+- **`versionName`** (string) — user-facing version label. Cosmetic only. Has no effect on Play Console rejection.
+
+Only `versionName` was bumped. `versionCode` was still `1`, matching the previous upload.
+
+### Fix
+
+Bump `versionCode` alongside `versionName` in `android/app/build.gradle`:
+
+```gradle
+versionCode 2
+versionName "0.0.2"
+```
+
+Also created `scripts/bump-android-version.sh` to automate this — bumps patch semver in `versionName` in `build.gradle`, increments `versionCode` by 1, and updates `package.json` version to match.
+
+### Lesson
+
+- Google Play only cares about `versionCode` for uniqueness. `versionName` is cosmetic.
+- Both must be bumped together. Never bump one without the other.
+- Automate version bumps — manual edits to two fields across two files (`build.gradle` + `package.json`) are error-prone.
+
+---
+
 ## 2026-05-02 — Android Release Build Signed with Debug Certificate
 
 ### Problem
