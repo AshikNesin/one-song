@@ -4,24 +4,24 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '@/types/navigation';
 import { getSong, clearSongData } from '@/services/SongIntake';
 import { getAutoPlayEnabled, saveAutoPlayEnabled } from '@/services/Playback';
-import { getDefaultTimer, setDefaultTimer, clearTimer } from '@/services/SleepTimer';
+import { loadDefaultTimer, saveDefaultTimer, clearTimer } from '@/services/SleepTimer';
 import TimerPresetPicker from '@/components/TimerPresetPicker';
 
 export default function SettingsScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const [defaultTimer, setDefaultTimer] = useState<number | null>(null);
+  const [defaultTimerMinutes, setDefaultTimerMinutes] = useState<number | null>(null);
   const [currentSong, setCurrentSong] = useState<string | null>(null);
   const [autoPlay, setAutoPlay] = useState(true);
 
   useEffect(() => {
-    getDefaultTimer().then(setDefaultTimer);
+    loadDefaultTimer().then(setDefaultTimerMinutes);
     getSong().then(song => setCurrentSong(song?.title ?? null));
     getAutoPlayEnabled().then(setAutoPlay);
   }, []);
 
   const handleTimerSelect = async (minutes: number | null) => {
-    setDefaultTimer(minutes);
-    await setDefaultTimer(minutes);
+    setDefaultTimerMinutes(minutes);
+    await saveDefaultTimer(minutes);
     await clearTimer();
   };
 
@@ -101,7 +101,7 @@ export default function SettingsScreen() {
 
         <Section title="Sleep Timer Default">
           <View style={styles.timerRow}>
-            <TimerPresetPicker selectedMinutes={defaultTimer} onSelect={handleTimerSelect} />
+            <TimerPresetPicker selectedMinutes={defaultTimerMinutes} onSelect={handleTimerSelect} />
           </View>
         </Section>
 

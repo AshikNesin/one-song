@@ -68,12 +68,14 @@ describe('PlaybackController', () => {
     getAutoPlayEnabled.mockResolvedValue(true);
 
     const { loadSong, play } = require('@/services/AudioService');
+    const { restoreTimer } = require('@/services/SleepTimer');
 
     await ReactTestRenderer.act(async () => {
       ReactTestRenderer.create(<TestComponent />);
     });
 
     expect(loadSong).toHaveBeenCalledWith(mockSong);
+    expect(restoreTimer).toHaveBeenCalled();
     expect(play).toHaveBeenCalled();
   });
 

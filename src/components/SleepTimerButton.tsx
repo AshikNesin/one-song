@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import { getDefaultTimer, setDefaultTimer, setTimer, clearTimer } from '@/services/SleepTimer';
+import { loadDefaultTimer, saveDefaultTimer, setTimer, clearTimer } from '@/services/SleepTimer';
 import TimerPresetPicker from './TimerPresetPicker';
 
 export default function SleepTimerButton() {
@@ -8,14 +8,14 @@ export default function SleepTimerButton() {
   const [currentMinutes, setCurrentMinutes] = useState<number | null>(null);
 
   useEffect(() => {
-    getDefaultTimer().then(setCurrentMinutes);
+    loadDefaultTimer().then(setCurrentMinutes);
   }, []);
 
   const label = currentMinutes ? `Timer: ${currentMinutes}m` : 'Sleep Timer';
 
   const handleSelect = async (minutes: number | null) => {
     setCurrentMinutes(minutes);
-    await setDefaultTimer(minutes);
+    await saveDefaultTimer(minutes);
     await clearTimer();
     await setTimer(minutes);
     setVisible(false);

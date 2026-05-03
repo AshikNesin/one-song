@@ -3,8 +3,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   setTimer,
   clearTimer,
-  getDefaultTimer,
-  setDefaultTimer,
+  loadDefaultTimer,
+  saveDefaultTimer,
   restoreTimer,
 } from '@/services/SleepTimer';
 import { STORAGE_KEYS } from '@/utils/constants';
@@ -53,18 +53,18 @@ describe('SleepTimer', () => {
   describe('default timer', () => {
     it('gets default sleep timer from storage', async () => {
       AsyncStorage.getItem.mockResolvedValue('15');
-      const result = await getDefaultTimer();
+      const result = await loadDefaultTimer();
       expect(result).toBe(15);
       expect(AsyncStorage.getItem).toHaveBeenCalledWith(STORAGE_KEYS.SLEEP_TIMER);
     });
 
     it('sets default sleep timer in storage', async () => {
-      await setDefaultTimer(30);
+      await saveDefaultTimer(30);
       expect(AsyncStorage.setItem).toHaveBeenCalledWith(STORAGE_KEYS.SLEEP_TIMER, '30');
     });
 
     it('clears default sleep timer when null', async () => {
-      await setDefaultTimer(null);
+      await saveDefaultTimer(null);
       expect(AsyncStorage.removeItem).toHaveBeenCalledWith(STORAGE_KEYS.SLEEP_TIMER);
     });
   });

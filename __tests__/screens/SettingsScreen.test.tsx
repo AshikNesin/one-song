@@ -1,13 +1,14 @@
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
 import SettingsScreen from '../../src/screens/SettingsScreen';
+import TimerPresetPicker from '../../src/components/TimerPresetPicker';
 
 const mockGetSong = jest.fn().mockResolvedValue({ title: 'Test Song' });
 const mockGetAutoPlayEnabled = jest.fn().mockResolvedValue(true);
 const mockSaveAutoPlayEnabled = jest.fn().mockResolvedValue(undefined);
 const mockClearSongData = jest.fn().mockResolvedValue(undefined);
-const mockGetDefaultTimer = jest.fn().mockResolvedValue(null);
-const mockSetDefaultTimer = jest.fn().mockResolvedValue(undefined);
+const mockLoadDefaultTimer = jest.fn().mockResolvedValue(null);
+const mockSaveDefaultTimer = jest.fn().mockResolvedValue(undefined);
 const mockClearTimer = jest.fn().mockResolvedValue(undefined);
 
 jest.mock('../../src/services/SongIntake', () => ({
@@ -21,8 +22,8 @@ jest.mock('@/services/Playback', () => ({
 }));
 
 jest.mock('@/services/SleepTimer', () => ({
-  getDefaultTimer: (...args: any[]) => mockGetDefaultTimer(...args),
-  setDefaultTimer: (...args: any[]) => mockSetDefaultTimer(...args),
+  loadDefaultTimer: (...args: any[]) => mockLoadDefaultTimer(...args),
+  saveDefaultTimer: (...args: any[]) => mockSaveDefaultTimer(...args),
   clearTimer: (...args: any[]) => mockClearTimer(...args),
 }));
 
@@ -32,7 +33,7 @@ describe('SettingsScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetSong.mockResolvedValue({ title: 'Test Song' });
-    mockGetDefaultTimer.mockResolvedValue(null);
+    mockLoadDefaultTimer.mockResolvedValue(null);
     mockGetAutoPlayEnabled.mockResolvedValue(true);
   });
 
@@ -95,5 +96,20 @@ describe('SettingsScreen', () => {
         expect(mockClearSongData).toHaveBeenCalled();
       }
     }
+  });
+
+  it('persists timer selection when a preset is chosen', async () => {
+    let renderer: any;
+    await ReactTestRenderer.act(async () => {
+      renderer = ReactTestRenderer.create(<SettingsScreen />);
+    });
+    const timerPicker = renderer.root.findByType(TimerPresetPicker);
+    const pressables = timerPicker.findAllByType('button');
+    const firstPreset = pressables[0];
+    await ReactTestRenderer.act(async () => {
+      firstPreset.props.onPress();
+    });
+    expect(mockSaveDefaultTimer).toHaveBeenCalledWith(5);
+    expect(mockClearTimer).toHaveBeenCalled();
   });
 });

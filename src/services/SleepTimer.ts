@@ -23,12 +23,12 @@ export async function clearTimer(): Promise<void> {
   }
 }
 
-export async function getDefaultTimer(): Promise<number | null> {
+export async function loadDefaultTimer(): Promise<number | null> {
   const data = await AsyncStorage.getItem(STORAGE_KEYS.SLEEP_TIMER);
   return data ? Number(data) : null;
 }
 
-export async function setDefaultTimer(minutes: number | null): Promise<void> {
+export async function saveDefaultTimer(minutes: number | null): Promise<void> {
   if (minutes === null) {
     await AsyncStorage.removeItem(STORAGE_KEYS.SLEEP_TIMER);
   } else {
@@ -37,7 +37,7 @@ export async function setDefaultTimer(minutes: number | null): Promise<void> {
 }
 
 export async function restoreTimer(): Promise<void> {
-  const minutes = await getDefaultTimer();
+  const minutes = await loadDefaultTimer();
   if (minutes) {
     await setTimer(minutes);
   }
