@@ -1,4 +1,4 @@
-import { Platform, Linking } from 'react-native';
+import { Platform } from 'react-native';
 import {
   check,
   request,
@@ -13,13 +13,6 @@ function getStoragePermission() {
     : PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE;
 }
 
-export async function checkStoragePermission(): Promise<boolean> {
-  const permission = getStoragePermission();
-  if (!permission) return true;
-  const result = await check(permission);
-  return result === RESULTS.GRANTED;
-}
-
 export async function requestStoragePermission(): Promise<boolean> {
   const permission = getStoragePermission();
   if (!permission) return true;
@@ -32,8 +25,4 @@ export async function isPermissionBlocked(): Promise<boolean> {
   if (!permission) return false;
   const result = await check(permission);
   return result === RESULTS.BLOCKED;
-}
-
-export function openAppSettings(): void {
-  Linking.openSettings();
 }

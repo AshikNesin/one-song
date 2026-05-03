@@ -4,6 +4,251 @@ A running log of bugs, fixes, and lessons from building One Song.
 
 ---
 
+## 2026-05-03 — Patched sp-react-native-in-app-updates to Fix DEVELOPER_TRIGGERED
+
+### Problem
+
+After deploying the simplified code matching the library's documented pattern, the in-app update still showed a Play Store fallback instead of the native bottom sheet. Logcat showed:
+
+```
+'In-app update: current versionCode', '13'
+'In-app update: check result', { shouldUpdate: false,
+In-app update: flow already triggered, showing Play Store fallback
+```
+
+The update was stuck in `DEVELOPER_TRIGGERED` state. The library's `checkNeedsUpdate()` returned `shouldUpdate: false`, and `startUpdate()` rejected any attempt to resume the flow.
+
+### Root Cause
+
+The library `sp-react-native-in-app-updates` has **two bugs** related to `DEVELOPER_TRIGGERED`:
+
+**Bug 1 — `checkNeedsUpdate()` (JavaScript):**
+
+```typescript
+if (updateAvailability === AndroidAvailabilityStatus.AVAILABLE) {
+  // ...does version comparison, returns shouldUpdate: true/false
+} else if (updateAvailability === AndroidAvailabilityStatus.DEVELOPER_TRIGGERED) {
+  this.debugLog('Update has already been triggered by the developer');
+} else {
+  this.debugLog(`Failed to fetch a store version...`);
+}
+// Falls through to:
+return { shouldUpdate: false, ... };  // <-- ALWAYS false for DEVELOPER_TRIGGERED!
+```
+
+When `updateAvailability === 3` (`DEVELOPER_TRIGGERED`), the library skips version comparison entirely and returns `shouldUpdate: false`. This is wrong — `DEVELOPER_TRIGGERED` means an update IS available, just that a flow was previously started.
+
+**Bug 2 — `startUpdate()` (Native Java):**
+
+```java
+if (appUpdateInfo.updateAvailability() != UpdateAvailability.UPDATE_AVAILABLE) {
+    resolutionPromise.reject("Error", "Update unavailable...");
+}
+```
+
+When `updateAvailability === 3`, `startUpdate()` explicitly rejects. But Play Core's `startUpdateFlowForResult()` **does** accept `DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS` and resumes the flow. The library adds an unnecessary restriction.
+
+### Fix
+
+**1. Patch JavaScript — treat `DEVELOPER_TRIGGERED` like `AVAILABLE`:**
+
+In `src/InAppUpdates.android.ts`, the `DEVELOPER_TRIGGERED` branch now performs version comparison and returns `shouldUpdate: true` when the store version is newer:
+
+```typescript
+} else if (
+  updateAvailability === AndroidAvailabilityStatus.DEVELOPER_TRIGGERED
+) {
+  this.debugLog('Update has already been triggered by the developer');
+  // Treat DEVELOPER_TRIGGERED like AVAILABLE — an update is in progress
+  // but still needs to be completed. Do version comparison.
+  let newAppV = `${versionCode}`;
+  // ...same version comparison logic as AVAILABLE branch...
+  if (vCompRes > 0) {
+    return {
+      shouldUpdate: true,
+      storeVersion: newAppV,
+      other: { ...inAppUpdateInfo },
+    };
+  }
+  // ...
+}
+```
+
+**2. Patch Java — accept `DEVELOPER_TRIGGERED` in `startUpdate()`:**
+
+In `SpReactNativeInAppUpdatesModule.java`, the availability check now accepts both `UPDATE_AVAILABLE` and `DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS`:
+
+```java
+int availability = appUpdateInfo.updateAvailability();
+if (availability != UpdateAvailability.UPDATE_AVAILABLE
+    && availability != UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
+    resolutionPromise.reject("Error", "Update unavailable...");
+}
+```
+
+**3. Simplify our service code** to match the library's documented pattern:
+
+```typescript
+const result = await this.inAppUpdates.checkNeedsUpdate();
+
+if (!result.shouldUpdate) {
+  console.log('In-app update: no update needed');
+  return;
+}
+
+await this.startAndroidFlexibleUpdate();
+```
+
+No more Play Store fallback, no more `DEVELOPER_TRIGGERED` special handling, no more `getBuildNumber()` workaround.
+
+### Verification
+
+- Patched library via `pnpm patch` and committed to `patches/sp-react-native-in-app-updates.patch`
+- Unit test verifies `DEVELOPER_TRIGGERED` with newer version returns `shouldUpdate: true`
+- Unit test verifies `startUpdate` is called with `updateType: FLEXIBLE`
+- Unit test verifies `installUpdate` is called on `DOWNLOADED` status
+- All 71 tests pass
+
+### Lesson
+
+- **`DEVELOPER_TRIGGERED` is a legitimate update state, not an error.** Play Core returns this when a previous update flow was started but not completed. The library incorrectly treated it as "no update available."
+- **Native module bugs require native fixes.** No amount of JS workarounds (fallbacks, version comparisons, listener registration without `startUpdate`) can fix a bug in the native module's state machine.
+- **Patching via `pnpm patch` is the right tool for this.** It creates a reproducible patch file that applies automatically on `pnpm install`, without forking the library or maintaining a local copy.
+- **Always verify the full state machine when debugging native modules.** The bug was in `checkNeedsUpdate()` returning `shouldUpdate: false` AND in `startUpdate()` rejecting the state. Fixing only one side would still leave the flow broken.
+
+---
+
+## 2026-05-03 — In-App Update Still Not Showing After Version Comparison Fix
+
+### Problem
+
+Version 0.0.9 (which included the previous `getBuildNumber()` fix) was installed from Google Play Store internal testing. Version 0.0.10 was published and available on Play Store, but the in-app update modal still never appeared when launching the app.
+
+### Root Cause
+
+Three separate code issues, all related to insufficient error handling and missing guard checks:
+
+1. **Fire-and-forget `startUpdate()` with no error handling:** `startFlexibleUpdate()` called `this.inAppUpdates.startUpdate()` but never `await`ed or `.catch()`ed the returned Promise. The native module's `startUpdate` Java method calls `getAppUpdateInfo()` a **second time** and rejects the Promise if:
+   - `updateAvailability != UPDATE_AVAILABLE` (race condition between check and start)
+   - `!isUpdateTypeAllowed(updateType)` (flexible updates not allowed by Play Store)
+   - `getCurrentActivity()` returns null (called too early in app lifecycle)
+   
+   When any of these happened, the Promise rejected as an **unhandled rejection** — no logs, no UI feedback, no way to diagnose.
+
+2. **No check for `isFlexibleUpdateAllowed` / `isImmediateUpdateAllowed`:** The Play Store API returns `isFlexibleUpdateAllowed` and `isImmediateUpdateAllowed` booleans in `checkNeedsUpdate().other`. The old code blindly called `startUpdate({ updateType: FLEXIBLE })` without checking if flexible updates were actually allowed. If Play Store returned `isFlexibleUpdateAllowed: false`, the native module rejected with "Update type unavailable".
+
+3. **No logging for non-availability statuses:** The old code only logged when `shouldUpdate: true` or `updateAvailability === DEVELOPER_TRIGGERED`. For `UNKNOWN` (0), `UNAVAILABLE` (1), or any other status, it silently returned with zero diagnostic output. There was no way to tell from logs whether Play Core was returning "no update" or "update check failed."
+
+### Fix
+
+**1. Make `startFlexibleUpdate()` async and catch errors:**
+
+```typescript
+private async startFlexibleUpdate(): Promise<void> {
+  if (!this.inAppUpdates) {
+    return;
+  }
+
+  this.inAppUpdates.addStatusUpdateListener(
+    (status: StatusUpdateEvent) => {
+      if (status.status === INSTALL_STATUS.DOWNLOADED) {
+        this.inAppUpdates?.installUpdate();
+      }
+    },
+  );
+
+  const updateOptions: StartUpdateOptions = {
+    updateType: IAUUpdateKind.FLEXIBLE,
+  };
+
+  try {
+    await this.inAppUpdates.startUpdate(updateOptions);
+    console.log('In-app update: flexible update flow started');
+  } catch (error) {
+    console.error('In-app update: failed to start flexible update', error);
+  }
+}
+```
+
+**2. Check `isFlexibleUpdateAllowed` before starting, with fallback to immediate:**
+
+```typescript
+private async startAndroidUpdate(
+  isFlexibleAllowed?: boolean,
+  isImmediateAllowed?: boolean,
+): Promise<void> {
+  if (!this.inAppUpdates) {
+    return;
+  }
+
+  if (isFlexibleAllowed) {
+    console.log('In-app update: starting flexible update');
+    await this.startFlexibleUpdate();
+  } else if (isImmediateAllowed) {
+    console.log(
+      'In-app update: flexible not allowed, starting immediate update',
+    );
+    await this.startImmediateUpdate();
+  } else {
+    console.warn(
+      'In-app update: neither flexible nor immediate update is allowed by Play Store',
+    );
+  }
+}
+```
+
+**3. Log every `updateAvailability` status and all diagnostic fields:**
+
+```typescript
+console.log('In-app update: check result', {
+  shouldUpdate: result.shouldUpdate,
+  storeVersion: result.storeVersion,
+  updateAvailability: updateAvailability,
+  availabilityName: availabilityStatusName(updateAvailability ?? -1),
+  isFlexibleUpdateAllowed: isFlexibleAllowed,
+  isImmediateUpdateAllowed: isImmediateAllowed,
+  storeVersionCode: storeVersionCode,
+  currentVersionCode: currentVersionCode,
+});
+```
+
+This logs the numeric status, its human-readable name (`UNKNOWN`, `UNAVAILABLE`, `AVAILABLE`, `DEVELOPER_TRIGGERED`), and both `is*Allowed` flags. With this output in logcat, you can immediately distinguish:
+- "Play Store says no update" (`AVAILABLE: false` or `UNAVAILABLE`)
+- "Update exists but this type isn't allowed" (`AVAILABLE: true, isFlexibleUpdateAllowed: false`)
+- "Native module rejected the start call" (caught error log)
+
+**4. Log constructor failures:**
+
+```typescript
+constructor() {
+  if (!__DEV__ && NativeModules.SpInAppUpdates) {
+    try {
+      this.inAppUpdates = new SpInAppUpdates(false);
+    } catch (error) {
+      console.error('In-app update: failed to initialize SpInAppUpdates', error);
+      this.inAppUpdates = null;
+    }
+  }
+}
+```
+
+### Verification
+
+- Unit tests updated to mock `other.isFlexibleUpdateAllowed` and `other.isImmediateUpdateAllowed`
+- New test verifies fallback to immediate update when flexible is not allowed
+- New test verifies warning when neither update type is allowed
+- New test verifies `startUpdate` errors are caught and logged
+- All 10 tests pass
+
+### Lesson
+
+- **Never fire-and-forget native module calls that return Promises.** `startUpdate()` returns a Promise that can reject for multiple reasons (activity not ready, update type not allowed, Play Store unavailable). Always `await` and wrap in `try/catch`.
+- **The Play Store in-app update API has two separate permission checks:** `checkNeedsUpdate()` tells you IF an update exists, but `isFlexibleUpdateAllowed` / `isImmediateUpdateAllowed` tell you WHICH update types you can actually start. Check both before calling `startUpdate()`.
+- **Log every branch, not just the success path.** When debugging native module interactions, you need to see the full state: availability status, allowed types, version codes, and error messages. Silent failures in native code are impossible to diagnose without this.
+- **Native module constructors can throw too.** Wrapping `new SpInAppUpdates()` in try/catch prevents a hard crash if the native module fails to link (ProGuard, missing dependency, etc.).
+
+---
+
 ## 2026-05-03 — In-App Update Not Showing Despite Newer Version on Play Store
 
 ### Problem

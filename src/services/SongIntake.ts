@@ -4,8 +4,8 @@ import { pick, keepLocalCopy } from '@react-native-documents/picker';
 import { Song } from '@/types';
 import { STORAGE_KEYS, DEFAULT_SONG_TITLE, DEFAULT_ARTIST } from '@/utils/constants';
 import { parseFilename } from '@/utils/metadata';
-import { extractMetadata } from './MetadataAdapter';
-import { requestStoragePermission, isPermissionBlocked } from './PermissionService';
+import { extractMetadata } from '@/services/MetadataAdapter';
+import { requestStoragePermission, isPermissionBlocked } from '@/services/PermissionService';
 
 export type IntakeError =
   | { type: 'permission_denied'; blocked: boolean }

@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
-import { PlaybackState, getState, subscribe, init, togglePlay, seek, startPolling, stopPolling, handleAudioFocus, handleRemotePlay, handleRemotePause } from './Playback';
-import { useAudioFocus, useRemotePlayPause } from './AudioService';
-
-export type { PlaybackState };
+import { PlaybackState, getState, subscribe, init, togglePlay, seek, startPolling, stopPolling, handleAudioFocus, handleRemotePlay, handleRemotePause } from '@/services/Playback';
+import { useAudioFocus, useRemotePlayPause } from '@/services/AudioService';
 
 export function usePlaybackController() {
   const [state, setState] = useState<PlaybackState>(getState());

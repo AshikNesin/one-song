@@ -7,12 +7,6 @@ export interface Song {
   duration: number;
 }
 
-export interface AppState {
-  hasCompletedOnboarding: boolean;
-  selectedSong: Song | null;
-  sleepTimerMinutes: number | null;
-}
-
 export interface SleepTimerPreset {
   label: string;
   minutes: number;

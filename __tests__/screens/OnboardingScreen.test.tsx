@@ -1,15 +1,13 @@
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
-import OnboardingScreen from '../../src/screens/OnboardingScreen';
+import OnboardingScreen from '@/screens/OnboardingScreen';
 
 const mockIntake = jest.fn();
 const mockComplete = jest.fn().mockResolvedValue(undefined);
-const mockOpenAppSettings = jest.fn();
 
 jest.mock('@/services/SongIntake', () => ({
   intake: (...args: any[]) => mockIntake(...args),
   complete: (...args: any[]) => mockComplete(...args),
-  openAppSettings: mockOpenAppSettings,
 }));
 
 describe('OnboardingScreen', () => {

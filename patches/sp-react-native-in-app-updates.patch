@@ -1,0 +1,65 @@
+diff --git a/android/src/main/java/com/sudoplz/rninappupdates/SpReactNativeInAppUpdatesModule.java b/android/src/main/java/com/sudoplz/rninappupdates/SpReactNativeInAppUpdatesModule.java
+index 3429b20f534cbe07a3aab5c00af27d66c21ef149..edf9d7b8f4558767a68f3eafa06b28e4856b21c3 100644
+--- a/android/src/main/java/com/sudoplz/rninappupdates/SpReactNativeInAppUpdatesModule.java
++++ b/android/src/main/java/com/sudoplz/rninappupdates/SpReactNativeInAppUpdatesModule.java
+@@ -133,7 +133,8 @@ public class SpReactNativeInAppUpdatesModule extends ReactContextBaseJavaModule
+ 
+         // Checks that the platform will allow the specified type of update.
+         appUpdateInfoTask.addOnSuccessListener(appUpdateInfo -> {
+-            if (appUpdateInfo.updateAvailability() != UpdateAvailability.UPDATE_AVAILABLE) {
++            int availability = appUpdateInfo.updateAvailability();
++            if (availability != UpdateAvailability.UPDATE_AVAILABLE && availability != UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
+                 resolutionPromise.reject("Error", "Update unavailable, check checkNeedsUpdate.updateAvailability first");
+             } else if (!appUpdateInfo.isUpdateTypeAllowed(updateType)) {
+                 resolutionPromise.reject("Error", "Update type unavailable, check checkNeedsUpdate.isImmediateUpdateAllowed or checkNeedsUpdate.isFlexibleUpdateAllowed first.");
+diff --git a/src/InAppUpdates.android.ts b/src/InAppUpdates.android.ts
+index 1d490d2592f0e4964903196b1cb17545f1758a2e..3ab0a45b1c718da532e98b3f4907033434f17dc9 100644
+--- a/src/InAppUpdates.android.ts
++++ b/src/InAppUpdates.android.ts
+@@ -145,6 +145,46 @@ export default class InAppUpdates extends InAppUpdatesBase {
+           updateAvailability === AndroidAvailabilityStatus.DEVELOPER_TRIGGERED
+         ) {
+           this.debugLog('Update has already been triggered by the developer');
++          // Treat DEVELOPER_TRIGGERED like AVAILABLE — an update is in progress
++          // but still needs to be completed. Do version comparison.
++          let newAppV = `${versionCode}`;
++          if (toSemverConverter) {
++            newAppV = toSemverConverter(versionCode);
++            this.debugLog(
++              `Used custom semver, and converted result from store (${versionCode}) to ${newAppV}`
++            );
++            if (!newAppV) {
++              this.throwError(
++                `Couldnt convert ${versionCode} using your custom semver converter`,
++                'checkNeedsUpdate'
++              );
++            }
++          }
++          const vCompRes = customVersionComparator
++            ? customVersionComparator(newAppV, appVersion)
++            : compareVersions(newAppV, appVersion);
++
++          if (vCompRes > 0) {
++            this.debugLog(
++              `Compared cur version (${appVersion}) with store version (${newAppV}). The store version is higher!`
++            );
++            return {
++              shouldUpdate: true,
++              storeVersion: newAppV,
++              other: { ...inAppUpdateInfo },
++            };
++          }
++          this.debugLog(
++            `Compared cur version (${appVersion}) with store version (${newAppV}). The current version is higher!`
++          );
++          return {
++            shouldUpdate: false,
++            storeVersion: newAppV,
++            reason: `current version (${appVersion}) is already later than the latest store version (${newAppV}${
++              toSemverConverter ? ` - originated from ${versionCode}` : ''
++            })`,
++            other: { ...inAppUpdateInfo },
++          };
+         } else {
+           this.debugLog(
+             `Failed to fetch a store version, status: ${updateAvailability}`

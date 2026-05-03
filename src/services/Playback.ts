@@ -9,10 +9,10 @@ import {
   getPlaybackState,
   getProgress,
   seekTo,
-} from './AudioService';
-import { getSong, clearSongData } from './SongIntake';
-import { restoreTimer } from './SleepTimer';
-import { STORAGE_KEYS } from '../utils/constants';
+} from '@/services/AudioService';
+import { getSong, clearSongData } from '@/services/SongIntake';
+import { restoreTimer } from '@/services/SleepTimer';
+import { STORAGE_KEYS } from '@/utils/constants';
 
 export interface PlaybackState {
   isPlaying: boolean;
@@ -60,10 +60,6 @@ export async function getAutoPlayEnabled(): Promise<boolean> {
 
 export async function saveAutoPlayEnabled(enabled: boolean): Promise<void> {
   await AsyncStorage.setItem(STORAGE_KEYS.AUTOPLAY_ENABLED, String(enabled));
-}
-
-export async function clearAutoPlay(): Promise<void> {
-  await AsyncStorage.removeItem(STORAGE_KEYS.AUTOPLAY_ENABLED);
 }
 
 export async function init(): Promise<void> {

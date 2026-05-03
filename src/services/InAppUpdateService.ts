@@ -1,10 +1,7 @@
-import { NativeModules, Platform } from 'react-native';
-import { getBuildNumber } from 'react-native-device-info';
+import { Platform } from 'react-native';
 import SpInAppUpdates, {
   AndroidInstallStatus,
-  IAUAvailabilityStatus,
   IAUUpdateKind,
-  NeedsUpdateResponse,
   StartUpdateOptions,
   StatusUpdateEvent,
 } from 'sp-react-native-in-app-updates';
@@ -15,12 +12,8 @@ class InAppUpdateService {
   private inAppUpdates: SpInAppUpdates | null = null;
 
   constructor() {
-    if (!__DEV__ && NativeModules.SpInAppUpdates) {
-      try {
-        this.inAppUpdates = new SpInAppUpdates(false);
-      } catch (_e) {
-        this.inAppUpdates = null;
-      }
+    if (!__DEV__) {
+      this.inAppUpdates = new SpInAppUpdates(false);
     }
   }
 
@@ -30,34 +23,17 @@ class InAppUpdateService {
     }
 
     try {
-      const currentVersionCode = getBuildNumber();
-      const result: NeedsUpdateResponse =
-        await this.inAppUpdates.checkNeedsUpdate({
-          curVersion: currentVersionCode,
-        });
+      const result = await this.inAppUpdates.checkNeedsUpdate();
 
-      const androidResult = result as NeedsUpdateResponse & {
-        other?: { updateAvailability?: number };
-      };
-      const updateAvailability = androidResult.other?.updateAvailability;
+      console.log('In-app update: check result', result);
 
       if (!result.shouldUpdate) {
-        if (
-          Platform.OS === 'android' &&
-          updateAvailability === IAUAvailabilityStatus.DEVELOPER_TRIGGERED
-        ) {
-          console.log(
-            'In-app update: update already triggered, continuing flexible update',
-          );
-          this.startFlexibleUpdate();
-        }
+        console.log('In-app update: no update needed');
         return;
       }
 
-      console.log('In-app update: update available', result);
-
       if (Platform.OS === 'android') {
-        this.startFlexibleUpdate();
+        await this.startAndroidFlexibleUpdate(result.other as Record<string, unknown>);
       } else {
         const updateOptions: StartUpdateOptions = {
           title: 'Update Available',
@@ -69,27 +45,46 @@ class InAppUpdateService {
         await this.inAppUpdates.startUpdate(updateOptions);
       }
     } catch (error) {
-      console.error('In-app update check failed:', error);
+      console.error('In-app update failed:', error);
     }
   }
 
-  private startFlexibleUpdate(): void {
+  private async startAndroidFlexibleUpdate(
+    other: Record<string, unknown> | undefined,
+  ): Promise<void> {
     if (!this.inAppUpdates) {
       return;
     }
 
-    this.inAppUpdates.addStatusUpdateListener(
-      (status: StatusUpdateEvent) => {
-        if (status.status === INSTALL_STATUS.DOWNLOADED) {
-          this.inAppUpdates?.installUpdate();
-        }
-      },
-    );
+    this.inAppUpdates.addStatusUpdateListener((status: StatusUpdateEvent) => {
+      console.log('In-app update: status', status.status);
+      if (status.status === INSTALL_STATUS.DOWNLOADED) {
+        console.log('In-app update: download complete, installing');
+        this.inAppUpdates?.installUpdate();
+      }
+    });
+
+    const isDeveloperTriggered = other?.updateAvailability === 3;
+
+    let updateType = IAUUpdateKind.FLEXIBLE;
+
+    if (isDeveloperTriggered) {
+      if (other?.isImmediateUpdateAllowed) {
+        updateType = IAUUpdateKind.IMMEDIATE;
+      } else if (other?.isFlexibleUpdateAllowed) {
+        updateType = IAUUpdateKind.FLEXIBLE;
+      }
+    }
 
     const updateOptions: StartUpdateOptions = {
-      updateType: IAUUpdateKind.FLEXIBLE,
+      updateType,
     };
-    this.inAppUpdates.startUpdate(updateOptions);
+
+    await this.inAppUpdates.startUpdate(updateOptions);
+    console.log('In-app update: update flow started', {
+      updateType: updateType === IAUUpdateKind.IMMEDIATE ? 'IMMEDIATE' : 'FLEXIBLE',
+      isDeveloperTriggered,
+    });
   }
 }
 

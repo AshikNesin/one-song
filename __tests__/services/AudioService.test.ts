@@ -7,7 +7,6 @@ import {
   seekTo,
   getProgress,
   getPlaybackState,
-  usePlaybackState,
   useRemotePlayPause,
   useAudioFocus,
 } from '@/services/AudioService';
@@ -98,18 +97,6 @@ describe('AudioService', () => {
     it('returns current state', async () => {
       const result = await getPlaybackState();
       expect(result).toBe(State.Playing);
-    });
-  });
-
-  describe('usePlaybackState', () => {
-    it('registers PlaybackState event listener', () => {
-      const { useTrackPlayerEvents } = require('react-native-track-player');
-      const callback = jest.fn();
-      usePlaybackState(callback);
-      expect(useTrackPlayerEvents).toHaveBeenCalledWith(
-        [Event.PlaybackState],
-        expect.any(Function),
-      );
     });
   });
 

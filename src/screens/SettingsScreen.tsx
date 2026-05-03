@@ -230,23 +230,6 @@ const styles = StyleSheet.create({
     padding: 12,
     gap: 8,
   },
-  timerChip: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 16,
-    backgroundColor: '#2a2a2a',
-  },
-  timerChipActive: {
-    backgroundColor: '#fff',
-  },
-  timerChipText: {
-    color: '#ccc',
-    fontSize: 14,
-  },
-  timerChipTextActive: {
-    color: '#000',
-    fontWeight: '600',
-  },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',

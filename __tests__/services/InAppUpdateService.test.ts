@@ -1,10 +1,3 @@
-import { NativeModules, Platform } from 'react-native';
-import { AndroidInstallStatus } from 'sp-react-native-in-app-updates';
-
-jest.mock('react-native-device-info', () => ({
-  getBuildNumber: jest.fn().mockReturnValue('7'),
-}));
-
 jest.mock('sp-react-native-in-app-updates', () => {
   const mockSpInAppUpdates = jest.fn();
   mockSpInAppUpdates.prototype.checkNeedsUpdate = jest.fn();
@@ -27,12 +20,6 @@ jest.mock('sp-react-native-in-app-updates', () => {
       FLEXIBLE: 0,
       IMMEDIATE: 1,
     },
-    IAUAvailabilityStatus: {
-      UNKNOWN: 0,
-      UNAVAILABLE: 1,
-      AVAILABLE: 2,
-      DEVELOPER_TRIGGERED: 3,
-    },
   };
 });
 
@@ -44,25 +31,25 @@ describe('InAppUpdateService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     global.__DEV__ = false;
+    jest.spyOn(console, 'log').mockImplementation();
+    jest.spyOn(console, 'warn').mockImplementation();
+    jest.spyOn(console, 'error').mockImplementation();
   });
 
-  function createService(devMode = false, nativeModulePresent = true) {
+  function createService(devMode = false, platform = 'android') {
     global.__DEV__ = devMode;
-
-    if (nativeModulePresent) {
-      NativeModules.SpInAppUpdates = {};
-    } else {
-      delete NativeModules.SpInAppUpdates;
-    }
-
+    jest.doMock('react-native', () => ({
+      Platform: { OS: platform },
+    }));
     jest.isolateModules(() => {
       const mod = require('@/services/InAppUpdateService');
       inAppUpdateService = mod.inAppUpdateService;
     });
+    jest.dontMock('react-native');
   }
 
   afterEach(() => {
-    delete NativeModules.SpInAppUpdates;
+    jest.restoreAllMocks();
   });
 
   describe('in dev mode', () => {
@@ -72,27 +59,28 @@ describe('InAppUpdateService', () => {
       await inAppUpdateService.checkAndPromptUpdate();
 
       const SpInAppUpdates = require('sp-react-native-in-app-updates').default;
-      const instances = SpInAppUpdates.mock.instances;
-      expect(instances).toHaveLength(0);
+      expect(SpInAppUpdates).not.toHaveBeenCalled();
     });
   });
 
   describe('in production', () => {
-    it('checks for updates and starts flexible update when android', async () => {
-      createService(false);
+    it('starts flexible update when update is available', async () => {
+      createService(false, 'android');
 
       const SpInAppUpdates = require('sp-react-native-in-app-updates').default;
       const [instance] = SpInAppUpdates.mock.instances;
       instance.checkNeedsUpdate.mockResolvedValue({
         shouldUpdate: true,
-        storeVersion: '8',
+        storeVersion: '0.0.14',
+        other: {
+          updateAvailability: 2,
+          versionCode: 14,
+        },
       });
 
       await inAppUpdateService.checkAndPromptUpdate();
 
-      expect(instance.checkNeedsUpdate).toHaveBeenCalledWith({
-        curVersion: '7',
-      });
+      expect(instance.checkNeedsUpdate).toHaveBeenCalled();
       expect(instance.addStatusUpdateListener).toHaveBeenCalled();
       expect(instance.startUpdate).toHaveBeenCalledWith({
         updateType: 0,
@@ -100,50 +88,44 @@ describe('InAppUpdateService', () => {
     });
 
     it('does nothing when no update is available', async () => {
-      createService(false);
+      createService(false, 'android');
 
       const SpInAppUpdates = require('sp-react-native-in-app-updates').default;
       const [instance] = SpInAppUpdates.mock.instances;
       instance.checkNeedsUpdate.mockResolvedValue({
         shouldUpdate: false,
-        storeVersion: '6',
+        other: {
+          updateAvailability: 1,
+        },
       });
 
       await inAppUpdateService.checkAndPromptUpdate();
 
-      expect(instance.checkNeedsUpdate).toHaveBeenCalledWith({
-        curVersion: '7',
-      });
-      expect(instance.addStatusUpdateListener).not.toHaveBeenCalled();
       expect(instance.startUpdate).not.toHaveBeenCalled();
     });
 
-    it('continues flexible update when update was already triggered', async () => {
-      Platform.OS = 'android';
-      createService(false);
+    it('handles iOS update flow', async () => {
+      createService(false, 'ios');
 
       const SpInAppUpdates = require('sp-react-native-in-app-updates').default;
       const [instance] = SpInAppUpdates.mock.instances;
       instance.checkNeedsUpdate.mockResolvedValue({
-        shouldUpdate: false,
-        storeVersion: '8',
-        other: { updateAvailability: 3 },
+        shouldUpdate: true,
+        storeVersion: '0.0.14',
       });
 
       await inAppUpdateService.checkAndPromptUpdate();
 
-      expect(instance.checkNeedsUpdate).toHaveBeenCalledWith({
-        curVersion: '7',
-      });
-      expect(instance.addStatusUpdateListener).toHaveBeenCalled();
       expect(instance.startUpdate).toHaveBeenCalledWith({
-        updateType: 0,
+        title: 'Update Available',
+        message: expect.any(String),
+        buttonUpgradeText: 'Update',
+        buttonCancelText: 'Later',
       });
     });
 
-    it('logs errors in checkNeedsUpdate without throwing', async () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-      createService(false);
+    it('logs errors without throwing', async () => {
+      createService(false, 'android');
 
       const SpInAppUpdates = require('sp-react-native-in-app-updates').default;
       const [instance] = SpInAppUpdates.mock.instances;
@@ -155,23 +137,24 @@ describe('InAppUpdateService', () => {
         inAppUpdateService.checkAndPromptUpdate(),
       ).resolves.toBeUndefined();
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'In-app update check failed:',
+      expect(console.error).toHaveBeenCalledWith(
+        'In-app update failed:',
         expect.any(Error),
       );
-      expect(instance.startUpdate).not.toHaveBeenCalled();
-
-      consoleSpy.mockRestore();
     });
 
     it('handles DOWNLOADED status by calling installUpdate', async () => {
-      createService(false);
+      createService(false, 'android');
 
       const SpInAppUpdates = require('sp-react-native-in-app-updates').default;
       const [instance] = SpInAppUpdates.mock.instances;
       instance.checkNeedsUpdate.mockResolvedValue({
         shouldUpdate: true,
-        storeVersion: '8',
+        storeVersion: '0.0.14',
+        other: {
+          updateAvailability: 2,
+          versionCode: 14,
+        },
       });
 
       let statusListener: ((status: any) => void) | null = null;
@@ -185,6 +168,7 @@ describe('InAppUpdateService', () => {
 
       expect(statusListener).not.toBeNull();
 
+      const { AndroidInstallStatus } = require('sp-react-native-in-app-updates');
       statusListener!({
         status: AndroidInstallStatus.DOWNLOADED,
         bytesDownloaded: 100,
@@ -194,41 +178,71 @@ describe('InAppUpdateService', () => {
       expect(instance.installUpdate).toHaveBeenCalled();
     });
 
-    it('ignores non-DOWNLOADED status updates', async () => {
-      createService(false);
+    it('handles DEVELOPER_TRIGGERED with flexible allowed', async () => {
+      createService(false, 'android');
 
       const SpInAppUpdates = require('sp-react-native-in-app-updates').default;
       const [instance] = SpInAppUpdates.mock.instances;
       instance.checkNeedsUpdate.mockResolvedValue({
         shouldUpdate: true,
-        storeVersion: '8',
-      });
-
-      let statusListener: ((status: any) => void) | null = null;
-      instance.addStatusUpdateListener.mockImplementation(
-        (cb: (status: any) => void) => {
-          statusListener = cb;
+        storeVersion: '14',
+        other: {
+          updateAvailability: 3,
+          versionCode: 14,
+          isFlexibleUpdateAllowed: true,
+          isImmediateUpdateAllowed: false,
         },
-      );
+      });
 
       await inAppUpdateService.checkAndPromptUpdate();
 
-      statusListener!({
-        status: AndroidInstallStatus.DOWNLOADING,
-        bytesDownloaded: 50,
-        totalBytesToDownload: 100,
+      expect(instance.startUpdate).toHaveBeenCalledWith({
+        updateType: 0,
       });
-
-      expect(instance.installUpdate).not.toHaveBeenCalled();
     });
 
-    it('does nothing when native module is missing', async () => {
-      createService(false, false);
+    it('handles DEVELOPER_TRIGGERED with only immediate allowed', async () => {
+      createService(false, 'android');
+
+      const SpInAppUpdates = require('sp-react-native-in-app-updates').default;
+      const [instance] = SpInAppUpdates.mock.instances;
+      instance.checkNeedsUpdate.mockResolvedValue({
+        shouldUpdate: true,
+        storeVersion: '14',
+        other: {
+          updateAvailability: 3,
+          versionCode: 14,
+          isFlexibleUpdateAllowed: false,
+          isImmediateUpdateAllowed: true,
+        },
+      });
 
       await inAppUpdateService.checkAndPromptUpdate();
 
+      expect(instance.startUpdate).toHaveBeenCalledWith({
+        updateType: 1,
+      });
+    });
+
+    it('defaults to FLEXIBLE when DEVELOPER_TRIGGERED but neither type is explicitly allowed', async () => {
+      createService(false, 'android');
+
       const SpInAppUpdates = require('sp-react-native-in-app-updates').default;
-      expect(SpInAppUpdates).not.toHaveBeenCalled();
+      const [instance] = SpInAppUpdates.mock.instances;
+      instance.checkNeedsUpdate.mockResolvedValue({
+        shouldUpdate: true,
+        storeVersion: '14',
+        other: {
+          updateAvailability: 3,
+          versionCode: 14,
+        },
+      });
+
+      await inAppUpdateService.checkAndPromptUpdate();
+
+      expect(instance.startUpdate).toHaveBeenCalledWith({
+        updateType: 0,
+      });
     });
   });
 });

@@ -1,2 +1,3 @@
 patchedDependencies:
   react-native@0.85.2: patches/react-native@0.85.2.patch
+  sp-react-native-in-app-updates: patches/sp-react-native-in-app-updates.patch

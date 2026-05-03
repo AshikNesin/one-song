@@ -1,13 +1,12 @@
 import { read, readFile, writeFile, CachesDirectoryPath } from 'react-native-fs';
 import { Buffer } from 'buffer';
 import {
-  ExtractedMetadata,
   parseId3Metadata,
   parseMp4Metadata,
   getImageExtension,
 } from '@/utils/metadata';
 
-export interface SongMetadata {
+interface SongMetadata {
   title?: string;
   artist?: string;
   artwork?: string;

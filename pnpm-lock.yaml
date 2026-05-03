@@ -8,6 +8,9 @@ patchedDependencies:
   react-native@0.85.2:
     hash: 35d9e4efd5920651531a1e4b6587845c29d072aa312581bdec97dded23401f74
     path: patches/react-native@0.85.2.patch
+  sp-react-native-in-app-updates:
+    hash: 3ef08f39223a68b756736e7c9bb629d074190c47d6b457e0f2c58d9823dcc8c2
+    path: patches/sp-react-native-in-app-updates.patch
 
 importers:
 
@@ -60,7 +63,7 @@ importers:
         version: 5.0.0-alpha0(react-native@0.85.2(patch_hash=35d9e4efd5920651531a1e4b6587845c29d072aa312581bdec97dded23401f74)(@babel/core@7.29.0)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/jest-preset@0.85.2(@babel/core@7.29.0)(react@19.2.3))(@react-native/metro-config@0.85.2(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3)
       sp-react-native-in-app-updates:
         specifier: ^1.0.0
-        version: 1.5.0(react-native@0.85.2(patch_hash=35d9e4efd5920651531a1e4b6587845c29d072aa312581bdec97dded23401f74)(@babel/core@7.29.0)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/jest-preset@0.85.2(@babel/core@7.29.0)(react@19.2.3))(@react-native/metro-config@0.85.2(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3)
+        version: 1.5.0(patch_hash=3ef08f39223a68b756736e7c9bb629d074190c47d6b457e0f2c58d9823dcc8c2)(react-native@0.85.2(patch_hash=35d9e4efd5920651531a1e4b6587845c29d072aa312581bdec97dded23401f74)(@babel/core@7.29.0)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/jest-preset@0.85.2(@babel/core@7.29.0)(react@19.2.3))(@react-native/metro-config@0.85.2(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3)
     devDependencies:
       '@babel/core':
         specifier: ^7.25.2
@@ -8474,7 +8477,7 @@ snapshots:
 
   source-map@0.6.1: {}
 
-  sp-react-native-in-app-updates@1.5.0(react-native@0.85.2(patch_hash=35d9e4efd5920651531a1e4b6587845c29d072aa312581bdec97dded23401f74)(@babel/core@7.29.0)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/jest-preset@0.85.2(@babel/core@7.29.0)(react@19.2.3))(@react-native/metro-config@0.85.2(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3):
+  sp-react-native-in-app-updates@1.5.0(patch_hash=3ef08f39223a68b756736e7c9bb629d074190c47d6b457e0f2c58d9823dcc8c2)(react-native@0.85.2(patch_hash=35d9e4efd5920651531a1e4b6587845c29d072aa312581bdec97dded23401f74)(@babel/core@7.29.0)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/jest-preset@0.85.2(@babel/core@7.29.0)(react@19.2.3))(@react-native/metro-config@0.85.2(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3):
     dependencies:
       react: 19.2.3
       react-native: 0.85.2(patch_hash=35d9e4efd5920651531a1e4b6587845c29d072aa312581bdec97dded23401f74)(@babel/core@7.29.0)(@react-native-community/cli@20.1.0(typescript@5.9.3))(@react-native/jest-preset@0.85.2(@babel/core@7.29.0)(react@19.2.3))(@react-native/metro-config@0.85.2(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.3)

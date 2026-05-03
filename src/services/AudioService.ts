@@ -67,12 +67,6 @@ export async function getPlaybackState(): Promise<State> {
   return playbackState.state;
 }
 
-export function usePlaybackState(callback: (state: State) => void): void {
-  useTrackPlayerEvents([Event.PlaybackState], async event => {
-    callback(event.state);
-  });
-}
-
 export function useRemotePlayPause(
   onPlay: () => void,
   onPause: () => void,

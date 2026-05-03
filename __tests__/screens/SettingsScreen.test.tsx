@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
-import SettingsScreen from '../../src/screens/SettingsScreen';
-import TimerPresetPicker from '../../src/components/TimerPresetPicker';
+import SettingsScreen from '@/screens/SettingsScreen';
+import TimerPresetPicker from '@/components/TimerPresetPicker';
 
 const mockGetSong = jest.fn().mockResolvedValue({ title: 'Test Song' });
 const mockGetAutoPlayEnabled = jest.fn().mockResolvedValue(true);

@@ -70,7 +70,7 @@ export const clearDatabaseDirectoryPaths = jest.fn();
 export const clearLogDirectoryPaths = jest.fn();
 export const clearTmpDirectoryPaths = jest.fn();
 export const DocumentDirectoryPath = jest.fn();
-export const CacheDirectoryPath = jest.fn();
+
 export const ExternalDirectoryPath = jest.fn();
 export const ExternalStorageDirectoryPath = jest.fn();
 export const TemporaryDirectoryPath = jest.fn();

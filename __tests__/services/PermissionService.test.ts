@@ -1,10 +1,8 @@
-import { Platform, Linking } from 'react-native';
+import { Platform } from 'react-native';
 import { check, request, RESULTS, PERMISSIONS } from 'react-native-permissions';
 import {
-  checkStoragePermission,
   requestStoragePermission,
   isPermissionBlocked,
-  openAppSettings,
 } from '@/services/PermissionService';
 
 describe('PermissionService', () => {
@@ -16,19 +14,6 @@ describe('PermissionService', () => {
     beforeEach(() => {
       Platform.OS = 'android';
       Platform.Version = 33;
-    });
-
-    it('checkStoragePermission returns true when granted', async () => {
-      check.mockResolvedValue(RESULTS.GRANTED);
-      const result = await checkStoragePermission();
-      expect(check).toHaveBeenCalledWith(PERMISSIONS.ANDROID.READ_MEDIA_AUDIO);
-      expect(result).toBe(true);
-    });
-
-    it('checkStoragePermission returns false when denied', async () => {
-      check.mockResolvedValue(RESULTS.DENIED);
-      const result = await checkStoragePermission();
-      expect(result).toBe(false);
     });
 
     it('requestStoragePermission returns true when granted', async () => {
@@ -55,29 +40,11 @@ describe('PermissionService', () => {
       const result = await isPermissionBlocked();
       expect(result).toBe(false);
     });
-
-    it('uses READ_EXTERNAL_STORAGE on Android < 33', async () => {
-      Platform.Version = 30;
-      check.mockResolvedValue(RESULTS.GRANTED);
-      await checkStoragePermission();
-      expect(check).toHaveBeenCalledWith(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE);
-    });
-
-    it('openAppSettings opens app settings', () => {
-      openAppSettings();
-      expect(Linking.openSettings).toHaveBeenCalled();
-    });
   });
 
   describe('iOS', () => {
     beforeEach(() => {
       Platform.OS = 'ios';
-    });
-
-    it('checkStoragePermission returns true without checking', async () => {
-      const result = await checkStoragePermission();
-      expect(check).not.toHaveBeenCalled();
-      expect(result).toBe(true);
     });
 
     it('requestStoragePermission returns true without requesting', async () => {
