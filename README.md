@@ -2,6 +2,10 @@
 
 <p align="center">
   <img src="assets/logo.svg" alt="One Song Logo" width="120" height="120">
+  <br>
+  <a href="https://play.google.com/store/apps/details?id=io.nesin.onesong">
+    <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" height="80">
+  </a>
 </p>
 
 A minimal Android music player that plays exactly one song — on repeat, with a sleep timer, and background playback.
