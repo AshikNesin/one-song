@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OG Image Generator — One Song</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f172a;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      min-height: 100vh;
+      gap: 24px;
+    }
+    h1 { font-size: 1.5rem; font-weight: 600; }
+    p { color: #94a3b8; font-size: 0.95rem; }
+
+    .preview-wrapper {
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 16px;
+    }
+    canvas {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    button {
+      background: #0ea5e9;
+      color: #fff;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover { background: #0284c7; }
+    button:disabled {
+      background: #334155;
+      cursor: not-allowed;
+    }
+    .hint {
+      font-size: 0.85rem;
+      color: #64748b;
+      max-width: 500px;
+      text-align: center;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <h1>OG Image Generator</h1>
+  <p>1200 x 630 px — optimized for Twitter, Facebook, LinkedIn</p>
+
+  <div class="preview-wrapper">
+    <canvas id="ogCanvas" width="1200" height="630"></canvas>
+  </div>
+
+  <div class="controls">
+    <button id="dlBtn" onclick="downloadPNG()">Download PNG</button>
+  </div>
+
+  <p class="hint">
+    Renders directly on canvas — no external dependencies needed.<br>
+    Works offline, works from file://, works everywhere.
+  </p>
+
+  <script>
+    const canvas = document.getElementById('ogCanvas');
+    const ctx = canvas.getContext('2d');
+    const W = 1200;
+    const H = 630;
+
+    // Colors
+    const bg = '#f8fafc';
+    const textDark = '#0f172a';
+    const textMuted = '#64748b';
+    const accent = '#0ea5e9';
+
+    // SVG path data from logo.svg (viewBox 0 0 1668 1580)
+    const LOGO_PATHS = [
+      { fill: '#000', d: 'M0 0L1668 0L1668 1580L0 1580L0 0z' },
+      { fill: '#fefefe', d: 'M799.403 173.338L876.3 173.093C890.018 173.084 905.855 172.478 919.39 174.205C923.417 174.719 928.096 178.024 930.059 181.322C932.237 184.981 932.843 195.616 932.838 199.873C932.765 261.696 932.738 323.601 932.718 385.416L932.718 756.34L932.966 1017.57C932.971 1058.08 934.187 1106.29 932.766 1146.22C932.287 1162.26 930.139 1178.21 926.355 1193.82C908.868 1265.86 866.272 1316.64 804.301 1356.28C695.586 1425.83 511.037 1431 436.787 1308.06C399.936 1233.74 416.238 1153.66 469.029 1091.99C521.195 1031.64 596.636 996.423 676.395 995.188C698.168 994.648 716.374 997.494 737.836 999.068C746.095 999.674 748.63 987.3 748.539 980.651C748.146 951.938 748.166 923.199 748.193 894.458L748.402 693.06L748.657 594.943C748.705 581.684 749.507 552.069 747.702 540.144C745.093 535.761 741.138 534.039 736.287 532.938C724.029 530.157 709.215 531.837 696.599 531.854C678.577 531.879 559.957 534.355 551.062 530.129C547.212 528.3 543.946 523.524 542.762 519.548C540.802 512.972 541.18 406.592 541.849 396.022C542.092 392.185 542.663 388.796 544.506 385.364C551.427 380.221 583.246 376.445 592.86 374.863C679.201 360.658 751.038 303.046 775.083 217.588C778.596 205.101 779.982 190.249 787.098 179.18C790.188 174.373 794.24 174.064 799.403 173.338z' },
+      { fill: '#fefefe', d: 'M978.659 175.887C988.654 176.176 991.389 177.838 995.724 186.974C1001.9 200.234 1004.75 215.457 1009.58 229.201C1028.71 283.713 1066.17 326.138 1111.42 360.932C1168.58 404.879 1211.06 440.8 1233.01 511.567C1257.32 589.942 1246.62 663.143 1208.73 735.58C1204.29 744.953 1190.2 773.488 1176.77 762.707C1169.36 756.753 1172.19 723.205 1171.92 713.497C1171.72 705.796 1170.94 698.123 1169.58 690.541C1151.42 590.375 1078.73 543.953 987.704 530.824C971.974 528.556 971.097 518.471 971.066 504.534C970.924 441.26 971.089 377.834 971.09 314.483L971.062 233.232C971.062 218.67 970.822 203.748 971.444 189.206C971.739 182.312 973.78 180.051 978.659 175.887z' }
+    ];
+
+    function drawLogo(x, y, targetWidth) {
+      const scale = targetWidth / 1668;
+      const targetHeight = 1580 * scale;
+      const w = targetWidth;
+      const h = targetHeight;
+      const r = 180 * scale; // corner radius scaled from SVG proportions
+
+      ctx.save();
+      ctx.translate(x - w / 2, y - h / 2);
+
+      // Rounded rectangle background (black)
+      ctx.fillStyle = '#000';
+      ctx.beginPath();
+      ctx.moveTo(r, 0);
+      ctx.lineTo(w - r, 0);
+      ctx.quadraticCurveTo(w, 0, w, r);
+      ctx.lineTo(w, h - r);
+      ctx.quadraticCurveTo(w, h, w - r, h);
+      ctx.lineTo(r, h);
+      ctx.quadraticCurveTo(0, h, 0, h - r);
+      ctx.lineTo(0, r);
+      ctx.quadraticCurveTo(0, 0, r, 0);
+      ctx.closePath();
+      ctx.fill();
+
+      // White note paths
+      ctx.scale(scale, scale);
+      for (let i = 1; i < LOGO_PATHS.length; i++) {
+        ctx.fillStyle = LOGO_PATHS[i].fill;
+        const p = new Path2D(LOGO_PATHS[i].d);
+        ctx.fill(p);
+      }
+
+      ctx.restore();
+    }
+
+    function loadImage(src) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error('Failed to load: ' + src));
+        img.src = src;
+      });
+    }
+
+    async function draw() {
+      try {
+        // Background
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, W, H);
+
+        // Top accent bar
+        ctx.fillStyle = accent;
+        ctx.fillRect(0, 0, W, 6);
+
+        // Logo (embedded paths — no loading needed)
+        drawLogo(W / 2, 220, 100);
+
+        // Title
+        ctx.fillStyle = textDark;
+        ctx.font = 'bold 72px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('One Song', W / 2, 380);
+
+        // Tagline
+        ctx.fillStyle = textMuted;
+        ctx.font = '400 32px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.fillText('Play one song. On repeat.', W / 2, 440);
+
+        // Play Store badge (loaded from CDN)
+        const badge = await loadImage('./assets/get-on-google-play-store.png');
+        const badgeH = 80;
+        const badgeW = badgeH * (badge.width / badge.height);
+        ctx.drawImage(badge, (W - badgeW) / 2, 500, badgeW, badgeH);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function downloadPNG() {
+      const link = document.createElement('a');
+      link.download = 'og-image.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    draw();
+  </script>
+</body>
+</html>
