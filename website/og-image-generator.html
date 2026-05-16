@@ -152,9 +152,12 @@
         ctx.fillStyle = bg;
         ctx.fillRect(0, 0, W, H);
 
-        // Top accent bar
-        ctx.fillStyle = accent;
-        ctx.fillRect(0, 0, W, 6);
+        // Accent border (subtle gray)
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillRect(0, 0, W, 6);       // top
+        ctx.fillRect(0, H - 6, W, 6);    // bottom
+        ctx.fillRect(0, 0, 6, H);        // left
+        ctx.fillRect(W - 6, 0, 6, H);    // right
 
         // Logo (embedded paths — no loading needed)
         drawLogo(W / 2, 220, 100);
