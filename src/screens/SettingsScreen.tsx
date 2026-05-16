@@ -1,34 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Alert, Linking, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useNavigation, NavigationProp, CommonActions } from '@react-navigation/native';
 import { RootStackParamList } from '@/types/navigation';
-import { getSong, clearSongData } from '@/services/SongIntake';
-import { getAutoPlayEnabled, saveAutoPlayEnabled } from '@/services/Playback';
-import { loadDefaultTimer, saveDefaultTimer, clearTimer } from '@/services/SleepTimer';
+import { useSettings } from '@/hooks/useSettings';
 import TimerPresetPicker from '@/components/TimerPresetPicker';
 
 export default function SettingsScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const [defaultTimerMinutes, setDefaultTimerMinutes] = useState<number | null>(null);
-  const [currentSong, setCurrentSong] = useState<string | null>(null);
-  const [autoPlay, setAutoPlay] = useState(true);
-
-  useEffect(() => {
-    loadDefaultTimer().then(setDefaultTimerMinutes);
-    getSong().then(song => setCurrentSong(song?.title ?? null));
-    getAutoPlayEnabled().then(setAutoPlay);
-  }, []);
-
-  const handleTimerSelect = async (minutes: number | null) => {
-    setDefaultTimerMinutes(minutes);
-    await saveDefaultTimer(minutes);
-    await clearTimer();
-  };
-
-  const handleAutoPlayToggle = async (enabled: boolean) => {
-    setAutoPlay(enabled);
-    await saveAutoPlayEnabled(enabled);
-  };
+  const { state, actions } = useSettings();
 
   const handleChangeSong = () => {
     Alert.alert(
@@ -61,8 +40,7 @@ export default function SettingsScreen() {
           text: 'Reset',
           style: 'destructive',
           onPress: async () => {
-            await clearSongData();
-            await clearTimer();
+            await actions.clearAllData();
             navigation.dispatch(
               CommonActions.reset({
                 index: 0,
@@ -87,11 +65,11 @@ export default function SettingsScreen() {
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <Section title="Song">
-          {currentSong && (
+          {state.currentSong && (
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Current</Text>
               <Text style={styles.infoValue} numberOfLines={1}>
-                {currentSong}
+                {state.currentSong}
               </Text>
             </View>
           )}
@@ -102,17 +80,17 @@ export default function SettingsScreen() {
           <View style={styles.row}>
             <Text style={styles.rowLabel}>Auto-play on launch</Text>
             <Switch
-              value={autoPlay}
-              onValueChange={handleAutoPlayToggle}
+              value={state.autoPlay}
+              onValueChange={actions.toggleAutoPlay}
               trackColor={{ false: '#333', true: '#fff' }}
-              thumbColor={autoPlay ? '#000' : '#ccc'}
+              thumbColor={state.autoPlay ? '#000' : '#ccc'}
             />
           </View>
         </Section>
 
         <Section title="Sleep Timer Default">
           <View style={styles.timerRow}>
-            <TimerPresetPicker selectedMinutes={defaultTimerMinutes} onSelect={handleTimerSelect} />
+            <TimerPresetPicker selectedMinutes={state.defaultTimerMinutes} onSelect={actions.setTimerPreset} />
           </View>
         </Section>
 

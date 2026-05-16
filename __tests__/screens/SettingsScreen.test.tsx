@@ -10,6 +10,7 @@ const mockClearSongData = jest.fn().mockResolvedValue(undefined);
 const mockLoadDefaultTimer = jest.fn().mockResolvedValue(null);
 const mockSaveDefaultTimer = jest.fn().mockResolvedValue(undefined);
 const mockClearTimer = jest.fn().mockResolvedValue(undefined);
+const mockSetTimer = jest.fn().mockResolvedValue(undefined);
 
 jest.mock('../../src/services/SongIntake', () => ({
   getSong: (...args: any[]) => mockGetSong(...args),
@@ -25,6 +26,11 @@ jest.mock('@/services/SleepTimer', () => ({
   loadDefaultTimer: (...args: any[]) => mockLoadDefaultTimer(...args),
   saveDefaultTimer: (...args: any[]) => mockSaveDefaultTimer(...args),
   clearTimer: (...args: any[]) => mockClearTimer(...args),
+  setTimer: (...args: any[]) => mockSetTimer(...args),
+}));
+
+jest.mock('@/services/AudioService', () => ({
+  pause: jest.fn().mockResolvedValue(undefined),
 }));
 
 import { Alert, Linking } from 'react-native';

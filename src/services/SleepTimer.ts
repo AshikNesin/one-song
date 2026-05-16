@@ -1,17 +1,15 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import TrackPlayer from 'react-native-track-player';
-import { STORAGE_KEYS } from '@/utils/constants';
+import * as Storage from '@/services/StorageService';
 
 let activeTimerId: ReturnType<typeof setTimeout> | null = null;
 
-export async function setTimer(minutes: number | null): Promise<void> {
+export async function setTimer(minutes: number | null, onExpire?: () => void): Promise<void> {
   if (activeTimerId) {
     clearTimeout(activeTimerId);
     activeTimerId = null;
   }
   if (minutes && minutes > 0) {
     activeTimerId = setTimeout(() => {
-      TrackPlayer.pause();
+      onExpire?.();
     }, minutes * 60 * 1000);
   }
 }
@@ -24,21 +22,21 @@ export async function clearTimer(): Promise<void> {
 }
 
 export async function loadDefaultTimer(): Promise<number | null> {
-  const data = await AsyncStorage.getItem(STORAGE_KEYS.SLEEP_TIMER);
+  const data = await Storage.getItem('SLEEP_TIMER');
   return data ? Number(data) : null;
 }
 
 export async function saveDefaultTimer(minutes: number | null): Promise<void> {
   if (minutes === null) {
-    await AsyncStorage.removeItem(STORAGE_KEYS.SLEEP_TIMER);
+    await Storage.removeItem('SLEEP_TIMER');
   } else {
-    await AsyncStorage.setItem(STORAGE_KEYS.SLEEP_TIMER, String(minutes));
+    await Storage.setItem('SLEEP_TIMER', String(minutes));
   }
 }
 
-export async function restoreTimer(): Promise<void> {
+export async function restoreTimer(onExpire?: () => void): Promise<void> {
   const minutes = await loadDefaultTimer();
   if (minutes) {
-    await setTimer(minutes);
+    await setTimer(minutes, onExpire);
   }
 }
