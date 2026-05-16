@@ -6,3 +6,4 @@
 - For Netlify hosting, also redirect *.html URLs to their clean extensionless version using a 301 redirect (from = "/*.html", to = "/:splat", status = 301) so users never see .html in the address bar. Confidence: 0.65
 - Preserve original SVG logo colors as-is; do not apply theme accent colors to logo SVGs. Confidence: 0.70
 - For architecture/documentation pages, keep the tabbed navigation UI (tab bar switching between sections) rather than a single flat scrolling layout. Confidence: 0.65
+- When privacy policy text conflicts with analytics usage on website pages, resolve by updating the policy text to disclose analytics rather than removing the analytics script. Confidence: 0.65

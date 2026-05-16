@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getSong, clearSongData } from '@/services/SongIntake';
 import { getAutoPlayEnabled, saveAutoPlayEnabled } from '@/services/Playback';
+import * as Storage from '@/services/StorageService';
 import { useSleepTimer } from './useSleepTimer';
 
 export interface SettingsState {
@@ -37,6 +38,8 @@ export function useSettings(): { state: SettingsState; actions: SettingsActions 
   const clearAllData = useCallback(async () => {
     await clearSongData();
     await sleepTimer.clear();
+    await Storage.removeItem('AUTOPLAY_ENABLED');
+    setAutoPlay(true);
   }, [sleepTimer]);
 
   return {

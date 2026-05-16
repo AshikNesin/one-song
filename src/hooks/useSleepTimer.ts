@@ -12,23 +12,44 @@ export interface UseSleepTimerResult {
   clear: () => Promise<void>;
 }
 
+let sharedMinutes: number | null = null;
+let isLoaded = false;
+const listeners = new Set<(val: number | null) => void>();
+
+function notifyListeners(val: number | null) {
+  sharedMinutes = val;
+  listeners.forEach(l => l(val));
+}
+
 export function useSleepTimer(): UseSleepTimerResult {
-  const [currentMinutes, setCurrentMinutes] = useState<number | null>(null);
+  const [currentMinutes, setCurrentMinutes] = useState<number | null>(sharedMinutes);
 
   useEffect(() => {
-    loadDefaultTimer().then(setCurrentMinutes);
+    const listener = (val: number | null) => setCurrentMinutes(val);
+    listeners.add(listener);
+
+    if (!isLoaded) {
+      isLoaded = true;
+      loadDefaultTimer().then(notifyListeners);
+    }
+
+    return () => {
+      listeners.delete(listener);
+    };
   }, []);
 
   const selectPreset = useCallback(async (minutes: number | null, onExpire?: () => void) => {
-    setCurrentMinutes(minutes);
+    notifyListeners(minutes);
     await saveDefaultTimer(minutes);
     await clearTimer();
-    if (minutes && minutes > 0) {
+    if (minutes && minutes > 0 && onExpire) {
       await setTimer(minutes, onExpire);
     }
   }, []);
 
   const clear = useCallback(async () => {
+    notifyListeners(null);
+    await saveDefaultTimer(null);
     await clearTimer();
   }, []);
 
