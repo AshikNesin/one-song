@@ -163,6 +163,14 @@ a:hover { color: var(--accent-hover); }
   filter: brightness(1.05);
 }
 
+.free-badge {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-top: 20px;
+  margin-bottom: 4px;
+}
+
 .oss-tag {
   margin-top: 24px;
   font-size: 0.85rem;
