@@ -104,5 +104,21 @@
   <footer>
     <p>&copy; 2026 Nesin Technologies LLP · <a href="privacy">Privacy</a></p>
   </footer>
+
+  <div id="lightbox" class="lightbox" onclick="this.classList.remove('active')">
+    <span class="lightbox-close">&times;</span>
+    <img id="lightbox-img" src="">
+  </div>
+
+  <script>
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    document.querySelectorAll('.screenshot-grid img').forEach(img => {
+      img.addEventListener('click', () => {
+        lightboxImg.src = img.src;
+        lightbox.classList.add('active');
+      });
+    });
+  </script>
 </body>
 </html>

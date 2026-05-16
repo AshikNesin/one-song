@@ -183,6 +183,47 @@ section h2 {
   width: 260px;
   border-radius: 24px;
   border: 1px solid var(--border);
+  cursor: zoom-in;
+  transition: transform 0.2s;
+}
+.screenshot-grid img:hover {
+  transform: translateY(-4px);
+}
+
+/* ── Lightbox ── */
+.lightbox {
+  display: none;
+  position: fixed;
+  z-index: 999;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  cursor: zoom-out;
+}
+.lightbox.active {
+  display: flex;
+}
+.lightbox img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  object-fit: contain;
+  cursor: default;
+}
+.lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  color: white;
+  font-size: 40px;
+  font-weight: bold;
+  user-select: none;
 }
 
 /* ── Pitch ── */
