@@ -29,8 +29,12 @@ export function useSleepTimer(): UseSleepTimerResult {
     listeners.add(listener);
 
     if (!isLoaded) {
-      isLoaded = true;
-      loadDefaultTimer().then(notifyListeners);
+      loadDefaultTimer()
+        .then(val => {
+          isLoaded = true;
+          notifyListeners(val);
+        })
+        .catch(() => {});
     }
 
     return () => {
