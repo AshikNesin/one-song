@@ -874,11 +874,170 @@ footer {
 }
 
 /* ── Responsive ── */
+
+/* Tablet (768px - 1024px) */
+@media (max-width: 1024px) {
+  .hero h1 { font-size: 2.75rem; }
+  .arch-page pre { font-size: 0.8rem; padding: 16px; }
+  .arch-page .flow-row { gap: 8px; }
+  .arch-page .flow-box { padding: 8px 12px; font-size: 0.8rem; }
+}
+
+/* Mobile landscape / small tablet (480px - 768px) */
 @media (max-width: 768px) {
-  .hero h1 { font-size: 2.5rem; }
-  .tagline { font-size: 1.1rem; }
+  main { padding: 0 16px 60px; }
+
+  .navbar { padding: 12px 16px; }
+  .nav-brand { font-size: 1rem; gap: 8px; }
+  .nav-brand img { width: 24px; height: 24px; }
+  .nav-link { font-size: 0.8rem; padding: 5px 12px; border-radius: 12px; }
+
+  .hero { padding: 60px 0 40px; }
+  .hero h1 { font-size: 2.25rem; }
+  .tagline { font-size: 1rem; max-width: 100%; }
+  .logo { width: 80px; }
+  .store-badge img { height: 52px; }
+  .oss-tag { font-size: 0.8rem; padding: 6px 12px; }
+
+  section { padding: 48px 0; }
+  section h2 { font-size: 1.6rem; margin-bottom: 32px; }
+
   .features, .use-case-grid { grid-template-columns: 1fr; }
-  .arch-tabs { top: 64px; }
-  .arch-page h2 { font-size: 1.5rem; }
-  .story-content { padding: 32px 24px; }
+  .feature { padding: 24px 20px; }
+  .use-case { padding: 24px 20px; }
+
+  .pitch p { font-size: 1rem; }
+
+  .screenshots { padding: 40px 16px; }
+  .screenshot-grid { flex-direction: column; align-items: center; gap: 24px; }
+  .screenshot-grid img { width: 220px; }
+
+  .screenshot-wrapper {
+    max-width: 260px;
+    width: 100%;
+  }
+
+  .story-content { padding: 28px 20px; }
+  .story-content p { font-size: 1rem; }
+
+  .ios-waitlist { padding: 16px 16px 48px; }
+  .waitlist-card { padding: 36px 24px; max-width: 100%; }
+  .waitlist-card h2 { font-size: 1.4rem; }
+
+  .page-header { margin: 40px 0 28px; }
+  .page-header h1 { font-size: 2rem; }
+
+  .arch-tabs { top: 54px; padding: 12px 0; overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .arch-tabs::-webkit-scrollbar { display: none; }
+  .arch-tab { flex-shrink: 0; font-size: 0.8rem; padding: 6px 12px; border-radius: 16px; }
+
+  .arch-page h2 { font-size: 1.35rem; }
+  .arch-page h3 { font-size: 1.1rem; margin: 28px 0 12px; }
+  .arch-page .card { padding: 20px 20px; }
+  .arch-page .diagram { padding: 20px 16px; overflow-x: auto; }
+
+  .arch-page table { font-size: 0.85rem; display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .arch-page th, .arch-page td { padding: 10px 14px; white-space: nowrap; }
+  .arch-page td { white-space: normal; min-width: 120px; }
+
+  .arch-page pre { font-size: 0.75rem; padding: 14px; margin: 14px 0; }
+
+  .arch-page .til-entry { padding: 20px 16px; }
+  .arch-page .til-entry h4 { font-size: 1rem; flex-wrap: wrap; gap: 8px; }
+
+  .arch-page .step { padding: 16px 0; gap: 12px; }
+  .arch-page .step-num { min-width: 28px; height: 28px; font-size: 0.8rem; }
+  .arch-page .step-body { font-size: 0.95rem; }
+
+  .privacy-page h2 { font-size: 1.3rem; }
+  .privacy-page p, .privacy-page li { font-size: 1rem; }
+
+  .lightbox-close { top: 16px; right: 24px; font-size: 40px; }
+
+  footer { padding: 36px 16px; }
+}
+
+/* Mobile portrait (< 480px) */
+@media (max-width: 480px) {
+  main { padding: 0 12px 48px; }
+
+  .navbar { padding: 10px 12px; }
+  .nav-brand { font-size: 0.9rem; gap: 6px; }
+  .nav-brand img { width: 22px; height: 22px; }
+  .nav-links { gap: 10px; }
+  .nav-link { font-size: 0.75rem; padding: 4px 10px; }
+
+  .hero { padding: 48px 0 32px; }
+  .hero h1 { font-size: 1.75rem; margin-bottom: 10px; }
+  .hero::before { width: 320px; height: 400px; top: -60px; }
+  .tagline { font-size: 0.9rem; margin-bottom: 28px; }
+  .logo { width: 64px; margin-bottom: 24px; }
+  .store-badge img { height: 44px; }
+  .free-badge { font-size: 0.85rem; margin-top: 14px; }
+  .oss-tag { font-size: 0.75rem; padding: 5px 10px; gap: 6px; }
+
+  section { padding: 36px 0; }
+  section h2 { font-size: 1.4rem; margin-bottom: 24px; }
+
+  .feature { padding: 20px 16px; }
+  .feature h3 { font-size: 1rem; }
+  .feature p { font-size: 0.9rem; }
+  .feature-icon { width: 40px; height: 40px; font-size: 1.25rem; margin-bottom: 14px; }
+
+  .use-case { padding: 20px 16px; }
+  .use-case h3 { font-size: 1rem; }
+  .use-case p { font-size: 0.9rem; }
+  .use-case-icon { font-size: 1.5rem; margin-bottom: 12px; }
+
+  .pitch p { font-size: 0.95rem; }
+
+  .screenshots { padding: 32px 12px; margin: 24px 0; border-radius: var(--radius-lg); }
+  .screenshot-grid img { width: 180px; }
+  .screenshot-wrapper { max-width: 220px; }
+
+  .story-content { padding: 20px 16px; }
+  .story-content::before { width: 4px; }
+  .story-content p { font-size: 0.95rem; }
+  .story-author { gap: 12px; margin-top: 24px; padding-top: 18px; }
+  .story-avatar { width: 40px; height: 40px; }
+
+  .ios-waitlist { padding: 12px 12px 36px; }
+  .waitlist-card { padding: 28px 18px; border-radius: var(--radius-lg); }
+  .waitlist-card h2 { font-size: 1.25rem; }
+  .waitlist-card p { font-size: 0.9rem; margin-bottom: 24px; }
+  .listmonk-form .form-input { padding: 10px 12px; font-size: 0.9rem; }
+  .listmonk-form .form-submit { padding: 12px 20px; font-size: 0.95rem; }
+
+  .page-header { margin: 32px 0 24px; }
+  .page-header h1 { font-size: 1.6rem; }
+  .page-header .subtitle { font-size: 1rem; }
+  .page-header .updated { font-size: 0.85rem; }
+
+  .arch-page h2 { font-size: 1.2rem; margin: 40px 0 18px; }
+  .arch-page h2 .num { font-size: 0.9rem; padding: 3px 10px; }
+  .arch-page .card { padding: 16px; margin: 16px 0; }
+  .arch-page .diagram { padding: 16px 12px; }
+  .arch-page .flow-box { padding: 6px 10px; font-size: 0.75rem; }
+  .arch-page .flow-arrow { font-size: 1rem; }
+  .arch-page .flow-row { gap: 6px; }
+  .arch-page .steps { margin-top: 16px; }
+  .arch-page .step-body { font-size: 0.9rem; }
+  .arch-page .step-num { min-width: 26px; height: 26px; font-size: 0.75rem; }
+  .arch-page table { font-size: 0.8rem; }
+  .arch-page pre { font-size: 0.7rem; padding: 12px; }
+  .arch-page .til-entry { padding: 16px 14px; }
+  .arch-page .til-entry h4 { font-size: 0.95rem; }
+
+  .arch-tabs { padding: 10px 0; gap: 6px; }
+  .arch-tab { font-size: 0.75rem; padding: 5px 10px; }
+
+  .privacy-page section { padding: 24px 0; }
+  .privacy-page h2 { font-size: 1.15rem; }
+  .privacy-page p, .privacy-page li { font-size: 0.95rem; }
+
+  .lightbox-close { top: 12px; right: 16px; font-size: 36px; }
+  .lightbox { padding: 16px; }
+
+  footer { padding: 28px 16px; font-size: 0.85rem; }
+  .footer-links { flex-wrap: wrap; gap: 10px; }
 }
