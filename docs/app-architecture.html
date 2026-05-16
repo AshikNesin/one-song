@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>One Song — App Architecture</title>
+<style>
+  :root {
+    --bg: #fcfcfc;
+    --card: #ffffff;
+    --accent: #00a5ef;
+    --accent-glow: rgba(0, 165, 239, 0.1);
+    --text: #1a1a1a;
+    --text-dim: #6b7280;
+    --border: #e5e7eb;
+    --green: #059669;
+    --orange: #d97706;
+    --red: #dc2626;
+    --blue: #00a5ef;
+    --mono: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* --- Header --- */
+  .hero {
+    text-align: center;
+    padding: 80px 20px 60px;
+    position: relative;
+  }
+  .hero h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+  }
+  .hero .subtitle {
+    color: var(--text-dim);
+    font-size: 1.15rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .hero .hero-logo {
+    width: 80px;
+    height: auto;
+    border-radius: 22px;
+    margin-bottom: 20px;
+  }
+  .hero .store-badge {
+    display: inline-block;
+    margin-top: 24px;
+    transition: transform 0.2s ease;
+  }
+  .hero .store-badge:hover {
+    transform: scale(1.04);
+  }
+  .hero .store-badge img {
+    height: 54px;
+    width: auto;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 80px; height: 3px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  /* --- Tabs --- */
+  .tabs {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 30px 20px 10px;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+    border-bottom: 1px solid var(--border);
+  }
+  .tab {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+  }
+  .tab:hover { border-color: var(--accent); color: var(--text); }
+  .tab.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  /* --- Content --- */
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 30px 20px 80px;
+  }
+  .section { display: none; }
+  .section.active { display: block; animation: fadeUp 0.4s ease; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  h2 {
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+    color: #111;
+  }
+  h2 .num {
+    color: var(--accent);
+    font-size: 1.2rem;
+    margin-right: 8px;
+    font-family: var(--mono);
+  }
+  h3 {
+    font-size: 1.25rem;
+    margin: 32px 0 12px;
+    color: #111;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 20px 0;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 24px var(--accent-glow);
+  }
+  .card-title {
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-bottom: 10px;
+    color: #111;
+  }
+  .card-sub {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+  }
+
+  /* --- Code --- */
+  pre {
+    background: #f4f4f6;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    line-height: 1.6;
+    margin: 12px 0;
+  }
+  code { font-family: var(--mono); }
+  .inline-code {
+    background: #e0f7ff;
+    color: #0077b6;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.85em;
+  }
+  .kw { color: #0077b6; }
+  .str { color: var(--green); }
+  .fn { color: var(--blue); }
+  .cm { color: #8b8fa3; font-style: italic; }
+  .type { color: var(--orange); }
+  .num { color: #0077b6; }
+
+  /* --- Diagram --- */
+  .diagram {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 30px;
+    margin: 20px 0;
+    text-align: center;
+    overflow-x: auto;
+  }
+  .diagram-label {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 16px;
+  }
+
+  .flow-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 8px 0;
+  }
+  .flow-box {
+    background: #f4f4f6;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 0.8rem;
+    font-family: var(--mono);
+    white-space: nowrap;
+    transition: all 0.3s;
+  }
+  .flow-box.highlight { border-color: var(--accent); background: #e0f7ff; }
+  .flow-box.service { border-color: var(--blue); }
+  .flow-box.screen { border-color: var(--green); }
+  .flow-box.storage { border-color: var(--orange); }
+  .flow-arrow {
+    color: var(--accent);
+    font-size: 1.2rem;
+    animation: arrowPulse 1.5s ease-in-out infinite;
+  }
+  @keyframes arrowPulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+  }
+
+  .tree-line {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    text-align: left;
+    display: inline-block;
+    line-height: 2;
+    color: var(--text-dim);
+  }
+  .tree-line .dir { color: var(--accent); }
+  .tree-line .file { color: var(--text); }
+  .tree-line .comment { color: var(--text-dim); font-style: italic; }
+
+  /* --- Table --- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 0.88rem;
+  }
+  th {
+    text-align: left;
+    color: var(--text-dim);
+    font-weight: 600;
+    padding: 10px 14px;
+    border-bottom: 2px solid var(--border);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:hover td { background: rgba(0, 165, 239, 0.04); }
+
+  /* --- Badge --- */
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    margin: 0 4px;
+  }
+  .badge.rn { background: #e0f2fe; color: #0369a1; }
+  .badge.android { background: #ecfccb; color: #4d7c0f; }
+  .badge.ts { background: #dbeafe; color: #1e40af; }
+  .badge.service { background: #e0f7ff; color: var(--accent); }
+
+  /* --- TIL entry --- */
+  .til-entry {
+    background: var(--card);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 18px 22px;
+    margin: 16px 0;
+  }
+  .til-entry h4 {
+    font-size: 0.95rem;
+    color: #111;
+    margin-bottom: 6px;
+  }
+  .til-tag {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-right: 6px;
+    text-transform: uppercase;
+  }
+  .til-tag.bug { background: #fef2f2; color: var(--red); }
+  .til-tag.arch { background: #eff6ff; color: var(--blue); }
+  .til-tag.fix { background: #ecfdf5; color: var(--green); }
+
+  .steps { counter-reset: step; }
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .step:last-child { border-bottom: none; }
+  .step-num {
+    counter-increment: step;
+    width: 28px; height: 28px;
+    min-width: 28px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 800;
+  }
+  .step-body { flex: 1; padding-top: 2px; }
+  .step-body strong { color: #111; }
+
+  /* --- Mobile --- */
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 2rem; }
+    .tabs { gap: 4px; padding: 16px 8px 8px; }
+    .tab { padding: 6px 12px; font-size: 0.75rem; }
+    .container { padding: 20px 12px 60px; }
+    .flow-row { gap: 4px; }
+    .flow-box { font-size: 0.7rem; padding: 6px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <svg class="hero-logo" viewBox="0 0 1668 1580" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1668" height="1580" fill="#000" rx="200"/>
+    <path fill="#fff" d="M 799.403 173.338 L 876.3 173.093 C 890.018 173.084 905.855 172.478 919.39 174.205 C 923.417 174.719 928.096 178.024 930.059 181.322 C 932.237 184.981 932.843 195.616 932.838 199.873 C 932.765 261.696 932.738 323.601 932.718 385.416 L 932.718 756.34 L 932.966 1017.57 C 932.971 1058.08 934.187 1106.29 932.766 1146.22 C 932.287 1162.26 930.139 1178.21 926.355 1193.82 C 908.868 1265.86 866.272 1316.64 804.301 1356.28 C 695.586 1425.83 511.037 1431 436.787 1308.06 C 399.936 1233.74 416.238 1153.66 469.029 1091.99 C 521.195 1031.64 596.636 996.423 676.395 995.188 C 698.168 994.648 716.374 997.494 737.836 999.068 C 746.095 999.674 748.63 987.3 748.539 980.651 C 748.146 951.938 748.166 923.199 748.193 894.458 L 748.402 693.06 L 748.657 594.943 C 748.705 581.684 749.507 552.069 747.702 540.144 C 745.093 535.761 741.138 534.039 736.287 532.938 C 724.029 530.157 709.215 531.837 696.599 531.854 C 678.577 531.879 559.957 534.355 551.062 530.129 C 547.212 528.3 543.946 523.524 542.762 519.548 C 540.802 512.972 541.18 406.592 541.849 396.022 C 542.092 392.185 542.663 388.796 544.506 385.364 C 551.427 380.221 583.246 376.445 592.86 374.863 C 679.201 360.658 751.038 303.046 775.083 217.588 C 778.596 205.101 779.982 190.249 787.098 179.18 C 790.188 174.373 794.24 174.064 799.403 173.338 z"/>
+    <path fill="#fff" d="M 978.659 175.887 C 988.654 176.176 991.389 177.838 995.724 186.974 C 1001.9 200.234 1004.75 215.457 1009.58 229.201 C 1028.71 283.713 1066.17 326.138 1111.42 360.932 C 1168.58 404.879 1211.06 440.8 1233.01 511.567 C 1257.32 589.942 1246.62 663.143 1208.73 735.58 C 1204.29 744.953 1190.2 773.488 1176.77 762.707 C 1169.36 756.753 1172.19 723.205 1171.92 713.497 C 1171.72 705.796 1170.94 698.123 1169.58 690.541 C 1151.42 590.375 1078.73 543.953 987.704 530.824 C 971.974 528.556 971.097 518.471 971.066 504.534 C 970.924 441.26 971.089 377.834 971.09 314.483 L 971.062 233.232 C 971.062 218.67 970.822 203.748 971.444 189.206 C 971.739 182.312 973.78 180.051 978.659 175.887 z"/>
+  </svg>
+  <h1>One Song</h1>
+  <p class="subtitle">A minimal Android music player that plays a single song on repeat — built with React Native. This doc covers the full architecture, every component, service, and lesson learned.</p>
+  <a class="store-badge" href="https://play.google.com/store/apps/details?id=io.nesin.onesong" target="_blank" rel="noopener">
+    <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play">
+  </a>
+</div>
+
+<div class="tabs">
+  <button class="tab active" data-section="overview">Overview</button>
+  <button class="tab" data-section="architecture">Architecture</button>
+  <button class="tab" data-section="audio">Audio System</button>
+  <button class="tab" data-section="data">Data &amp; State</button>
+  <button class="tab" data-section="onboarding">Onboarding</button>
+  <button class="tab" data-section="services">Services</button>
+  <button class="tab" data-section="rn-basics">RN Basics</button>
+  <button class="tab" data-section="til">Lessons (TIL)</button>
+</div>
+
+<div class="container">
+
+<!-- ==================== OVERVIEW ==================== -->
+<section class="section active" id="section-overview">
+
+  <h2><span class="num">01</span> What is One Song?</h2>
+
+  <div class="card">
+    <p>One Song is an <strong>Android-only</strong> music player that does exactly one thing: <strong>play a single audio file on infinite loop</strong>. No playlists, no libraries, no complexity. Pick one song from your device and the app remembers it forever.</p>
+  </div>
+
+  <h3>Core Features</h3>
+  <table>
+    <tr><td><strong>Instant Auto-Play</strong></td><td>Song starts immediately on launch — no taps needed</td></tr>
+    <tr><td><strong>Infinite Loop</strong></td><td>Uses native <code class="inline-code">RepeatMode.Track</code> for gapless looping</td></tr>
+    <tr><td><strong>Sleep Timer</strong></td><td>5 to 60 minutes, configurable default in Settings</td></tr>
+    <tr><td><strong>Background Audio</strong></td><td>Plays while locked, in other apps, even when app is killed</td></tr>
+    <tr><td><strong>Notification Controls</strong></td><td>Play/Pause from lock screen and notification shade</td></tr>
+    <tr><td><strong>Seekable Progress</strong></td><td>Tap or drag the progress bar to jump anywhere</td></tr>
+    <tr><td><strong>Persistent Song</strong></td><td>Remembers your song even if you move or rename the original file</td></tr>
+    <tr><td><strong>In-App Updates</strong></td><td>Detects and installs Play Store updates without leaving the app</td></tr>
+  </table>
+
+  <h3>Tech Stack</h3>
+  <table>
+    <tr><th>Layer</th><th>Technology</th></tr>
+    <tr><td>Framework</td><td><span class="badge rn">React Native 0.85</span></td></tr>
+    <tr><td>Language</td><td><span class="badge ts">TypeScript</span></td></tr>
+    <tr><td>Audio Engine</td><td><code class="inline-code">react-native-track-player</code> (v5 alpha)</td></tr>
+    <tr><td>Navigation</td><td><code class="inline-code">@react-navigation/native-stack</code></td></tr>
+    <tr><td>State Persistence</td><td><code class="inline-code">@react-native-async-storage/async-storage</code></td></tr>
+    <tr><td>File Picker</td><td><code class="inline-code">@react-native-documents/picker</code></td></tr>
+    <tr><td>Permissions</td><td><code class="inline-code">react-native-permissions</code></td></tr>
+    <tr><td>Build</td><td><span class="badge android">Gradle (Android)</span></td></tr>
+  </table>
+
+  <h3>Why So Simple?</h3>
+  <div class="card">
+    <p>The app is intentionally single-purpose. Rather than building a general music player, One Song solves a specific problem: <strong>you have one song you want to listen to, always</strong> — a meditation track, a white noise loop, a focus beat. Every design decision flows from this constraint.</p>
+  </div>
+
+</section>
+
+<!-- ==================== ARCHITECTURE ==================== -->
+<section class="section" id="section-architecture">
+
+  <h2><span class="num">02</span> Architecture Overview</h2>
+
+  <div class="diagram">
+    <div class="diagram-label">Navigation &amp; Screen Flow</div>
+    <div class="flow-row">
+      <div class="flow-box highlight">index.js</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box highlight">App.tsx</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box highlight">AppNavigator</div>
+    </div>
+    <div class="flow-row" style="margin-top:16px;">
+      <div class="flow-box screen">OnboardingScreen</div>
+      <div class="flow-arrow">⇄</div>
+      <div class="flow-box screen">PlayerScreen</div>
+      <div class="flow-arrow">⇄</div>
+      <div class="flow-box screen">SettingsScreen</div>
+    </div>
+  </div>
+
+  <h3>Component Tree</h3>
+  <div class="card">
+    <pre><span class="dir">App</span>
+ └─ <span class="dir">SafeAreaProvider</span>
+      ├─ <span class="dir">StatusBar</span>
+      └─ <span class="dir">NavigationContainer</span>
+           └─ <span class="dir">Stack.Navigator</span>
+                ├─ <span class="file">"Onboarding" → OnboardingScreen</span>
+                │    <span class="cm">(Permission, File Pick, Save Song)</span>
+                ├─ <span class="file">"Player" → PlayerScreen</span>
+                │    ├─ <span class="file">ProgressBar</span>  <span class="cm">(tap/drag to seek)</span>
+                │    ├─ <span class="file">PlayPauseButton</span>  <span class="cm">(geometric toggle)</span>
+                │    └─ <span class="file">SleepTimerButton</span>
+                │         └─ <span class="file">TimerPresetPicker</span> <span class="cm">(modal chips)</span>
+                └─ <span class="file">"Settings" → SettingsScreen</span>
+                     <span class="cm">(Change Song, Timer Default, Reset)</span></pre>
+  </div>
+
+  <h3>File Dependency Graph</h3>
+  <div class="diagram" style="text-align:left; line-height:2;">
+    <div class="tree-line">
+<span class="dir">src/</span><br>
+├── <span class="file">App.tsx</span> <span class="comment">— entry point, mounts navigator</span><br>
+├── <span class="dir">navigation/</span><br>
+│&nbsp;&nbsp; └── <span class="file">AppNavigator.tsx</span> <span class="comment">— conditional onboarding vs player</span><br>
+├── <span class="dir">screens/</span><br>
+│&nbsp;&nbsp; ├── <span class="file">OnboardingScreen.tsx</span> <span class="comment">— song selection UI</span><br>
+│&nbsp;&nbsp; ├── <span class="file">PlayerScreen.tsx</span> <span class="comment">— main playback UI</span><br>
+│&nbsp;&nbsp; └── <span class="file">SettingsScreen.tsx</span> <span class="comment">— configuration</span><br>
+├── <span class="dir">components/</span><br>
+│&nbsp;&nbsp; ├── <span class="file">ProgressBar.tsx</span><br>
+│&nbsp;&nbsp; ├── <span class="file">PlayPauseButton.tsx</span><br>
+│&nbsp;&nbsp; └── <span class="file">SleepTimerButton.tsx</span><br>
+├── <span class="dir">services/</span><br>
+│&nbsp;&nbsp; ├── <span class="file">Playback.ts</span> <span class="comment">— state machine (module-level pub/sub)</span><br>
+│&nbsp;&nbsp; ├── <span class="file">PlaybackController.ts</span> <span class="comment">— React bridge hook</span><br>
+│&nbsp;&nbsp; ├── <span class="file">AudioService.ts</span> <span class="comment">— TrackPlayer wrapper</span><br>
+│&nbsp;&nbsp; ├── <span class="file">SongIntake.ts</span> <span class="comment">— file pick + metadata + save</span><br>
+│&nbsp;&nbsp; ├── <span class="file">MetadataAdapter.ts</span> <span class="comment">— ID3 + MP4 parsing</span><br>
+│&nbsp;&nbsp; ├── <span class="file">PermissionService.ts</span> <span class="comment">— runtime permissions</span><br>
+│&nbsp;&nbsp; ├── <span class="file">SleepTimer.ts</span> <span class="comment">— setTimeout timer + defaults</span><br>
+│&nbsp;&nbsp; ├── <span class="file">StorageService.ts</span> <span class="comment">— AsyncStorage wrapper</span><br>
+│&nbsp;&nbsp; └── <span class="file">InAppUpdateService.ts</span> <span class="comment">— Play Store updates</span><br>
+├── <span class="dir">utils/</span><br>
+│&nbsp;&nbsp; ├── <span class="file">constants.ts</span> <span class="comment">— timer presets, storage keys</span><br>
+│&nbsp;&nbsp; └── <span class="file">metadata.ts</span> <span class="comment">— ID3 + MP4 parsing logic</span><br>
+└── <span class="dir">types/</span><br>
+&nbsp;&nbsp;&nbsp; └── <span class="file">index.ts</span> <span class="comment">— Song, SleepTimerPreset interfaces</span>
+    </div>
+  </div>
+
+  <h3>Navigation Flow</h3>
+  <div class="diagram">
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body"><strong>App starts</strong> → AppNavigator checks <code class="inline-code">hasCompletedOnboarding()</code> from AsyncStorage</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body"><strong>First launch?</strong> → OnboardingScreen (pick song, grant permission, save)</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body"><strong>Returning user?</strong> → PlayerScreen (auto-load song, auto-play)</div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body"><strong>Settings</strong> accessible from Player via gear icon. Uses <code class="inline-code">CommonActions.reset()</code> — no back-stack accumulation</div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body"><strong>Corrupted song?</strong> (<code class="inline-code">initError: true</code>) → auto-redirects to Onboarding</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Design Decisions</h3>
+  <div class="card">
+    <div class="card-title">No Global State Library</div>
+    <p class="card-sub">No Redux, no Context, no Zustand. A simple module-level pub/sub pattern in <code class="inline-code">Playback.ts</code> is sufficient for a single-screen player app. State lives outside React, enabling the 1-second polling loop and audio focus handlers to work independently of component lifecycle.</p>
+  </div>
+  <div class="card">
+    <div class="card-title">1-Second Polling for Position</div>
+    <p class="card-sub">Instead of event-driven position tracking (complex with native audio), a simple 1-second <code class="inline-code">setInterval</code> reads position/duration from the native player. Trade-off: ~1% CPU overhead vs much simpler code.</p>
+  </div>
+  <div class="card">
+    <div class="card-title">Song Copied to App Cache</div>
+    <p class="card-sub">Selected files are copied to <code class="inline-code">cachesDirectory</code> to avoid Android content URI permission expiration on app reinstall. Trade-off: files may be cleared by OS under storage pressure, but simpler than <code class="inline-code">documentsDirectory</code>.</p>
+  </div>
+
+</section>
+
+<!-- ==================== AUDIO SYSTEM ==================== -->
+<section class="section" id="section-audio">
+
+  <h2><span class="num">03</span> Audio Playback System</h2>
+
+  <div class="card">
+    <p>The audio engine is <strong>react-native-track-player</strong>, which wraps Android's native <code class="inline-code">MediaSession</code> system. Audio runs in a <strong>foreground service</strong>, meaning playback continues even when the app is backgrounded or killed.</p>
+  </div>
+
+  <h3>How react-native-track-player Works</h3>
+  <div class="diagram">
+    <div class="diagram-label">Audio System Flow</div>
+    <div class="flow-row">
+      <div class="flow-box highlight">AndroidManifest.xml</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box service">MusicService</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box highlight">TrackPlayer API</div>
+    </div>
+    <div class="flow-row" style="margin-top:12px;">
+      <div class="flow-box service">AudioService.ts</div>
+      <div class="flow-arrow">↔</div>
+      <div class="flow-box highlight">Native Audio Engine</div>
+      <div class="flow-arrow">↔</div>
+      <div class="flow-box service">Android MediaSession</div>
+    </div>
+    <p style="margin-top:16px; font-size:0.82rem; color:var(--text-dim);">
+      Audio runs in a foreground service — survives app kill. Notification auto-generated by TrackPlayer.
+    </p>
+  </div>
+
+  <h3>Track Lifecycle</h3>
+  <table>
+    <tr><th>Step</th><th>API Call</th><th>What Happens</th></tr>
+    <tr>
+      <td><strong>1. Setup</strong></td>
+      <td><code class="inline-code">TrackPlayer.setupPlayer()</code></td>
+      <td>Initializes the native audio engine. Configures capabilities (<code class="inline-code">Play, Pause, SeekTo</code>), sets <code class="inline-code">RepeatMode.Track</code> for infinite loop, and sets <code class="inline-code">StopPlaybackAndRemoveNotification</code> for app-kill behavior</td>
+    </tr>
+    <tr>
+      <td><strong>2. Load</strong></td>
+      <td><code class="inline-code">TrackPlayer.reset() + add()</code></td>
+      <td>Clears any existing track queue, adds a single track with <code class="inline-code">{ id, url, title, artist, artwork, duration }</code></td>
+    </tr>
+    <tr>
+      <td><strong>3. Play</strong></td>
+      <td><code class="inline-code">TrackPlayer.play()</code></td>
+      <td>Starts playback. Android creates a media notification automatically showing track info and Play/Pause controls</td>
+    </tr>
+    <tr>
+      <td><strong>4. Poll</strong></td>
+      <td><code class="inline-code">getProgress() + getPlaybackState()</code></td>
+      <td>Every 1 second, reads current position/duration and play state from the native player, updates React state</td>
+    </tr>
+    <tr>
+      <td><strong>5. Loop</strong></td>
+      <td><code class="inline-code">RepeatMode.Track</code></td>
+      <td>Native looping at the audio engine level — no JS intervention needed, gapless</td>
+    </tr>
+  </table>
+
+  <h3>Audio Focus Handling</h3>
+  <div class="card">
+    <div class="card-title">What happens when you get a phone call?</div>
+    <p>TrackPlayer integrates with Android's audio focus system. When another app requests focus:</p>
+    <ul style="padding-left:20px; margin-top:8px;">
+      <li><strong>Transient focus loss</strong> (notification sound, alarm) → auto-pause, auto-resume when focus regained</li>
+      <li><strong>Permanent focus loss</strong> (phone call, other music app) → pause and stay paused</li>
+      <li><strong>Focus regained</strong> → resume playback automatically (transient only)</li>
+    </ul>
+    <p style="margin-top:8px; font-size:0.85rem; color:var(--text-dim);">Handled via <code class="inline-code">useTrackPlayerEvents([Event.RemoteDuck])</code> → maps to <code class="inline-code">AudioFocusEvent</code> objects → updates module-level state.</p>
+  </div>
+
+  <h3>Remote Controls (Notification)</h3>
+  <p>The notification shade and lock screen show:</p>
+  <ul style="padding-left:20px; margin-top:6px;">
+    <li>Album artwork (from ID3/MP4 metadata)</li>
+    <li>Track title &amp; artist</li>
+    <li>Play/Pause button</li>
+  </ul>
+  <p style="margin-top:6px; font-size:0.85rem; color:var(--text-dim);">These are auto-managed by TrackPlayer. Tapping a notification button triggers <code class="inline-code">Event.RemotePlay</code> / <code class="inline-code">Event.RemotePause</code> which our <code class="inline-code">useRemotePlayPause()</code> hook handles.</p>
+
+  <h3>Android Native Configuration</h3>
+  <pre><span class="cm">&lt;!-- AndroidManifest.xml --&gt;</span>
+<span class="kw">&lt;service</span>
+  android:name=<span class="str">"com.doublesymmetry.trackplayer.service.MusicService"</span>
+  android:foregroundServiceType=<span class="str">"mediaPlayback"</span>
+  android:exported=<span class="str">"true"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;intent-filter&gt;</span>
+    <span class="kw">&lt;action</span> android:name=<span class="str">"android.intent.action.MEDIA_BUTTON"</span> <span class="kw">/&gt;</span>
+  <span class="kw">&lt;/intent-filter&gt;</span>
+<span class="kw">&lt;/service&gt;</span>
+
+<span class="cm">// index.js (JS-side registration)</span>
+TrackPlayer.<span class="fn">registerPlaybackService</span>(() => <span class="kw">async</span> () => {});</pre>
+  <p style="font-size:0.82rem; color:var(--text-dim);">The <code class="inline-code">MEDIA_BUTTON</code> intent filter allows headset buttons to control playback. The JS registration is required by the library even if the callback is empty — all event handling happens via hooks.</p>
+
+</section>
+
+<!-- ==================== DATA & STATE ==================== -->
+<section class="section" id="section-data">
+
+  <h2><span class="num">04</span> Data &amp; State Management</h2>
+
+  <div class="card">
+    <p>One Song uses a <strong>module-level pub/sub</strong> pattern instead of Redux, Context, or Zustand. This is a deliberate choice — the app is a single-screen player with simple state.</p>
+  </div>
+
+  <h3>The Pub/Sub Pattern</h3>
+  <div class="diagram">
+    <div class="diagram-label">State Flow</div>
+    <div class="flow-row">
+      <div class="flow-box highlight">Playback.ts</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box" style="border-color:var(--accent);">State Object + Listeners Set</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box service">PlaybackController.ts</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box screen">PlayerScreen.tsx</div>
+    </div>
+    <div class="flow-row" style="margin-top:8px; justify-content:flex-start;">
+      <span style="font-size:0.78rem; color:var(--text-dim);">1. State changes → <code class="inline-code">notify()</code> → all <code class="inline-code">subscribe()</code>d React components re-render</span>
+    </div>
+  </div>
+
+  <pre><span class="cm">// Playback.ts — simplified</span>
+<span class="kw">let</span> state: <span class="type">PlaybackState</span> = { isPlaying: <span class="kw">false</span>, position: <span class="num">0</span>, <span class="cm">/* ... */</span> };
+<span class="kw">const</span> listeners = <span class="kw">new</span> <span class="type">Set</span>&lt;(s: <span class="type">PlaybackState</span>) => <span class="kw">void</span>&gt;();
+
+<span class="kw">export function</span> <span class="fn">subscribe</span>(cb) { listeners.add(cb); <span class="kw">return</span> () => listeners.delete(cb); }
+<span class="kw">export function</span> <span class="fn">getState</span>() { <span class="kw">return</span> state; }
+
+<span class="kw">function</span> <span class="fn">notify</span>() { listeners.forEach(cb => cb(state)); }
+
+<span class="cm">// Usage in React hook:</span>
+<span class="kw">export function</span> <span class="fn">usePlaybackController</span>() {
+  <span class="kw">const</span> [s, setS] = useState(getState());
+  useEffect(() => subscribe(setS), []);  <span class="cm">// React re-renders on every notify()</span>
+}</pre>
+
+  <h3>State Shape</h3>
+  <table>
+    <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+    <tr><td><code class="inline-code">isPlaying</code></td><td>boolean</td><td>Current playback state</td></tr>
+    <tr><td><code class="inline-code">position</code></td><td>number</td><td>Current position in seconds</td></tr>
+    <tr><td><code class="inline-code">duration</code></td><td>number</td><td>Total track duration in seconds</td></tr>
+    <tr><td><code class="inline-code">isReady</code></td><td>boolean</td><td>True after <code class="inline-code">init()</code> completes</td></tr>
+    <tr><td><code class="inline-code">hasSong</code></td><td>boolean</td><td>Whether a song is saved</td></tr>
+    <tr><td><code class="inline-code">song</code></td><td>Song | null</td><td>The persisted song object</td></tr>
+    <tr><td><code class="inline-code">initError</code></td><td>boolean</td><td>Triggers redirect back to Onboarding</td></tr>
+  </table>
+
+  <h3>AsyncStorage Persistence</h3>
+  <table>
+    <tr><th>Key</th><th>Value</th><th>Purpose</th></tr>
+    <tr><td><code class="inline-code">@onesong:onboarding_complete</code></td><td><code class="inline-code">"true"</code> / <code class="inline-code">"false"</code></td><td>Gates onboarding vs player</td></tr>
+    <tr><td><code class="inline-code">@onesong:selected_song</code></td><td><code class="inline-code">JSON.stringify(Song)</code></td><td>Full song metadata</td></tr>
+    <tr><td><code class="inline-code">@onesong:sleep_timer</code></td><td><code class="inline-code">String(minutes)</code></td><td>Default timer duration</td></tr>
+    <tr><td><code class="inline-code">@onesong:autoplay_enabled</code></td><td><code class="inline-code">String(boolean)</code></td><td>Auto-play toggle</td></tr>
+  </table>
+
+  <h3>Init Sequence (on Player mount)</h3>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body"><strong><code class="inline-code">setupPlayer()</code></strong> — Initialize TrackPlayer's native audio session (slowest step)</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body"><strong><code class="inline-code">getSong()</code></strong> — Read saved Song from AsyncStorage</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body"><strong><code class="inline-code">loadSong()</code></strong> — Add the track to TrackPlayer's queue</div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body"><strong><code class="inline-code">restoreTimer()</code></strong> — Re-arm the sleep timer if one was active</div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body"><strong><code class="inline-code">play()</code></strong> — Auto-play if enabled</div>
+    </div>
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-body"><strong><code class="inline-code">startPolling()</code></strong> — Begin 1-second position/duration polling</div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ==================== ONBOARDING ==================== -->
+<section class="section" id="section-onboarding">
+
+  <h2><span class="num">05</span> Onboarding Flow</h2>
+
+  <div class="diagram">
+    <div class="diagram-label">Song Selection Pipeline</div>
+    <div class="flow-row">
+      <div class="flow-box highlight">Permission</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box highlight">File Picker</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box highlight">Copy to Cache</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box highlight">Extract Metadata</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box highlight">Save to Storage</div>
+    </div>
+  </div>
+
+  <h3>Step by Step</h3>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Request Permission</strong><br>
+        <span style="font-size:0.85rem; color:var(--text-dim);">
+          Android 13+ → <code class="inline-code">READ_MEDIA_AUDIO</code><br>
+          Android 12- → <code class="inline-code">READ_EXTERNAL_STORAGE</code><br>
+          If permanently denied → Alert with "Open Settings" button → <code class="inline-code">Linking.openSettings()</code>
+        </span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Pick Audio File</strong><br>
+        <span style="font-size:0.85rem; color:var(--text-dim);">Uses <code class="inline-code">@react-native-documents/picker</code> → <code class="inline-code">pick({ type: ['audio/*'] })</code> → system file picker dialog</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Copy to App Cache</strong><br>
+        <span style="font-size:0.85rem; color:var(--text-dim);">Copies selected file to <code class="inline-code">cachesDirectory</code> → creates persistent <code class="inline-code">file://</code> URI. This solves Android's <code class="inline-code">SecurityException</code> when content URI permissions expire.</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>Extract Metadata</strong><br>
+        <span style="font-size:0.85rem; color:var(--text-dim);">
+          <strong>MP3:</strong> <code class="inline-code">id3-parser</code> reads ID3 tags (reads first 256KB) → title, artist, artwork<br>
+          <strong>M4A/MP4:</strong> Custom MP4 atom parser walks <code class="inline-code">moov→udta→meta→ilst</code> hierarchy → <code class="inline-code">©nam</code>, <code class="inline-code">©ART</code>, <code class="inline-code">covr</code> atoms<br>
+          <strong>Fallback:</strong> Regex parse filename pattern <code class="inline-code">artist - title.mp3</code><br>
+          Artwork saved as <code class="inline-code">file://</code> URI in cache (not base64 in AsyncStorage)
+        </span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <strong>Save &amp; Navigate</strong><br>
+        <span style="font-size:0.85rem; color:var(--text-dim);"><code class="inline-code">complete(song)</code> → AsyncStorage → <code class="inline-code">CommonActions.reset</code> to Player screen</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Dual Metadata Extraction: ID3 + MP4</div>
+    <p style="font-size:0.85rem; color:var(--text-dim);">
+      <code class="inline-code">id3-parser</code> only handles MP3 ID3 tags. M4A/MP4 files store metadata in MP4 atoms — a completely different binary structure. The custom <code class="inline-code">parseMp4Metadata()</code> walks the atom tree to find <code class="inline-code">moov/udta/meta/ilst</code>, then reads child atoms for title (<code class="inline-code">©nam</code>), artist (<code class="inline-code">©ART</code>), and cover art (<code class="inline-code">covr</code>).
+    </p>
+  </div>
+
+</section>
+
+<!-- ==================== SERVICES ==================== -->
+<section class="section" id="section-services">
+
+  <h2><span class="num">06</span> Service Layer</h2>
+
+  <h3>AudioService.ts</h3>
+  <div class="card">
+    <p>Thin wrapper around <code class="inline-code">react-native-track-player</code>. Provides <code class="inline-code">setupPlayer()</code>, <code class="inline-code">loadSong()</code>, <code class="inline-code">play()</code>, <code class="inline-code">pause()</code>, <code class="inline-code">seekTo()</code>, <code class="inline-code">getProgress()</code>, <code class="inline-code">getPlaybackState()</code>. Also exposes React hooks: <code class="inline-code">useRemotePlayPause()</code> for notification controls and <code class="inline-code">useAudioFocus()</code> for inter-app audio handling.</p>
+  </div>
+
+  <h3>Playback.ts + PlaybackController.ts</h3>
+  <div class="card">
+    <p><strong>Playback.ts</strong> is the core state machine — NOT a React hook. Module-level state + listeners. Orchestrates <code class="inline-code">init()</code>, <code class="inline-code">togglePlay()</code>, <code class="inline-code">seek()</code>, <code class="inline-code">startPolling()</code>, and <code class="inline-code">handleAudioFocus()</code>.</p>
+    <p style="margin-top:8px;"><strong>PlaybackController.ts</strong> is the React bridge — <code class="inline-code">usePlaybackController()</code> hook that subscribes to Playback state changes, runs init on mount, starts/stops polling, and registers remote/audio focus handlers.</p>
+  </div>
+
+  <h3>SongIntake.ts</h3>
+  <div class="card">
+    <p>The file-picking pipeline: <code class="inline-code">intake()</code> orchestrates permission → file pick → copy to cache → metadata extraction → returns Song. <code class="inline-code">complete()</code> persists to AsyncStorage. <code class="inline-code">getSong()</code>, <code class="inline-code">hasCompletedOnboarding()</code>, <code class="inline-code">clearSongData()</code> manage the onboarding gate.</p>
+  </div>
+
+  <h3>SleepTimer.ts</h3>
+  <div class="card">
+    <p>Simple <code class="inline-code">setTimeout</code>-based timer. <code class="inline-code">setTimer(minutes, onExpire)</code> sets a timeout. <code class="inline-code">restoreTimer()</code> re-arms on app launch so it survives restarts. <code class="inline-code">saveDefaultTimer()</code> / <code class="inline-code">loadDefaultTimer()</code> persist the default preference to AsyncStorage.</p>
+  </div>
+
+  <h3>StorageService.ts</h3>
+  <div class="card">
+    <p>Typed AsyncStorage wrapper: <code class="inline-code">getItem(key)</code>, <code class="inline-code">setItem(key, value)</code>, <code class="inline-code">removeItem(key)</code>, <code class="inline-code">multiRemove(keys)</code>. All keys prefixed with <code class="inline-code">@onesong:</code>.</p>
+  </div>
+
+  <h3>PermissionService.ts</h3>
+  <div class="card">
+    <p>Wraps <code class="inline-code">react-native-permissions</code>. Requests <code class="inline-code">READ_MEDIA_AUDIO</code> (Android 13+) or <code class="inline-code">READ_EXTERNAL_STORAGE</code> (Android 12-). Detects permanently denied state and offers an "Open Settings" path.</p>
+  </div>
+
+  <h3>InAppUpdateService.ts</h3>
+  <div class="card">
+    <p>Wraps <code class="inline-code">sp-react-native-in-app-updates</code> (patched). Only active in non-dev builds. Checks for updates on app launch, handles FLEXIBLE (background download + install) and IMMEDIATE (blocking) update types. Multiple bugs fixed via patch-package (see TIL section).</p>
+  </div>
+
+</section>
+
+<!-- ==================== REACT NATIVE BASICS ==================== -->
+<section class="section" id="section-rn-basics">
+
+  <h2><span class="num">07</span> React Native Basics (for newcomers)</h2>
+
+  <h3>What is React Native?</h3>
+  <div class="card">
+    <p>React Native lets you write mobile apps using React-style JavaScript/TypeScript that renders to <strong>real native UI components</strong>, not web views. A <code class="inline-code">&lt;Text&gt;</code> becomes an Android <code class="inline-code">TextView</code>. A <code class="inline-code">&lt;View&gt;</code> becomes an Android <code class="inline-code">ViewGroup</code>. This gives you native performance with a React development experience.</p>
+  </div>
+
+  <h3>Key Concepts Used in One Song</h3>
+
+  <div class="card">
+    <div class="card-title">JS Thread vs Native Thread</div>
+    <p>React Native runs JavaScript on a separate thread from the native UI. This is why <strong>audio can keep playing even when the JS thread is frozen</strong> — the native audio service runs independently. TrackPlayer operates entirely on the native side, with JS only sending commands and receiving status updates.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Native Modules</div>
+    <p>Libraries like <code class="inline-code">react-native-track-player</code> and <code class="inline-code">react-native-device-info</code> have both <strong>JavaScript code</strong> (the API you call) and <strong>native Java/Kotlin code</strong> (the actual implementation). React Native "autolinks" these at build time. If ProGuard/R8 obfuscates the Java classes, the JS side gets <code class="inline-code">null</code> back — a common source of release-build-only crashes.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Hermes JS Engine</div>
+    <p>React Native 0.85 defaults to <strong>Hermes</strong>, a lightweight JavaScript engine optimized for mobile. Unlike browser engines (V8/JSC), Hermes doesn't define <code class="inline-code">window</code> as a global. Accessing <code class="inline-code">window.document</code> throws <code class="inline-code">ReferenceError</code> instead of returning <code class="inline-code">undefined</code> — use <code class="inline-code">typeof window === 'undefined'</code> guards.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Path Aliases (@/)</div>
+    <p>One Song uses <code class="inline-code">@/</code> as an alias for <code class="inline-code">src/</code>. This requires three separate configs:</p>
+    <ul style="padding-left:20px; margin-top:6px; font-size:0.85rem; color:var(--text-dim);">
+      <li><strong>tsconfig.json</strong> — <code class="inline-code">"paths": {"@/*": ["./src/*"]}</code> for type-checking</li>
+      <li><strong>metro.config.js</strong> — custom <code class="inline-code">resolveRequest</code> for bundling at runtime</li>
+      <li><strong>jest.config.js</strong> — <code class="inline-code">moduleNameMapper</code> for test resolution</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">AsyncStorage</div>
+    <p>React Native's equivalent of <code class="inline-code">localStorage</code>. It's a simple key-value store backed by native SQLite/SharedPreferences. All values are strings — you <code class="inline-code">JSON.stringify</code> objects before storing and <code class="inline-code">JSON.parse</code> when reading. One Song uses it for persisting the selected song, onboarding state, sleep timer default, and auto-play preference.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">AndroidManifest.xml</div>
+    <p>The central configuration file for Android apps. Declares app name, icon, permissions (<code class="inline-code">READ_MEDIA_AUDIO</code>, <code class="inline-code">POST_NOTIFICATIONS</code>), services (<code class="inline-code">MusicService</code> for audio), and the launcher activity. Every native library that needs background services declares its hooks here.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">ProGuard / R8 (Code Obfuscation)</div>
+    <p>Release builds run R8, which removes unused code and renames Java classes to short names. This breaks React Native's autolinking for native modules unless you add <strong>keep rules</strong> in <code class="inline-code">proguard-rules.pro</code>. Every native module library needs a keep rule. The TIL section has detailed examples of crashes caused by missing rules.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">ABI Splitting</div>
+    <p>Android devices use different CPU architectures (arm64-v8a, x86, etc.). Native libraries (<code class="inline-code">.so</code> files) must match the architecture. Building for all architectures creates a 56MB APK — but the device only needs one. ABI splitting builds separate APKs per architecture, reducing size to ~14MB for modern phones.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">versionCode vs versionName</div>
+    <p><strong>versionCode</strong> (integer) is Google Play's internal identifier — must be strictly increasing for every upload. <strong>versionName</strong> (string like "1.0.1") is what users see. Both must be bumped together for every release.</p>
+  </div>
+
+</section>
+
+<!-- ==================== TIL ==================== -->
+<section class="section" id="section-til">
+
+  <h2><span class="num">08</span> Key Lessons (from TIL.md)</h2>
+  <p style="color:var(--text-dim); margin-bottom:24px;">Every bug, fix, and architectural insight from building One Song. The full log is in <code class="inline-code">TIL.md</code> — these are the most impactful entries.</p>
+
+  <div class="til-entry">
+    <h4><span class="til-tag bug">Bug</span> Android 12+ Double Splash Screen</h4>
+    <p style="font-size:0.85rem; color:var(--text-dim);">Android 12+ mandates a system splash screen that shows the app icon before <code class="inline-code">onCreate()</code> runs. Having both a system splash <em>and</em> a custom <code class="inline-code">SplashActivity</code> caused a double flash. Fix: removed <code class="inline-code">SplashActivity</code>, made <code class="inline-code">MainActivity</code> the launcher, customized the system splash via <code class="inline-code">values-v31/styles.xml</code>. The system splash <strong>cannot render text</strong> — text must be shown in the RN app.</p>
+  </div>
+
+  <div class="til-entry">
+    <h4><span class="til-tag bug">Bug</span> ProGuard/R8 Crashes on Release Builds</h4>
+    <p style="font-size:0.85rem; color:var(--text-dim);">R8 obfuscates Java classes in release builds, renaming native module package classes and stripping <code class="inline-code">@ReactModule</code> annotations. This breaks React Native's autolinking. Fix: add <code class="inline-code">-keep</code> rules in <code class="inline-code">proguard-rules.pro</code> for <strong>every</strong> native module library. Debug builds don't run ProGuard, so these crashes only appear in production.</p>
+  </div>
+
+  <div class="til-entry">
+    <h4><span class="til-tag fix">Fix</span> In-App Update Stuck in DEVELOPER_TRIGGERED</h4>
+    <p style="font-size:0.85rem; color:var(--text-dim);">The <code class="inline-code">sp-react-native-in-app-updates</code> library had two bugs: <code class="inline-code">checkNeedsUpdate()</code> returned <code class="inline-code">shouldUpdate: false</code> for <code class="inline-code">DEVELOPER_TRIGGERED</code> state, and <code class="inline-code">startUpdate()</code> rejected it. Patched via <code class="inline-code">pnpm patch</code> at both JS and Java levels. Lesson: <code class="inline-code">DEVELOPER_TRIGGERED</code> is a legitimate update state, not an error.</p>
+  </div>
+
+  <div class="til-entry">
+    <h4><span class="til-tag fix">Fix</span> Flexible Update Downloaded But Never Installed</h4>
+    <p style="font-size:0.85rem; color:var(--text-dim);">You must call <code class="inline-code">installUpdate()</code> after the download completes. Old code was fire-and-forget — no status listener registered. Fix: register <code class="inline-code">addStatusUpdateListener</code> <strong>before</strong> <code class="inline-code">startUpdate()</code>, call <code class="inline-code">installUpdate()</code> on <code class="inline-code">DOWNLOADED</code> status. The listener must come first — status callbacks can fire synchronously for already-completed states.</p>
+  </div>
+
+  <div class="til-entry">
+    <h4><span class="til-tag fix">Fix</span> Release APK Signed with Debug Certificate</h4>
+    <p style="font-size:0.85rem; color:var(--text-dim);">React Native's starter template defaults release builds to <code class="inline-code">signingConfigs.debug</code>. Must change to <code class="inline-code">signingConfigs.release</code> with env-var-based credential injection. Always validate credentials before the Gradle build — silent failures produce invalid signatures.</p>
+  </div>
+
+  <div class="til-entry">
+    <h4><span class="til-tag arch">Arch</span> Metadata Extraction: ID3 + MP4 Dual Path</h4>
+    <p style="font-size:0.85rem; color:var(--text-dim);"><code class="inline-code">id3-parser</code> only handles MP3. M4A/MP4 files store metadata in a completely different binary format (MP4 atoms). Custom parser walks <code class="inline-code">moov→udta→meta→ilst</code> to find <code class="inline-code">©nam</code>, <code class="inline-code">©ART</code>, <code class="inline-code">covr</code> atoms. Key gotcha: <code class="inline-code">meta</code> is a "full box" with a 4-byte header before children; <code class="inline-code">udta</code> is not. MP4 <code class="inline-code">data</code> atom type indicator is the first byte, not a uint32. Artwork saved as <code class="inline-code">file://</code> URI (not base64).</p>
+  </div>
+
+  <div class="til-entry">
+    <h4><span class="til-tag arch">Arch</span> Hermes: No window Global</h4>
+    <p style="font-size:0.85rem; color:var(--text-dim);">Hermes doesn't define <code class="inline-code">window</code>. Accessing an undeclared variable throws <code class="inline-code">ReferenceError</code> (not <code class="inline-code">undefined</code> like in JSC/browsers). RN 0.85's DevTools setup code hit this. Fix: <code class="inline-code">typeof window === 'undefined'</code> guard, persisted via <code class="inline-code">pnpm patch</code>.</p>
+  </div>
+
+  <div class="til-entry">
+    <h4><span class="til-tag fix">Fix</span> APK Size: 56MB → 14MB</h4>
+    <p style="font-size:0.85rem; color:var(--text-dim);">Building for all 4 CPU architectures packs 4 copies of every native library. ABI splitting targeting only <code class="inline-code">arm64-v8a</code> reduces APK size by 75%. Modern phones (2015+) all use arm64. Google Play's AAB format does this per-device automatically.</p>
+  </div>
+
+  <div class="til-entry">
+    <h4><span class="til-tag bug">Bug</span> versionCode Must Be Unique Per Upload</h4>
+    <p style="font-size:0.85rem; color:var(--text-dim);">Google Play rejects uploads with duplicate <code class="inline-code">versionCode</code>. Only <code class="inline-code">versionName</code> was bumped; <code class="inline-code">versionCode</code> stayed at 1. Both must be bumped: <code class="inline-code">versionCode</code> for Play Store uniqueness, <code class="inline-code">versionName</code> for users. Automated via <code class="inline-code">scripts/bump-android-version.sh</code>.</p>
+  </div>
+
+  <div class="til-entry">
+    <h4><span class="til-tag arch">Arch</span> Java 17 Required for RN 0.85</h4>
+    <p style="font-size:0.85rem; color:var(--text-dim);">React Native's New Architecture (TurboModules/Fabric) + NDK/CMake is sensitive to Java version. Java 25 (latest) throws <code class="inline-code">restricted method</code> errors. Pin Gradle to OpenJDK 17 via <code class="inline-code">org.gradle.java.home</code> in <code class="inline-code">gradle.properties</code> and export <code class="inline-code">JAVA_HOME</code> for the CLI. System default Java can stay at 25 — only the Android build needs 17.</p>
+  </div>
+
+</section>
+
+</div>
+
+<!-- ==================== FOOTER ==================== -->
+<div style="text-align:center; padding:40px 20px; border-top:1px solid var(--border); color:var(--text-dim); font-size:0.82rem;">
+  <p>One Song · v1.0.1 · <a href="https://play.google.com/store/apps/details?id=io.nesin.onesong" style="color:var(--accent); text-decoration:none;">Google Play</a> · MIT License</p>
+  <p style="margin-top:6px;">Full TIL.md, source code, and docs at the project repository</p>
+</div>
+
+<script>
+// Tab switching
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const section = tab.dataset.section;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('section-' + section).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});
+
+// Intersection Observer for card animations
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = '1';
+      entry.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.card, .til-entry, .diagram, table, pre').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(12px)';
+  el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+  observer.observe(el);
+});
+
+// Show initial visible elements immediately
+setTimeout(() => {
+  document.querySelectorAll('.card, .til-entry, .diagram, table, pre').forEach(el => {
+    if (el.getBoundingClientRect().top < window.innerHeight) {
+      el.style.opacity = '1';
+      el.style.transform = 'translateY(0)';
+    }
+  });
+}, 100);
+</script>
+
+</body>
+</html>

@@ -1,4 +1,3 @@
-import TrackPlayer from 'react-native-track-player';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   setTimer,
@@ -7,9 +6,10 @@ import {
   saveDefaultTimer,
   restoreTimer,
 } from '@/services/SleepTimer';
-import { STORAGE_KEYS } from '@/utils/constants';
 
 describe('SleepTimer', () => {
+  const mockOnExpire = jest.fn();
+
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
@@ -20,33 +20,33 @@ describe('SleepTimer', () => {
   });
 
   describe('active timer', () => {
-    it('sets a timer that pauses playback', async () => {
-      await setTimer(0.05); // 3 seconds for fast test
-      expect(TrackPlayer.pause).not.toHaveBeenCalled();
+    it('sets a timer that calls onExpire', async () => {
+      await setTimer(0.05, mockOnExpire); // 3 seconds for fast test
+      expect(mockOnExpire).not.toHaveBeenCalled();
       jest.advanceTimersByTime(3000);
-      expect(TrackPlayer.pause).toHaveBeenCalled();
+      expect(mockOnExpire).toHaveBeenCalled();
     });
 
     it('clears existing timer before setting new one', async () => {
-      await setTimer(1);
-      await setTimer(2);
+      await setTimer(1, mockOnExpire);
+      await setTimer(2, mockOnExpire);
       jest.advanceTimersByTime(60000);
-      expect(TrackPlayer.pause).not.toHaveBeenCalled();
+      expect(mockOnExpire).not.toHaveBeenCalled();
       jest.advanceTimersByTime(60000);
-      expect(TrackPlayer.pause).toHaveBeenCalledTimes(1);
+      expect(mockOnExpire).toHaveBeenCalledTimes(1);
     });
 
     it('does nothing when minutes is null', async () => {
-      await setTimer(null);
+      await setTimer(null, mockOnExpire);
       jest.advanceTimersByTime(100000);
-      expect(TrackPlayer.pause).not.toHaveBeenCalled();
+      expect(mockOnExpire).not.toHaveBeenCalled();
     });
 
     it('clears sleep timer', async () => {
-      await setTimer(1);
+      await setTimer(1, mockOnExpire);
       await clearTimer();
       jest.advanceTimersByTime(70000);
-      expect(TrackPlayer.pause).not.toHaveBeenCalled();
+      expect(mockOnExpire).not.toHaveBeenCalled();
     });
   });
 
@@ -55,33 +55,33 @@ describe('SleepTimer', () => {
       AsyncStorage.getItem.mockResolvedValue('15');
       const result = await loadDefaultTimer();
       expect(result).toBe(15);
-      expect(AsyncStorage.getItem).toHaveBeenCalledWith(STORAGE_KEYS.SLEEP_TIMER);
+      expect(AsyncStorage.getItem).toHaveBeenCalledWith('@onesong:sleep_timer');
     });
 
     it('sets default sleep timer in storage', async () => {
       await saveDefaultTimer(30);
-      expect(AsyncStorage.setItem).toHaveBeenCalledWith(STORAGE_KEYS.SLEEP_TIMER, '30');
+      expect(AsyncStorage.setItem).toHaveBeenCalledWith('@onesong:sleep_timer', '30');
     });
 
     it('clears default sleep timer when null', async () => {
       await saveDefaultTimer(null);
-      expect(AsyncStorage.removeItem).toHaveBeenCalledWith(STORAGE_KEYS.SLEEP_TIMER);
+      expect(AsyncStorage.removeItem).toHaveBeenCalledWith('@onesong:sleep_timer');
     });
   });
 
   describe('restoreTimer', () => {
-    it('sets active timer from default', async () => {
+    it('sets active timer from default with onExpire callback', async () => {
       AsyncStorage.getItem.mockResolvedValue('10');
-      await restoreTimer();
+      await restoreTimer(mockOnExpire);
       jest.advanceTimersByTime(600000);
-      expect(TrackPlayer.pause).toHaveBeenCalled();
+      expect(mockOnExpire).toHaveBeenCalled();
     });
 
     it('does nothing when no default is set', async () => {
       AsyncStorage.getItem.mockResolvedValue(null);
-      await restoreTimer();
+      await restoreTimer(mockOnExpire);
       jest.advanceTimersByTime(100000);
-      expect(TrackPlayer.pause).not.toHaveBeenCalled();
+      expect(mockOnExpire).not.toHaveBeenCalled();
     });
   });
 });

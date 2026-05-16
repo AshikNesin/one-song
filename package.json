@@ -1,10 +1,10 @@
 {
   "name": "one-song",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "scripts": {
     "android": "scripts/run-android.sh",
-    "android:release": "scripts/build-android-signed.sh",
+    "android:release": "scripts/bump-android-version.sh && scripts/build-android-signed.sh",
     "clean": "scripts/clean.sh",
     "ios": "react-native run-ios",
     "lint": "eslint .",

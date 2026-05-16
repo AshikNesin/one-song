@@ -1,6 +1,5 @@
 import { State } from 'react-native-track-player';
 import { Song } from '@/types';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   setupPlayer,
   loadSong,
@@ -10,9 +9,9 @@ import {
   getProgress,
   seekTo,
 } from '@/services/AudioService';
-import { getSong, clearSongData } from '@/services/SongIntake';
 import { restoreTimer } from '@/services/SleepTimer';
-import { STORAGE_KEYS } from '@/utils/constants';
+import { getSong, clearSongData } from '@/services/SongIntake';
+import * as Storage from '@/services/StorageService';
 
 export interface PlaybackState {
   isPlaying: boolean;
@@ -54,12 +53,12 @@ export function getState(): PlaybackState {
 }
 
 export async function getAutoPlayEnabled(): Promise<boolean> {
-  const value = await AsyncStorage.getItem(STORAGE_KEYS.AUTOPLAY_ENABLED);
+  const value = await Storage.getItem('AUTOPLAY_ENABLED');
   return value !== 'false';
 }
 
 export async function saveAutoPlayEnabled(enabled: boolean): Promise<void> {
-  await AsyncStorage.setItem(STORAGE_KEYS.AUTOPLAY_ENABLED, String(enabled));
+  await Storage.setItem('AUTOPLAY_ENABLED', String(enabled));
 }
 
 export async function init(): Promise<void> {
@@ -69,7 +68,7 @@ export async function init(): Promise<void> {
   if (savedSong) {
     try {
       await loadSong(savedSong);
-      await restoreTimer();
+      await restoreTimer(pause);
       const autoPlay = await getAutoPlayEnabled();
       if (autoPlay) {
         await play();
