@@ -322,6 +322,105 @@ section h2 {
   transform: translateY(-4px);
 }
 
+/* ── iOS Waitlist ── */
+.ios-waitlist {
+  padding: 24px 24px 64px;
+}
+.waitlist-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  padding: 48px 40px;
+  text-align: center;
+  box-shadow: 0 12px 40px -12px rgba(15, 23, 42, 0.1);
+  max-width: 440px;
+  margin: 0 auto;
+}
+.waitlist-card h2 {
+  color: var(--text);
+  margin-bottom: 8px;
+  margin-top: 0;
+  font-size: 1.6rem;
+  letter-spacing: -0.01em;
+}
+.waitlist-card p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 32px;
+  line-height: 1.5;
+}
+.listmonk-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  text-align: left;
+}
+.listmonk-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.listmonk-form label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-left: 2px;
+}
+.listmonk-form .form-input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-family: inherit;
+  outline: none;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02) inset;
+  transition: all 0.2s ease;
+}
+.listmonk-form .form-input::placeholder {
+  color: #94a3b8;
+}
+.listmonk-form .form-input:focus {
+  border-color: var(--text);
+  box-shadow: 0 0 0 1px var(--text);
+}
+.listmonk-form .form-submit {
+  width: 100%;
+  padding: 14px 24px;
+  border-radius: 8px;
+  border: none;
+  background: var(--text);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+.listmonk-form .form-submit:hover {
+  background: #000000;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.2);
+  transform: translateY(-2px);
+}
+.listmonk-form .form-footer {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-top: 8px;
+  margin-bottom: 0;
+}
+.listmonk-form .form-footer a {
+  color: var(--text);
+  text-decoration: underline;
+}
+
 /* ── Story ── */
 .story-content {
   background: var(--bg-surface);

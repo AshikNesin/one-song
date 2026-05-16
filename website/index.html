@@ -142,13 +142,39 @@
       </div>
     </section>
 
+    <section class="ios-waitlist">
+      <div class="waitlist-card">
+        <h2>Subscribe for Updates</h2>
+        <p>Get notified about new features, general app updates, and early access to the upcoming iOS version.</p>
+        <form method="post" action="https://listmonk.nesin.io/subscription/form" class="listmonk-form">
+          <input type="hidden" name="nonce" />
+          <input id="e7bf7" type="checkbox" name="l" checked value="e7bf7164-ceaa-4373-abaa-bdbef876d26a" style="display:none;" />
+          
+          <div class="form-group">
+            <label for="name">Name (optional)</label>
+            <input type="text" id="name" name="name" placeholder="John Doe" class="form-input" />
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email address</label>
+            <input type="email" id="email" name="email" required placeholder="you@example.com" class="form-input" />
+          </div>
+          
+          <button type="submit" class="form-submit">
+            Subscribe 
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </button>
+        </form>
+      </div>
+    </section>
+
   </main>
 
   <footer>
     <div class="footer-links">
       <a href="/">Home</a>
-      <a href="architecture">Architecture</a>
-      <a href="privacy">Privacy</a>
+      <a href="/architecture">Architecture</a>
+      <a href="/privacy">Privacy</a>
     </div>
     <p style="margin-top:16px">&copy; 2026 Nesin Technologies LLP</p>
   </footer>
