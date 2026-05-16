@@ -1,127 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>One Song — Play one song. On repeat.</title>
-    <meta
-      name="description"
-      content="A minimal Android music player that plays exactly one song — on repeat, with a sleep timer, and background playback."
-    />
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <main>
-      <section class="hero">
-        <img src="assets/logo.svg" alt="One Song Logo" class="logo" />
-        <h1>One Song</h1>
-        <p class="tagline">Play one song. On repeat. With a sleep timer.</p>
-        <a
-          href="https://play.google.com/store/apps/details?id=io.nesin.onesong"
-          class="download-btn"
-        >
-          Download on Google Play
-        </a>
-      </section>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>One Song</title>
+  <meta name="description" content="A minimal Android music player that plays exactly one song — on repeat, with a sleep timer, and background playback.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main>
 
-      <section class="features">
-        <div class="feature">
-          <div class="feature-icon">▶</div>
-          <h3>Instant Playback</h3>
-          <p>Open the app and your song starts playing. No taps needed.</p>
-        </div>
-        <div class="feature">
-          <div class="feature-icon">↻</div>
-          <h3>Loops Forever</h3>
-          <p>Your song repeats automatically until you say stop.</p>
-        </div>
-        <div class="feature">
-          <div class="feature-icon">⏳</div>
-          <h3>Sleep Timer</h3>
-          <p>Set it and forget it. 5 to 60 minutes, your choice.</p>
-        </div>
-        <div class="feature">
-          <div class="feature-icon">♫</div>
-          <h3>Background Audio</h3>
-          <p>Music keeps playing while locked or in other apps.</p>
-        </div>
-        <div class="feature">
-          <div class="feature-icon">🔔</div>
-          <h3>Notification Controls</h3>
-          <p>Play, pause, or stop from the lock screen.</p>
-        </div>
-        <div class="feature">
-          <div class="feature-icon">💾</div>
-          <h3>Remembers Your Song</h3>
-          <p>Even if you move or rename the original file.</p>
-        </div>
-      </section>
+    <a href="architecture" class="top-link">Architecture</a>
 
-      <section class="use-cases">
-        <h2>Perfect for</h2>
-        <div class="use-case-grid">
-          <div class="use-case">
-            <span class="use-case-icon">🌙</span>
-            <h3>Bedtime Lullabies</h3>
-            <p>
-              The same lullaby every night. Open the app, it plays. The sleep
-              timer handles the rest.
-            </p>
-          </div>
-          <div class="use-case">
-            <span class="use-case-icon">🌊</span>
-            <h3>White Noise</h3>
-            <p>
-              Loop rain sounds or white noise tracks all night without
-              interruptions.
-            </p>
-          </div>
-          <div class="use-case">
-            <span class="use-case-icon">💜</span>
-            <h3>Favorite Songs</h3>
-            <p>
-              One song you can't get enough of. No distractions, no decisions.
-            </p>
-          </div>
+    <section class="hero">
+      <img src="assets/logo.svg" alt="One Song" class="logo">
+      <h1>One Song</h1>
+      <p class="tagline">Pick one song. Play it forever. That's it.</p>
+      <a class="store-badge" href="https://play.google.com/store/apps/details?id=io.nesin.onesong">
+        <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play">
+      </a>
+      <p class="oss-tag"><a href="https://github.com/AshikNesin/one-song">Open source</a> · MIT</p>
+    </section>
+
+    <section class="features">
+      <div class="feature">
+        <div class="feature-icon">&#9654;</div>
+        <h3>Instant play</h3>
+        <p>Open the app, your song starts. No taps.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">&#8635;</div>
+        <h3>Loops forever</h3>
+        <p>Repeats until you stop. Gapless.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">&#9203;</div>
+        <h3>Sleep timer</h3>
+        <p>5 to 60 minutes. Set a default.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">&#9835;</div>
+        <h3>Background audio</h3>
+        <p>Plays while locked or in other apps.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">&#128276;</div>
+        <h3>Lock screen controls</h3>
+        <p>Play, pause, stop from notifications.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">&#128190;</div>
+        <h3>Remembers your song</h3>
+        <p>Even if you rename or move the file.</p>
+      </div>
+    </section>
+
+    <section class="use-cases">
+      <h2>Perfect for</h2>
+      <div class="use-case-grid">
+        <div class="use-case">
+          <span class="use-case-icon">&#127772;</span>
+          <h3>Bedtime lullabies</h3>
+          <p>Same song every night. Timer handles the rest.</p>
         </div>
-      </section>
-
-      <section class="screenshots">
-        <h2>Screenshots</h2>
-        <div class="screenshot-grid">
-          <img
-            src="assets/screenshot-01.png"
-            alt="Main player screen"
-            loading="lazy"
-          />
-          <img
-            src="assets/screenshot-02.png"
-            alt="Settings screen"
-            loading="lazy"
-          />
+        <div class="use-case">
+          <span class="use-case-icon">&#127754;</span>
+          <h3>White noise</h3>
+          <p>Loop rain or noise tracks all night.</p>
         </div>
-      </section>
+        <div class="use-case">
+          <span class="use-case-icon">&#128156;</span>
+          <h3>Favorite songs</h3>
+          <p>One song you can't get enough of.</p>
+        </div>
+      </div>
+    </section>
 
-      <section class="pitch">
-        <h2>Zero friction</h2>
-        <p>
-          No ads. No subscriptions. No accounts. No playlists. No libraries.
-        </p>
-        <p>Just one song, always ready.</p>
-      </section>
+    <section class="pitch">
+      <h2>Zero friction</h2>
+      <p>No ads. No subscriptions. No accounts. No playlists. No libraries.</p>
+      <p>Just one song, always ready.</p>
+    </section>
 
-      <section class="download">
-        <a
-          href="https://play.google.com/store/apps/details?id=io.nesin.onesong"
-          class="download-btn"
-        >
-          Download on Google Play
-        </a>
-      </section>
-    </main>
+    <section class="screenshots">
+      <h2>Screenshots</h2>
+      <div class="screenshot-grid">
+        <img src="assets/screenshot-01.png" alt="Main player screen" loading="lazy">
+        <img src="assets/screenshot-02.png" alt="Settings screen" loading="lazy">
+      </div>
+    </section>
 
-    <footer>
-      <p>&copy; 2026 One Song · <a href="privacy.html">Privacy Policy</a></p>
-    </footer>
-  </body>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 Nesin Technologies LLP · <a href="privacy">Privacy</a></p>
+  </footer>
+</body>
 </html>

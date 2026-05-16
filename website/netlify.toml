@@ -1,4 +1,19 @@
 [[redirects]]
+  from = "/architecture"
+  to = "/architecture.html"
+  status = 200
+
+[[redirects]]
+  from = "/privacy"
+  to = "/privacy.html"
+  status = 200
+
+[[redirects]]
+  from = "/index"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
   from = "/*.html"
   to = "/:splat"
   status = 301
