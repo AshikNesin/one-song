@@ -540,6 +540,15 @@ footer a:hover { color: var(--text); }
 
 /* ── Responsive ── */
 @media (max-width: 480px) {
+  main { padding-top: 60px; }
+  .top-link {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    margin: 0;
+    display: inline-block;
+  }
+  .hero { padding-top: 0; }
   .hero h1 { font-size: 1.8rem; }
   .features, .use-case-grid { grid-template-columns: 1fr; }
   .screenshot-grid img { width: 100%; max-width: 260px; }
