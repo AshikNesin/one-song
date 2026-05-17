@@ -14,3 +14,4 @@
 - Do not import Node.js built-ins like `Buffer` from 'buffer' in React Native; Metro bundler cannot resolve them without explicit polyfill setup. Confidence: 0.90
 - Installing `buffer` as an explicit dependency is not a valid workaround for Metro bundler resolution issues with Node.js built-ins; the root cause is Metro's inability to polyfill them properly. Confidence: 0.85
 - Use `@/` path alias imports instead of relative paths when importing from within the project. Confidence: 0.85
+- Keep all application source code under `src/` directory, including entry point files (App.tsx, index.js) that React Native conventionally places at root. Confidence: 0.65

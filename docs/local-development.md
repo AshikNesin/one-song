@@ -147,7 +147,7 @@ cd android
 
 Install the release APK:
 ```bash
-adb install app/build/outputs/apk/release/app-release.apk
+adb install app/build/outputs/apk/release/app-arm64-v8a-release.apk
 ```
 
 ## Tips for This Project
