@@ -161,40 +161,37 @@
         <figcaption>The player and settings screens.</figcaption>
       </figure>
 
-      <!-- Prose body — what it does -->
+      <!-- What it does -->
       <section class="letter-prose">
-        <p>
-          Pick one audio file from your device. The app plays it continuously,
-          loops it gaplessly, and keeps playing while your screen is locked or
-          you're in another app. Set a sleep timer — five minutes, sixty, or
-          anything between — and it stops quietly when the time is up.
-        </p>
-        <p>
-          No playlists. No libraries. No accounts. No ads. No subscriptions. The
-          app remembers your song even if you move or rename the original file.
-          Open it tomorrow and it starts playing immediately.
+        <p class="letter-prose__lead">
+          No playlists. No libraries. No accounts. No ads. Open it tomorrow and
+          it starts playing immediately.
         </p>
 
-        <!-- What it does — typographic list, not icon cards -->
-        <ul class="letter-features">
-          <li>
-            <strong>Instant play</strong> — opens and starts, no extra taps.
+        <ul class="feature-grid" aria-label="Features">
+          <li class="feature-grid__item">
+            <span class="feature-grid__name">Instant play</span>
+            <span class="feature-grid__desc">Opens and starts. No extra taps.</span>
           </li>
-          <li><strong>Loops forever</strong> — gapless, native repeat mode.</li>
-          <li>
-            <strong>Sleep timer</strong> — 5 to 60 minutes, configurable
-            default.
+          <li class="feature-grid__item">
+            <span class="feature-grid__name">Loops forever</span>
+            <span class="feature-grid__desc">Gapless, native repeat mode.</span>
           </li>
-          <li>
-            <strong>Background audio</strong> — plays while locked or in other
-            apps.
+          <li class="feature-grid__item">
+            <span class="feature-grid__name">Sleep timer</span>
+            <span class="feature-grid__desc">5 to 60 minutes, configurable default.</span>
           </li>
-          <li>
-            <strong>Lock screen controls</strong> — play, pause, stop from the
-            notification shade.
+          <li class="feature-grid__item">
+            <span class="feature-grid__name">Background audio</span>
+            <span class="feature-grid__desc">Plays while locked or in other apps.</span>
           </li>
-          <li>
-            <strong>Remembers your song</strong> — cached so it never gets lost.
+          <li class="feature-grid__item">
+            <span class="feature-grid__name">Lock screen controls</span>
+            <span class="feature-grid__desc">Play, pause, stop from the notification shade.</span>
+          </li>
+          <li class="feature-grid__item">
+            <span class="feature-grid__name">Remembers your song</span>
+            <span class="feature-grid__desc">Cached so it never gets lost.</span>
           </li>
         </ul>
 
@@ -210,28 +207,26 @@
 
       <!-- Story section -->
       <section class="letter-story">
-        <p class="letter-story__body">
-          Hi, I'm Ashik. Every night before bed, my kid wants to hear the exact
-          same lullaby. We used to play it on YouTube or a standard music app,
-          which meant navigating through UI clutter, playlists, and multiple
-          taps just to get to the one song we needed.
-        </p>
-        <p class="letter-story__body">
-          I wanted a dedicated app for this scenario. Open it, song starts.
-          Sleep timer fires, app goes quiet. That's it. One Song is that app.
-        </p>
-        <div class="letter-author">
-          <img
-            src="https://ashiknesin.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Favatar.d801e307.jpg&w=64&q=75"
-            alt="Ashik Nesin"
-            class="letter-author__avatar"
-            loading="lazy"
-            width="44"
-            height="44"
-          />
-          <div>
-            <span class="letter-author__name">Ashik Nesin</span>
-            <span class="letter-author__title">Dad &amp; Developer</span>
+        <div class="story-card">
+          <p class="story-card__quote">
+            Every night before bed, my kid wants to hear the exact same lullaby.
+            We used to play it on YouTube — navigating through UI clutter,
+            playlists, and multiple taps just to get to the one song we needed.
+            I wanted an app that opens and plays. That's it. One Song is that app.
+          </p>
+          <div class="story-card__author">
+            <img
+              src="https://ashiknesin.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Favatar.d801e307.jpg&w=64&q=75"
+              alt="Ashik Nesin"
+              class="story-card__avatar"
+              loading="lazy"
+              width="40"
+              height="40"
+            />
+            <div>
+              <a href="https://x.com/AshikNesin" class="story-card__name" target="_blank" rel="noopener">Ashik Nesin</a>
+              <span class="story-card__title">Dad &amp; Developer</span>
+            </div>
           </div>
         </div>
       </section>
