@@ -6,3 +6,4 @@
 - For Play Store badge images: do not apply outlines, scale-on-press, or any button-like styling. Keep them clean. Confidence: 0.80
 - Avoid underlines on links by default; use other visual cues (color, hover states) for link indication. Confidence: 0.85
 - Avoid italic text for body content and quotes; use plain readable text instead. Confidence: 0.75
+- For scrollable navigation (tab strips, carousels): use explicit visual indicators like arrows or chevrons rather than subtle fade gradients alone. Confidence: 0.75

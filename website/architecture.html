@@ -101,7 +101,8 @@
       </header>
 
       <!-- Tab navigation -->
-      <nav class="doc-tabs" aria-label="Architecture sections">
+      <div class="doc-tabs-wrap" id="doc-tabs-wrap">
+      <nav class="doc-tabs" aria-label="Architecture sections" id="doc-tabs">
         <button class="doc-tab is-active" data-section="overview">
           Overview
         </button>
@@ -113,6 +114,17 @@
         <button class="doc-tab" data-section="rn">RN Basics</button>
         <button class="doc-tab" data-section="til">Lessons</button>
       </nav>
+      </div>
+      <script>
+        const tabsEl = document.getElementById('doc-tabs');
+        const tabsWrap = document.getElementById('doc-tabs-wrap');
+        function updateFade() {
+          const atEnd = tabsEl.scrollLeft + tabsEl.clientWidth >= tabsEl.scrollWidth - 4;
+          tabsWrap.classList.toggle('has-overflow', !atEnd);
+        }
+        tabsEl.addEventListener('scroll', updateFade, { passive: true });
+        updateFade();
+      </script>
 
       <!-- ── Overview ── -->
       <article class="doc-section is-active" id="section-overview">
@@ -1105,9 +1117,10 @@ TrackPlayer.<span class="syn-fn">registerPlaybackService</span>(() =&gt; <span c
           tab.setAttribute('aria-selected', 'true');
           const target = document.getElementById('section-' + section);
           if (target) target.classList.add('is-active');
-          const tabsEl = document.querySelector('.doc-tabs');
-          if (tabsEl) {
-            const rect = tabsEl.getBoundingClientRect();
+          tab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          const tabsWrap = document.querySelector('.doc-tabs-wrap');
+          if (tabsWrap) {
+            const rect = tabsWrap.getBoundingClientRect();
             if (rect.top < 0)
               window.scrollBy({ top: rect.top - 72, behavior: 'smooth' });
           }
