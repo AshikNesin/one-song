@@ -4,4 +4,5 @@
 - Ensure hover states maintain text readability (contrast, color). Confidence: 0.70
 - When matching existing UI elements, directly reference and copy the existing implementation rather than recreating from memory. Confidence: 0.85
 - For Play Store badge images: do not apply outlines, scale-on-press, or any button-like styling. Keep them clean. Confidence: 0.80
-- Avoid underlines on links by default; use other visual cues (color, hover states) for link indication. Confidence: 0.75
+- Avoid underlines on links by default; use other visual cues (color, hover states) for link indication. Confidence: 0.85
+- Avoid italic text for body content and quotes; use plain readable text instead. Confidence: 0.75
