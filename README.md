@@ -110,36 +110,56 @@ pnpm react-native run-android --mode=release
 
 ```
 OneSong/
-├── android/                         # Android native project
+├── android/                              # Android native project
 │   ├── app/src/main/
-│   │   ├── AndroidManifest.xml      # Permissions & services
-│   │   └── java/io/nesin/onesong/   # MainActivity.kt, MainApplication.kt
+│   │   ├── AndroidManifest.xml           # Permissions & services
+│   │   └── java/io/nesin/onesong/        # MainActivity.kt, MainApplication.kt
 │   └── ...
 ├── src/
 │   ├── types/
-│   │   └── index.ts                 # TypeScript interfaces (Song, TimerPreset, etc.)
+│   │   ├── index.ts                      # TypeScript interfaces (Song, TimerPreset, etc.)
+│   │   └── navigation.ts                # Navigation param types
 │   ├── utils/
-│   │   └── constants.ts             # Storage keys, timer presets, UI strings
+│   │   ├── constants.ts                  # Storage keys, timer presets, UI strings
+│   │   └── metadata.ts                  # ID3 + MP4 metadata extraction
+│   ├── hooks/
+│   │   ├── useSleepTimer.ts             # Timer state hook
+│   │   └── useSettings.ts              # Settings screen state
 │   ├── services/
-│   │   ├── AudioService.ts          # Track player setup, playback controls, audio focus
-│   │   ├── PlaybackController.ts  # Orchestrates player init, state polling, remote events
-│   │   ├── SleepTimer.ts           # Active timer + persisted default preference
-│   │   ├── OnboardingFlow.ts       # Permission, file pick, copy, and song persistence
-│   │   ├── StorageService.ts        # AsyncStorage wrapper (song, timer, onboarding state)
-│   │   └── PermissionService.ts     # Android storage permission requests
+│   │   ├── Playback.ts                  # Core playback state machine
+│   │   ├── PlaybackController.ts        # React bridge for playback state
+│   │   ├── AudioService.ts              # Track player setup, playback controls, audio focus
+│   │   ├── SleepTimer.ts                # Active timer + persisted default preference
+│   │   ├── SongIntake.ts                # Permission, file pick, copy, metadata, and song persistence
+│   │   ├── MetadataAdapter.ts           # ID3 + MP4 tag parsing adapters
+│   │   ├── StorageService.ts            # AsyncStorage wrapper (song, timer, onboarding state)
+│   │   ├── PermissionService.ts         # Android storage permission requests
+│   │   └── InAppUpdateService.ts        # Play Store in-app update flow
 │   ├── components/
-│   │   ├── ProgressBar.tsx          # Seekable playback progress bar
-│   │   ├── PlayPauseButton.tsx      # Geometric play/pause icon button
-│   │   └── SleepTimerButton.tsx     # Timer preset selector modal
+│   │   ├── ProgressBar.tsx              # Seekable playback progress bar
+│   │   ├── PlayPauseButton.tsx          # Geometric play/pause icon button
+│   │   ├── SleepTimerButton.tsx         # Timer preset selector modal
+│   │   └── TimerPresetPicker.tsx        # Timer duration chip picker
 │   ├── screens/
-│   │   ├── OnboardingScreen.tsx     # First launch: pick song UI (delegates to OnboardingFlow)
-│   │   ├── PlayerScreen.tsx         # Main screen: song info, controls, progress
-│   │   └── SettingsScreen.tsx       # Change song, timer default, reset data
+│   │   ├── OnboardingScreen.tsx         # First launch: pick song UI
+│   │   ├── PlayerScreen.tsx             # Main screen: song info, controls, progress
+│   │   └── SettingsScreen.tsx           # Change song, timer default, reset data
 │   ├── navigation/
-│   │   └── AppNavigator.tsx         # Stack navigator (Onboarding → Player → Settings)
-│   └── App.tsx                      # Entry point: initializes track player
-├── TIL.md                           # Running log of bugs, fixes, and lessons learned
-├── PLAN.md                          # Original implementation plan
+│   │   └── AppNavigator.tsx             # Stack navigator (Onboarding → Player → Settings)
+│   ├── App.tsx                          # Entry point: initializes track player
+│   └── index.js                         # App bootstrap: registers TrackPlayer service
+├── docs/
+│   ├── architecture.md                   # Audio focus, file persistence, sleep timer details
+│   ├── building.md                       # Release build instructions
+│   ├── local-development.md              # Device testing setup and workflow
+│   ├── troubleshooting.md                # Common issues and fixes
+│   ├── DESIGN.md                         # Color palette and design system
+│   ├── PLAN.md                           # Original implementation plan
+│   ├── PRD.md                            # Product requirements document
+│   └── APP_STORE.md                      # Google Play Store listing assets
+├── scripts/                              # Build and version automation
+├── AGENTS.md                             # LLM context for coding assistants
+├── TIL.md                                # Running log of bugs, fixes, and lessons learned
 └── package.json
 ```
 

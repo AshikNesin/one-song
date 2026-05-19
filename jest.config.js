@@ -4,7 +4,7 @@ module.exports = {
     platforms: ['android', 'ios', 'native'],
   },
   moduleNameMapper: {
-    '^@/App$': '<rootDir>/App.tsx',
+    '^@/App$': '<rootDir>/src/App.tsx',
     '^@/(.*)$': '<rootDir>/src/$1',
     '^react-native-track-player$': '<rootDir>/__mocks__/react-native-track-player.ts',
     '^@react-native-async-storage/async-storage$': '<rootDir>/__mocks__/@react-native-async-storage/async-storage.ts',
