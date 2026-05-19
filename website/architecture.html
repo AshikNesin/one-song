@@ -25,32 +25,63 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png" />
-    <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="/android-chrome-192x192.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="512x512"
+      href="/android-chrome-512x512.png"
+    />
     <meta name="theme-color" content="#f9f7f4" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Architecture — One Song" />
-    <meta property="og:description" content="Complete architecture documentation for One Song — a minimal Android music player built with React Native." />
+    <meta
+      property="og:description"
+      content="Complete architecture documentation for One Song — a minimal Android music player built with React Native."
+    />
     <meta property="og:url" content="https://onesong.nesin.io/architecture" />
-    <meta property="og:image" content="https://onesong.nesin.io/assets/og-image.png" />
+    <meta
+      property="og:image"
+      content="https://onesong.nesin.io/assets/og-image.png"
+    />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="One Song — Play one song. On repeat." />
+    <meta
+      property="og:image:alt"
+      content="One Song — Play one song. On repeat."
+    />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Architecture — One Song" />
-    <meta name="twitter:description" content="Complete architecture documentation for One Song — a minimal Android music player built with React Native." />
-    <meta name="twitter:image" content="https://onesong.nesin.io/assets/og-image.png" />
-    <meta name="twitter:image:alt" content="One Song — Play one song. On repeat." />
+    <meta
+      name="twitter:description"
+      content="Complete architecture documentation for One Song — a minimal Android music player built with React Native."
+    />
+    <meta
+      name="twitter:image"
+      content="https://onesong.nesin.io/assets/og-image.png"
+    />
+    <meta
+      name="twitter:image:alt"
+      content="One Song — Play one song. On repeat."
+    />
   </head>
   <body class="doc-page">
-
     <!-- N9 · Edge-aligned minimal nav -->
     <nav class="nav">
       <a href="/" class="nav__wordmark" aria-label="One Song home">
         <img src="assets/logo.svg" alt="" width="24" height="24" />
         <span>One Song</span>
       </a>
-      <a href="https://go.nesin.io/onesong-android" class="nav__cta" aria-label="Get One Song on Google Play">
+      <a
+        href="https://go.nesin.io/onesong-android"
+        class="nav__cta"
+        aria-label="Get One Song on Google Play"
+      >
         <img
           src="./assets/get-on-google-play-store.png"
           alt="Get it on Google Play"
@@ -60,7 +91,6 @@
     </nav>
 
     <main class="doc-main">
-
       <!-- Long Document header -->
       <header class="doc-header">
         <h1 class="doc-title">App Architecture</h1>
@@ -72,7 +102,9 @@
 
       <!-- Tab navigation -->
       <nav class="doc-tabs" aria-label="Architecture sections">
-        <button class="doc-tab is-active" data-section="overview">Overview</button>
+        <button class="doc-tab is-active" data-section="overview">
+          Overview
+        </button>
         <button class="doc-tab" data-section="arch">Architecture</button>
         <button class="doc-tab" data-section="audio">Audio System</button>
         <button class="doc-tab" data-section="state">Data &amp; State</button>
@@ -87,39 +119,105 @@
         <h2 class="doc-section__heading">What is One Song?</h2>
         <p>
           One Song is an <strong>Android-only</strong> music player that does
-          exactly one thing: <strong>play a single audio file on infinite loop</strong>.
-          No playlists, no libraries, no complexity. Pick one song from your
-          device and the app remembers it forever.
+          exactly one thing:
+          <strong>play a single audio file on infinite loop</strong>. No
+          playlists, no libraries, no complexity. Pick one song from your device
+          and the app remembers it forever.
         </p>
 
         <h3 class="doc-section__subheading">Core features</h3>
         <table class="doc-table">
           <tbody>
-            <tr><td><strong>Instant Auto-Play</strong></td><td>Song starts immediately on launch — no taps needed</td></tr>
-            <tr><td><strong>Infinite Loop</strong></td><td>Uses native <code>RepeatMode.Track</code> for gapless looping</td></tr>
-            <tr><td><strong>Sleep Timer</strong></td><td>5 to 60 minutes, configurable default in Settings</td></tr>
-            <tr><td><strong>Background Audio</strong></td><td>Plays while locked, in other apps, even when app is killed</td></tr>
-            <tr><td><strong>Notification Controls</strong></td><td>Play/Pause from lock screen and notification shade</td></tr>
-            <tr><td><strong>Seekable Progress</strong></td><td>Tap or drag the progress bar to jump anywhere</td></tr>
-            <tr><td><strong>Persistent Song</strong></td><td>Remembers your song even if you move or rename the original file</td></tr>
-            <tr><td><strong>In-App Updates</strong></td><td>Detects and installs Play Store updates without leaving the app</td></tr>
+            <tr>
+              <td><strong>Instant Auto-Play</strong></td>
+              <td>Song starts immediately on launch — no taps needed</td>
+            </tr>
+            <tr>
+              <td><strong>Infinite Loop</strong></td>
+              <td>
+                Uses native <code>RepeatMode.Track</code> for gapless looping
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Sleep Timer</strong></td>
+              <td>5 to 60 minutes, configurable default in Settings</td>
+            </tr>
+            <tr>
+              <td><strong>Background Audio</strong></td>
+              <td>
+                Plays while locked, in other apps, even when app is killed
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Notification Controls</strong></td>
+              <td>Play/Pause from lock screen and notification shade</td>
+            </tr>
+            <tr>
+              <td><strong>Seekable Progress</strong></td>
+              <td>Tap or drag the progress bar to jump anywhere</td>
+            </tr>
+            <tr>
+              <td><strong>Persistent Song</strong></td>
+              <td>
+                Remembers your song even if you move or rename the original file
+              </td>
+            </tr>
+            <tr>
+              <td><strong>In-App Updates</strong></td>
+              <td>
+                Detects and installs Play Store updates without leaving the app
+              </td>
+            </tr>
           </tbody>
         </table>
 
         <h3 class="doc-section__subheading">Tech stack</h3>
         <table class="doc-table">
           <thead>
-            <tr><th>Layer</th><th>Technology</th></tr>
+            <tr>
+              <th>Layer</th>
+              <th>Technology</th>
+            </tr>
           </thead>
           <tbody>
-            <tr><td>Framework</td><td><span class="doc-badge doc-badge--rn">React Native 0.85</span></td></tr>
-            <tr><td>Language</td><td><span class="doc-badge doc-badge--ts">TypeScript</span></td></tr>
-            <tr><td>Audio Engine</td><td><code>react-native-track-player</code> (v5 alpha)</td></tr>
-            <tr><td>Navigation</td><td><code>@react-navigation/native-stack</code></td></tr>
-            <tr><td>State</td><td><code>@react-native-async-storage/async-storage</code></td></tr>
-            <tr><td>File Picker</td><td><code>@react-native-documents/picker</code></td></tr>
-            <tr><td>Permissions</td><td><code>react-native-permissions</code></td></tr>
-            <tr><td>Build</td><td><span class="doc-badge doc-badge--android">Gradle (Android)</span></td></tr>
+            <tr>
+              <td>Framework</td>
+              <td>
+                <span class="doc-badge doc-badge--rn">React Native 0.85</span>
+              </td>
+            </tr>
+            <tr>
+              <td>Language</td>
+              <td><span class="doc-badge doc-badge--ts">TypeScript</span></td>
+            </tr>
+            <tr>
+              <td>Audio Engine</td>
+              <td><code>react-native-track-player</code> (v5 alpha)</td>
+            </tr>
+            <tr>
+              <td>Navigation</td>
+              <td><code>@react-navigation/native-stack</code></td>
+            </tr>
+            <tr>
+              <td>State</td>
+              <td><code>@react-native-async-storage/async-storage</code></td>
+            </tr>
+            <tr>
+              <td>File Picker</td>
+              <td><code>@react-native-documents/picker</code></td>
+            </tr>
+            <tr>
+              <td>Permissions</td>
+              <td><code>react-native-permissions</code></td>
+            </tr>
+            <tr>
+              <td>Build</td>
+              <td>
+                <span class="doc-badge doc-badge--android"
+                  >Gradle (Android)</span
+                >
+              </td>
+            </tr>
           </tbody>
         </table>
       </article>
@@ -164,25 +262,66 @@
 
         <h3 class="doc-section__subheading">Navigation flow</h3>
         <ol class="doc-steps">
-          <li><div class="doc-steps__body"><strong>App starts</strong> → AppNavigator checks <code>hasCompletedOnboarding()</code> from AsyncStorage</div></li>
-          <li><div class="doc-steps__body"><strong>First launch?</strong> → OnboardingScreen (pick song, grant permission, save)</div></li>
-          <li><div class="doc-steps__body"><strong>Returning user?</strong> → PlayerScreen (auto-load song, auto-play)</div></li>
-          <li><div class="doc-steps__body"><strong>Settings</strong> accessible from Player via gear icon. Uses <code>CommonActions.reset()</code> — no back-stack accumulation</div></li>
-          <li><div class="doc-steps__body"><strong>Corrupted song?</strong> (<code>initError: true</code>) → auto-redirects to Onboarding</div></li>
+          <li>
+            <div class="doc-steps__body">
+              <strong>App starts</strong> → AppNavigator checks
+              <code>hasCompletedOnboarding()</code> from AsyncStorage
+            </div>
+          </li>
+          <li>
+            <div class="doc-steps__body">
+              <strong>First launch?</strong> → OnboardingScreen (pick song,
+              grant permission, save)
+            </div>
+          </li>
+          <li>
+            <div class="doc-steps__body">
+              <strong>Returning user?</strong> → PlayerScreen (auto-load song,
+              auto-play)
+            </div>
+          </li>
+          <li>
+            <div class="doc-steps__body">
+              <strong>Settings</strong> accessible from Player via gear icon.
+              Uses <code>CommonActions.reset()</code> — no back-stack
+              accumulation
+            </div>
+          </li>
+          <li>
+            <div class="doc-steps__body">
+              <strong>Corrupted song?</strong> (<code>initError: true</code>) →
+              auto-redirects to Onboarding
+            </div>
+          </li>
         </ol>
 
         <h3 class="doc-section__subheading">Design decisions</h3>
         <div class="doc-card">
           <p class="doc-card__title">No global state library</p>
-          <p>No Redux, no Context, no Zustand. A simple module-level pub/sub pattern in <code>Playback.ts</code> is sufficient for a single-screen player app. State lives outside React, enabling the 1-second polling loop and audio focus handlers to work independently of component lifecycle.</p>
+          <p>
+            No Redux, no Context, no Zustand. A simple module-level pub/sub
+            pattern in <code>Playback.ts</code> is sufficient for a
+            single-screen player app. State lives outside React, enabling the
+            1-second polling loop and audio focus handlers to work independently
+            of component lifecycle.
+          </p>
         </div>
         <div class="doc-card">
           <p class="doc-card__title">1-second polling for position</p>
-          <p>Instead of event-driven position tracking, a simple 1-second <code>setInterval</code> reads position/duration from the native player. Trade-off: ~1% CPU overhead vs much simpler code.</p>
+          <p>
+            Instead of event-driven position tracking, a simple 1-second
+            <code>setInterval</code> reads position/duration from the native
+            player. Trade-off: ~1% CPU overhead vs much simpler code.
+          </p>
         </div>
         <div class="doc-card">
           <p class="doc-card__title">Song copied to app cache</p>
-          <p>Selected files are copied to <code>cachesDirectory</code> to avoid Android content URI permission expiration on app reinstall. Trade-off: files may be cleared by OS under storage pressure, but simpler than <code>documentsDirectory</code>.</p>
+          <p>
+            Selected files are copied to <code>cachesDirectory</code> to avoid
+            Android content URI permission expiration on app reinstall.
+            Trade-off: files may be cleared by OS under storage pressure, but
+            simpler than <code>documentsDirectory</code>.
+          </p>
         </div>
       </article>
 
@@ -190,15 +329,18 @@
       <article class="doc-section" id="section-audio">
         <h2 class="doc-section__heading">Audio playback system</h2>
         <p>
-          The audio engine is <strong>react-native-track-player</strong>, which wraps Android's
-          native <code>MediaSession</code> system. Audio runs in a <strong>foreground service</strong>,
-          meaning playback continues even when the app is backgrounded or killed.
+          The audio engine is <strong>react-native-track-player</strong>, which
+          wraps Android's native <code>MediaSession</code> system. Audio runs in
+          a <strong>foreground service</strong>, meaning playback continues even
+          when the app is backgrounded or killed.
         </p>
 
         <h3 class="doc-section__subheading">Audio system flow</h3>
         <div class="doc-diagram">
           <div class="doc-flow">
-            <div class="doc-flow__box doc-flow__box--hl">AndroidManifest.xml</div>
+            <div class="doc-flow__box doc-flow__box--hl">
+              AndroidManifest.xml
+            </div>
             <div class="doc-flow__arrow" aria-hidden="true">→</div>
             <div class="doc-flow__box doc-flow__box--srv">MusicService</div>
             <div class="doc-flow__arrow" aria-hidden="true">→</div>
@@ -207,43 +349,72 @@
           <div class="doc-flow" style="margin-top: var(--space-sm)">
             <div class="doc-flow__box doc-flow__box--srv">AudioService.ts</div>
             <div class="doc-flow__arrow" aria-hidden="true">↔</div>
-            <div class="doc-flow__box doc-flow__box--hl">Native Audio Engine</div>
+            <div class="doc-flow__box doc-flow__box--hl">
+              Native Audio Engine
+            </div>
             <div class="doc-flow__arrow" aria-hidden="true">↔</div>
-            <div class="doc-flow__box doc-flow__box--srv">Android MediaSession</div>
+            <div class="doc-flow__box doc-flow__box--srv">
+              Android MediaSession
+            </div>
           </div>
-          <p class="doc-diagram__caption">Audio runs in a foreground service — survives app kill. Notification auto-generated by TrackPlayer.</p>
+          <p class="doc-diagram__caption">
+            Audio runs in a foreground service — survives app kill. Notification
+            auto-generated by TrackPlayer.
+          </p>
         </div>
 
         <h3 class="doc-section__subheading">Track lifecycle</h3>
         <table class="doc-table">
           <thead>
-            <tr><th>Step</th><th>API Call</th><th>What Happens</th></tr>
+            <tr>
+              <th>Step</th>
+              <th>API Call</th>
+              <th>What Happens</th>
+            </tr>
           </thead>
           <tbody>
             <tr>
               <td><strong>1. Setup</strong></td>
               <td><code>TrackPlayer.setupPlayer()</code></td>
-              <td>Initializes native audio engine. Configures capabilities (<code>Play, Pause, SeekTo</code>), sets <code>RepeatMode.Track</code> for infinite loop, and <code>StopPlaybackAndRemoveNotification</code> for app-kill behavior</td>
+              <td>
+                Initializes native audio engine. Configures capabilities (<code
+                  >Play, Pause, SeekTo</code
+                >), sets <code>RepeatMode.Track</code> for infinite loop, and
+                <code>StopPlaybackAndRemoveNotification</code> for app-kill
+                behavior
+              </td>
             </tr>
             <tr>
               <td><strong>2. Load</strong></td>
               <td><code>TrackPlayer.reset() + add()</code></td>
-              <td>Clears queue, adds single track with <code>{ id, url, title, artist, artwork, duration }</code></td>
+              <td>
+                Clears queue, adds single track with
+                <code>{ id, url, title, artist, artwork, duration }</code>
+              </td>
             </tr>
             <tr>
               <td><strong>3. Play</strong></td>
               <td><code>TrackPlayer.play()</code></td>
-              <td>Starts playback. Android creates a media notification showing track info and Play/Pause controls</td>
+              <td>
+                Starts playback. Android creates a media notification showing
+                track info and Play/Pause controls
+              </td>
             </tr>
             <tr>
               <td><strong>4. Poll</strong></td>
               <td><code>getProgress() + getPlaybackState()</code></td>
-              <td>Every 1 second, reads position/duration and play state from native player, updates React state</td>
+              <td>
+                Every 1 second, reads position/duration and play state from
+                native player, updates React state
+              </td>
             </tr>
             <tr>
               <td><strong>5. Loop</strong></td>
               <td><code>RepeatMode.Track</code></td>
-              <td>Native looping at the audio engine level — no JS intervention needed, gapless</td>
+              <td>
+                Native looping at the audio engine level — no JS intervention
+                needed, gapless
+              </td>
             </tr>
           </tbody>
         </table>
@@ -251,17 +422,35 @@
         <h3 class="doc-section__subheading">Audio focus handling</h3>
         <div class="doc-card">
           <p class="doc-card__title">What happens during a phone call?</p>
-          <p>TrackPlayer integrates with Android's audio focus system. When another app requests focus:</p>
+          <p>
+            TrackPlayer integrates with Android's audio focus system. When
+            another app requests focus:
+          </p>
           <ul class="doc-list">
-            <li><strong>Transient focus loss</strong> (notification sound, alarm) → auto-pause, auto-resume when focus regained</li>
-            <li><strong>Permanent focus loss</strong> (phone call, other music app) → pause and stay paused</li>
-            <li><strong>Focus regained</strong> → resume playback automatically (transient only)</li>
+            <li>
+              <strong>Transient focus loss</strong> (notification sound, alarm)
+              → auto-pause, auto-resume when focus regained
+            </li>
+            <li>
+              <strong>Permanent focus loss</strong> (phone call, other music
+              app) → pause and stay paused
+            </li>
+            <li>
+              <strong>Focus regained</strong> → resume playback automatically
+              (transient only)
+            </li>
           </ul>
-          <p class="doc-card__note">Handled via <code>useTrackPlayerEvents([Event.RemoteDuck])</code> → maps to <code>AudioFocusEvent</code> objects → updates module-level state.</p>
+          <p class="doc-card__note">
+            Handled via <code>useTrackPlayerEvents([Event.RemoteDuck])</code> →
+            maps to <code>AudioFocusEvent</code> objects → updates module-level
+            state.
+          </p>
         </div>
 
         <h3 class="doc-section__subheading">Android native configuration</h3>
-        <pre class="doc-pre"><span class="syn-cm">&lt;!-- AndroidManifest.xml --&gt;</span>
+        <pre
+          class="doc-pre"
+        ><span class="syn-cm">&lt;!-- AndroidManifest.xml --&gt;</span>
 <span class="syn-kw">&lt;service</span>
   android:name=<span class="syn-str">"com.doublesymmetry.trackplayer.service.MusicService"</span>
   android:foregroundServiceType=<span class="syn-str">"mediaPlayback"</span>
@@ -279,8 +468,9 @@ TrackPlayer.<span class="syn-fn">registerPlaybackService</span>(() =&gt; <span c
       <article class="doc-section" id="section-state">
         <h2 class="doc-section__heading">Data &amp; state management</h2>
         <p>
-          One Song uses a <strong>module-level pub/sub</strong> pattern instead of Redux,
-          Context, or Zustand. This is deliberate — the app is a single-screen player with simple state.
+          One Song uses a <strong>module-level pub/sub</strong> pattern instead
+          of Redux, Context, or Zustand. This is deliberate — the app is a
+          single-screen player with simple state.
         </p>
 
         <h3 class="doc-section__subheading">The pub/sub pattern</h3>
@@ -288,15 +478,21 @@ TrackPlayer.<span class="syn-fn">registerPlaybackService</span>(() =&gt; <span c
           <div class="doc-flow">
             <div class="doc-flow__box doc-flow__box--hl">Playback.ts</div>
             <div class="doc-flow__arrow" aria-hidden="true">→</div>
-            <div class="doc-flow__box doc-flow__box--accent">State + Listeners</div>
+            <div class="doc-flow__box doc-flow__box--accent">
+              State + Listeners
+            </div>
             <div class="doc-flow__arrow" aria-hidden="true">→</div>
-            <div class="doc-flow__box doc-flow__box--srv">PlaybackController.ts</div>
+            <div class="doc-flow__box doc-flow__box--srv">
+              PlaybackController.ts
+            </div>
             <div class="doc-flow__arrow" aria-hidden="true">→</div>
             <div class="doc-flow__box doc-flow__box--scr">PlayerScreen.tsx</div>
           </div>
         </div>
 
-        <pre class="doc-pre"><span class="syn-cm">// Playback.ts — simplified</span>
+        <pre
+          class="doc-pre"
+        ><span class="syn-cm">// Playback.ts — simplified</span>
 <span class="syn-kw">let</span> state: PlaybackState = { isPlaying: <span class="syn-kw">false</span>, position: 0, <span class="syn-cm">/* ... */</span> };
 <span class="syn-kw">const</span> listeners = <span class="syn-kw">new</span> Set&lt;(s: PlaybackState) =&gt; <span class="syn-kw">void</span>&gt;();
 
@@ -313,40 +509,121 @@ TrackPlayer.<span class="syn-fn">registerPlaybackService</span>(() =&gt; <span c
         <h3 class="doc-section__subheading">State shape</h3>
         <table class="doc-table">
           <thead>
-            <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
           </thead>
           <tbody>
-            <tr><td><code>isPlaying</code></td><td>boolean</td><td>Current playback state</td></tr>
-            <tr><td><code>position</code></td><td>number</td><td>Current position in seconds</td></tr>
-            <tr><td><code>duration</code></td><td>number</td><td>Total track duration in seconds</td></tr>
-            <tr><td><code>isReady</code></td><td>boolean</td><td>True after <code>init()</code> completes</td></tr>
-            <tr><td><code>hasSong</code></td><td>boolean</td><td>Whether a song is saved</td></tr>
-            <tr><td><code>song</code></td><td>Song | null</td><td>The persisted song object</td></tr>
-            <tr><td><code>initError</code></td><td>boolean</td><td>Triggers redirect back to Onboarding</td></tr>
+            <tr>
+              <td><code>isPlaying</code></td>
+              <td>boolean</td>
+              <td>Current playback state</td>
+            </tr>
+            <tr>
+              <td><code>position</code></td>
+              <td>number</td>
+              <td>Current position in seconds</td>
+            </tr>
+            <tr>
+              <td><code>duration</code></td>
+              <td>number</td>
+              <td>Total track duration in seconds</td>
+            </tr>
+            <tr>
+              <td><code>isReady</code></td>
+              <td>boolean</td>
+              <td>True after <code>init()</code> completes</td>
+            </tr>
+            <tr>
+              <td><code>hasSong</code></td>
+              <td>boolean</td>
+              <td>Whether a song is saved</td>
+            </tr>
+            <tr>
+              <td><code>song</code></td>
+              <td>Song | null</td>
+              <td>The persisted song object</td>
+            </tr>
+            <tr>
+              <td><code>initError</code></td>
+              <td>boolean</td>
+              <td>Triggers redirect back to Onboarding</td>
+            </tr>
           </tbody>
         </table>
 
         <h3 class="doc-section__subheading">AsyncStorage persistence</h3>
         <table class="doc-table">
           <thead>
-            <tr><th>Key</th><th>Value</th><th>Purpose</th></tr>
+            <tr>
+              <th>Key</th>
+              <th>Value</th>
+              <th>Purpose</th>
+            </tr>
           </thead>
           <tbody>
-            <tr><td><code>@onesong:onboarding_complete</code></td><td><code>"true"</code> / <code>"false"</code></td><td>Gates onboarding vs player</td></tr>
-            <tr><td><code>@onesong:selected_song</code></td><td><code>JSON.stringify(Song)</code></td><td>Full song metadata</td></tr>
-            <tr><td><code>@onesong:sleep_timer</code></td><td><code>String(minutes)</code></td><td>Default timer duration</td></tr>
-            <tr><td><code>@onesong:autoplay_enabled</code></td><td><code>String(boolean)</code></td><td>Auto-play toggle</td></tr>
+            <tr>
+              <td><code>@onesong:onboarding_complete</code></td>
+              <td><code>"true"</code> / <code>"false"</code></td>
+              <td>Gates onboarding vs player</td>
+            </tr>
+            <tr>
+              <td><code>@onesong:selected_song</code></td>
+              <td><code>JSON.stringify(Song)</code></td>
+              <td>Full song metadata</td>
+            </tr>
+            <tr>
+              <td><code>@onesong:sleep_timer</code></td>
+              <td><code>String(minutes)</code></td>
+              <td>Default timer duration</td>
+            </tr>
+            <tr>
+              <td><code>@onesong:autoplay_enabled</code></td>
+              <td><code>String(boolean)</code></td>
+              <td>Auto-play toggle</td>
+            </tr>
           </tbody>
         </table>
 
         <h3 class="doc-section__subheading">Init sequence (on Player mount)</h3>
         <ol class="doc-steps">
-          <li><div class="doc-steps__body"><strong><code>setupPlayer()</code></strong> — Initialize TrackPlayer's native audio session (slowest step)</div></li>
-          <li><div class="doc-steps__body"><strong><code>getSong()</code></strong> — Read saved Song from AsyncStorage</div></li>
-          <li><div class="doc-steps__body"><strong><code>loadSong()</code></strong> — Add the track to TrackPlayer's queue</div></li>
-          <li><div class="doc-steps__body"><strong><code>restoreTimer()</code></strong> — Re-arm the sleep timer if one was active</div></li>
-          <li><div class="doc-steps__body"><strong><code>play()</code></strong> — Auto-play if enabled</div></li>
-          <li><div class="doc-steps__body"><strong><code>startPolling()</code></strong> — Begin 1-second position/duration polling</div></li>
+          <li>
+            <div class="doc-steps__body">
+              <strong><code>setupPlayer()</code></strong> — Initialize
+              TrackPlayer's native audio session (slowest step)
+            </div>
+          </li>
+          <li>
+            <div class="doc-steps__body">
+              <strong><code>getSong()</code></strong> — Read saved Song from
+              AsyncStorage
+            </div>
+          </li>
+          <li>
+            <div class="doc-steps__body">
+              <strong><code>loadSong()</code></strong> — Add the track to
+              TrackPlayer's queue
+            </div>
+          </li>
+          <li>
+            <div class="doc-steps__body">
+              <strong><code>restoreTimer()</code></strong> — Re-arm the sleep
+              timer if one was active
+            </div>
+          </li>
+          <li>
+            <div class="doc-steps__body">
+              <strong><code>play()</code></strong> — Auto-play if enabled
+            </div>
+          </li>
+          <li>
+            <div class="doc-steps__body">
+              <strong><code>startPolling()</code></strong> — Begin 1-second
+              position/duration polling
+            </div>
+          </li>
         </ol>
       </article>
 
@@ -373,38 +650,70 @@ TrackPlayer.<span class="syn-fn">registerPlaybackService</span>(() =&gt; <span c
           <li>
             <div class="doc-steps__body">
               <strong>Request permission</strong>
-              <span class="doc-steps__note">Android 13+ → <code>READ_MEDIA_AUDIO</code> · Android 12- → <code>READ_EXTERNAL_STORAGE</code> · If permanently denied → Alert with "Open Settings" → <code>Linking.openSettings()</code></span>
+              <span class="doc-steps__note"
+                >Android 13+ → <code>READ_MEDIA_AUDIO</code> · Android 12- →
+                <code>READ_EXTERNAL_STORAGE</code> · If permanently denied →
+                Alert with "Open Settings" →
+                <code>Linking.openSettings()</code></span
+              >
             </div>
           </li>
           <li>
             <div class="doc-steps__body">
               <strong>Pick audio file</strong>
-              <span class="doc-steps__note">Uses <code>@react-native-documents/picker</code> → <code>pick({ type: ['audio/*'] })</code> → system file picker dialog</span>
+              <span class="doc-steps__note"
+                >Uses <code>@react-native-documents/picker</code> →
+                <code>pick({ type: ['audio/*'] })</code> → system file picker
+                dialog</span
+              >
             </div>
           </li>
           <li>
             <div class="doc-steps__body">
               <strong>Copy to app cache</strong>
-              <span class="doc-steps__note">Copies to <code>cachesDirectory</code> → creates persistent <code>file://</code> URI. Solves Android's <code>SecurityException</code> when content URI permissions expire.</span>
+              <span class="doc-steps__note"
+                >Copies to <code>cachesDirectory</code> → creates persistent
+                <code>file://</code> URI. Solves Android's
+                <code>SecurityException</code> when content URI permissions
+                expire.</span
+              >
             </div>
           </li>
           <li>
             <div class="doc-steps__body">
               <strong>Extract metadata</strong>
-              <span class="doc-steps__note"><strong>MP3:</strong> <code>id3-parser</code> reads ID3 tags (first 256KB) · <strong>M4A/MP4:</strong> Custom atom parser walks <code>moov→udta→meta→ilst</code> → <code>©nam</code>, <code>©ART</code>, <code>covr</code> atoms · <strong>Fallback:</strong> Regex parse <code>artist - title.mp3</code> filename · Artwork saved as <code>file://</code> URI in cache</span>
+              <span class="doc-steps__note"
+                ><strong>MP3:</strong> <code>id3-parser</code> reads ID3 tags
+                (first 256KB) · <strong>M4A/MP4:</strong> Custom atom parser
+                walks <code>moov→udta→meta→ilst</code> → <code>©nam</code>,
+                <code>©ART</code>, <code>covr</code> atoms ·
+                <strong>Fallback:</strong> Regex parse
+                <code>artist - title.mp3</code> filename · Artwork saved as
+                <code>file://</code> URI in cache</span
+              >
             </div>
           </li>
           <li>
             <div class="doc-steps__body">
               <strong>Save &amp; navigate</strong>
-              <span class="doc-steps__note"><code>complete(song)</code> → AsyncStorage → <code>CommonActions.reset</code> to Player screen</span>
+              <span class="doc-steps__note"
+                ><code>complete(song)</code> → AsyncStorage →
+                <code>CommonActions.reset</code> to Player screen</span
+              >
             </div>
           </li>
         </ol>
 
         <div class="doc-card">
           <p class="doc-card__title">Dual metadata extraction: ID3 + MP4</p>
-          <p><code>id3-parser</code> only handles MP3. M4A/MP4 files store metadata in MP4 atoms — a completely different binary structure. The custom parser walks the atom tree to find <code>moov/udta/meta/ilst</code>, then reads child atoms for title (<code>©nam</code>), artist (<code>©ART</code>), and cover art (<code>covr</code>).</p>
+          <p>
+            <code>id3-parser</code> only handles MP3. M4A/MP4 files store
+            metadata in MP4 atoms — a completely different binary structure. The
+            custom parser walks the atom tree to find
+            <code>moov/udta/meta/ilst</code>, then reads child atoms for title
+            (<code>©nam</code>), artist (<code>©ART</code>), and cover art
+            (<code>covr</code>).
+          </p>
         </div>
       </article>
 
@@ -414,38 +723,83 @@ TrackPlayer.<span class="syn-fn">registerPlaybackService</span>(() =&gt; <span c
 
         <div class="doc-card">
           <p class="doc-card__title">AudioService.ts</p>
-          <p>Thin wrapper around <code>react-native-track-player</code>. Provides <code>setupPlayer()</code>, <code>loadSong()</code>, <code>play()</code>, <code>pause()</code>, <code>seekTo()</code>, <code>getProgress()</code>, <code>getPlaybackState()</code>. Also exposes React hooks: <code>useRemotePlayPause()</code> for notification controls and <code>useAudioFocus()</code> for inter-app audio handling.</p>
+          <p>
+            Thin wrapper around <code>react-native-track-player</code>. Provides
+            <code>setupPlayer()</code>, <code>loadSong()</code>,
+            <code>play()</code>, <code>pause()</code>, <code>seekTo()</code>,
+            <code>getProgress()</code>, <code>getPlaybackState()</code>. Also
+            exposes React hooks: <code>useRemotePlayPause()</code> for
+            notification controls and <code>useAudioFocus()</code> for inter-app
+            audio handling.
+          </p>
         </div>
 
         <div class="doc-card">
           <p class="doc-card__title">Playback.ts + PlaybackController.ts</p>
-          <p><strong>Playback.ts</strong> is the core state machine — NOT a React hook. Module-level state + listeners. Orchestrates <code>init()</code>, <code>togglePlay()</code>, <code>seek()</code>, <code>startPolling()</code>, and <code>handleAudioFocus()</code>.</p>
-          <p style="margin-top: var(--space-xs)"><strong>PlaybackController.ts</strong> is the React bridge — <code>usePlaybackController()</code> hook that subscribes to state changes, runs init on mount, starts/stops polling, and registers remote/audio focus handlers.</p>
+          <p>
+            <strong>Playback.ts</strong> is the core state machine — NOT a React
+            hook. Module-level state + listeners. Orchestrates
+            <code>init()</code>, <code>togglePlay()</code>, <code>seek()</code>,
+            <code>startPolling()</code>, and <code>handleAudioFocus()</code>.
+          </p>
+          <p style="margin-top: var(--space-xs)">
+            <strong>PlaybackController.ts</strong> is the React bridge —
+            <code>usePlaybackController()</code> hook that subscribes to state
+            changes, runs init on mount, starts/stops polling, and registers
+            remote/audio focus handlers.
+          </p>
         </div>
 
         <div class="doc-card">
           <p class="doc-card__title">SongIntake.ts</p>
-          <p>The file-picking pipeline: <code>intake()</code> orchestrates permission → file pick → copy to cache → metadata extraction → returns Song. <code>complete()</code> persists to AsyncStorage. <code>getSong()</code>, <code>hasCompletedOnboarding()</code>, <code>clearSongData()</code> manage the onboarding gate.</p>
+          <p>
+            The file-picking pipeline: <code>intake()</code> orchestrates
+            permission → file pick → copy to cache → metadata extraction →
+            returns Song. <code>complete()</code> persists to AsyncStorage.
+            <code>getSong()</code>, <code>hasCompletedOnboarding()</code>,
+            <code>clearSongData()</code> manage the onboarding gate.
+          </p>
         </div>
 
         <div class="doc-card">
           <p class="doc-card__title">SleepTimer.ts</p>
-          <p>Simple <code>setTimeout</code>-based timer. <code>setTimer(minutes, onExpire)</code> sets a timeout. <code>restoreTimer()</code> re-arms on app launch so it survives restarts. <code>saveDefaultTimer()</code> / <code>loadDefaultTimer()</code> persist the default preference.</p>
+          <p>
+            Simple <code>setTimeout</code>-based timer.
+            <code>setTimer(minutes, onExpire)</code> sets a timeout.
+            <code>restoreTimer()</code> re-arms on app launch so it survives
+            restarts. <code>saveDefaultTimer()</code> /
+            <code>loadDefaultTimer()</code> persist the default preference.
+          </p>
         </div>
 
         <div class="doc-card">
           <p class="doc-card__title">StorageService.ts</p>
-          <p>Typed AsyncStorage wrapper: <code>getItem(key)</code>, <code>setItem(key, value)</code>, <code>removeItem(key)</code>, <code>multiRemove(keys)</code>. All keys prefixed with <code>@onesong:</code>.</p>
+          <p>
+            Typed AsyncStorage wrapper: <code>getItem(key)</code>,
+            <code>setItem(key, value)</code>, <code>removeItem(key)</code>,
+            <code>multiRemove(keys)</code>. All keys prefixed with
+            <code>@onesong:</code>.
+          </p>
         </div>
 
         <div class="doc-card">
           <p class="doc-card__title">PermissionService.ts</p>
-          <p>Wraps <code>react-native-permissions</code>. Requests <code>READ_MEDIA_AUDIO</code> (Android 13+) or <code>READ_EXTERNAL_STORAGE</code> (Android 12-). Detects permanently denied state and offers an "Open Settings" path.</p>
+          <p>
+            Wraps <code>react-native-permissions</code>. Requests
+            <code>READ_MEDIA_AUDIO</code> (Android 13+) or
+            <code>READ_EXTERNAL_STORAGE</code> (Android 12-). Detects
+            permanently denied state and offers an "Open Settings" path.
+          </p>
         </div>
 
         <div class="doc-card">
           <p class="doc-card__title">InAppUpdateService.ts</p>
-          <p>Wraps <code>sp-react-native-in-app-updates</code> (patched). Only active in non-dev builds. Checks for updates on app launch, handles FLEXIBLE (background download + install) and IMMEDIATE (blocking) update types. Multiple bugs fixed via patch-package.</p>
+          <p>
+            Wraps <code>sp-react-native-in-app-updates</code> (patched). Only
+            active in non-dev builds. Checks for updates on app launch, handles
+            FLEXIBLE (background download + install) and IMMEDIATE (blocking)
+            update types. Multiple bugs fixed via patch-package.
+          </p>
         </div>
       </article>
 
@@ -455,47 +809,108 @@ TrackPlayer.<span class="syn-fn">registerPlaybackService</span>(() =&gt; <span c
 
         <div class="doc-card">
           <p class="doc-card__title">What is React Native?</p>
-          <p>React Native lets you write mobile apps using React-style JavaScript/TypeScript that renders to <strong>real native UI components</strong>, not web views. A <code>&lt;Text&gt;</code> becomes an Android <code>TextView</code>. A <code>&lt;View&gt;</code> becomes an Android <code>ViewGroup</code>. This gives you native performance with a React development experience.</p>
+          <p>
+            React Native lets you write mobile apps using React-style
+            JavaScript/TypeScript that renders to
+            <strong>real native UI components</strong>, not web views. A
+            <code>&lt;Text&gt;</code> becomes an Android <code>TextView</code>.
+            A <code>&lt;View&gt;</code> becomes an Android
+            <code>ViewGroup</code>. This gives you native performance with a
+            React development experience.
+          </p>
         </div>
 
         <div class="doc-card">
           <p class="doc-card__title">JS thread vs native thread</p>
-          <p>React Native runs JavaScript on a separate thread from the native UI. This is why <strong>audio can keep playing even when the JS thread is frozen</strong> — the native audio service runs independently. TrackPlayer operates entirely on the native side, with JS only sending commands and receiving status updates.</p>
+          <p>
+            React Native runs JavaScript on a separate thread from the native
+            UI. This is why
+            <strong
+              >audio can keep playing even when the JS thread is frozen</strong
+            >
+            — the native audio service runs independently. TrackPlayer operates
+            entirely on the native side, with JS only sending commands and
+            receiving status updates.
+          </p>
         </div>
 
         <div class="doc-card">
           <p class="doc-card__title">Native modules</p>
-          <p>Libraries like <code>react-native-track-player</code> have both <strong>JavaScript code</strong> (the API you call) and <strong>native Java code</strong> (the actual implementation). React Native "autolinks" these at build time. If ProGuard/R8 obfuscates the Java classes, the JS side gets <code>null</code> — a common source of release-only crashes.</p>
+          <p>
+            Libraries like <code>react-native-track-player</code> have both
+            <strong>JavaScript code</strong> (the API you call) and
+            <strong>native Java code</strong> (the actual implementation). React
+            Native "autolinks" these at build time. If ProGuard/R8 obfuscates
+            the Java classes, the JS side gets <code>null</code> — a common
+            source of release-only crashes.
+          </p>
         </div>
 
         <div class="doc-card">
           <p class="doc-card__title">Hermes JS engine</p>
-          <p>React Native 0.85 defaults to <strong>Hermes</strong>, a lightweight engine optimized for mobile. Unlike browsers, Hermes doesn't define <code>window</code> as a global. Accessing <code>window.document</code> throws <code>ReferenceError</code> — use <code>typeof window === 'undefined'</code> guards.</p>
+          <p>
+            React Native 0.85 defaults to <strong>Hermes</strong>, a lightweight
+            engine optimized for mobile. Unlike browsers, Hermes doesn't define
+            <code>window</code> as a global. Accessing
+            <code>window.document</code> throws <code>ReferenceError</code> —
+            use <code>typeof window === 'undefined'</code> guards.
+          </p>
         </div>
 
         <div class="doc-card">
           <p class="doc-card__title">Path aliases (@/)</p>
-          <p>One Song uses <code>@/</code> as an alias for <code>src/</code>. Requires three separate configs: <strong>tsconfig.json</strong> (<code>paths</code> for type-checking), <strong>metro.config.js</strong> (<code>resolveRequest</code> for bundling), <strong>jest.config.js</strong> (<code>moduleNameMapper</code> for tests).</p>
+          <p>
+            One Song uses <code>@/</code> as an alias for <code>src/</code>.
+            Requires three separate configs:
+            <strong>tsconfig.json</strong> (<code>paths</code> for
+            type-checking), <strong>metro.config.js</strong> (<code
+              >resolveRequest</code
+            >
+            for bundling), <strong>jest.config.js</strong> (<code
+              >moduleNameMapper</code
+            >
+            for tests).
+          </p>
         </div>
 
         <div class="doc-card">
           <p class="doc-card__title">AsyncStorage</p>
-          <p>React Native's equivalent of <code>localStorage</code>. Key-value store backed by native SQLite. All values are strings — <code>JSON.stringify</code> before storing, <code>JSON.parse</code> when reading. Used for song, onboarding state, timer default, and auto-play preference.</p>
+          <p>
+            React Native's equivalent of <code>localStorage</code>. Key-value
+            store backed by native SQLite. All values are strings —
+            <code>JSON.stringify</code> before storing,
+            <code>JSON.parse</code> when reading. Used for song, onboarding
+            state, timer default, and auto-play preference.
+          </p>
         </div>
 
         <div class="doc-card">
           <p class="doc-card__title">ProGuard / R8</p>
-          <p>Release builds run R8, which removes unused code and renames Java classes. This breaks autolinking unless you add <strong>keep rules</strong> in <code>proguard-rules.pro</code> for every native module library.</p>
+          <p>
+            Release builds run R8, which removes unused code and renames Java
+            classes. This breaks autolinking unless you add
+            <strong>keep rules</strong> in <code>proguard-rules.pro</code> for
+            every native module library.
+          </p>
         </div>
 
         <div class="doc-card">
           <p class="doc-card__title">ABI splitting</p>
-          <p>Building for all 4 CPU architectures creates a 56 MB APK. ABI splitting targets only <code>arm64-v8a</code>, reducing size to ~14 MB. Google Play's AAB format does this per-device automatically.</p>
+          <p>
+            Building for all 4 CPU architectures creates a 56 MB APK. ABI
+            splitting targets only <code>arm64-v8a</code>, reducing size to ~14
+            MB. Google Play's AAB format does this per-device automatically.
+          </p>
         </div>
 
         <div class="doc-card">
           <p class="doc-card__title">versionCode vs versionName</p>
-          <p><strong>versionCode</strong> (integer) is Google Play's internal identifier — must be strictly increasing. <strong>versionName</strong> (string like "1.0.1") is what users see. Both must be bumped for every release.</p>
+          <p>
+            <strong>versionCode</strong> (integer) is Google Play's internal
+            identifier — must be strictly increasing.
+            <strong>versionName</strong> (string like "1.0.1") is what users
+            see. Both must be bumped for every release.
+          </p>
         </div>
       </article>
 
@@ -503,8 +918,13 @@ TrackPlayer.<span class="syn-fn">registerPlaybackService</span>(() =&gt; <span c
       <article class="doc-section" id="section-til">
         <h2 class="doc-section__heading">Key lessons</h2>
         <p class="doc-intro">
-          Every bug, fix, and architectural insight from building One Song. The full log is in
-          <a href="https://github.com/AshikNesin/one-song/blob/main/TIL.md" class="doc-link">TIL.md</a>
+          Every bug, fix, and architectural insight from building One Song. The
+          full log is in
+          <a
+            href="https://github.com/AshikNesin/one-song/blob/main/TIL.md"
+            class="doc-link"
+            >TIL.md</a
+          >
           — these are the most impactful entries.
         </p>
 
@@ -513,39 +933,80 @@ TrackPlayer.<span class="syn-fn">registerPlaybackService</span>(() =&gt; <span c
             <span class="doc-til__tag doc-til__tag--bug">Bug</span>
           </div>
           <h3 class="doc-til__heading">Android 12+ double splash screen</h3>
-          <p>Android 12+ mandates a system splash screen that shows the app icon before <code>onCreate()</code> runs. Having both a system splash <em>and</em> a custom <code>SplashActivity</code> caused a double flash. Fix: removed <code>SplashActivity</code>, made <code>MainActivity</code> the launcher, customized the system splash via <code>values-v31/styles.xml</code>.</p>
+          <p>
+            Android 12+ mandates a system splash screen that shows the app icon
+            before <code>onCreate()</code> runs. Having both a system splash
+            <em>and</em> a custom <code>SplashActivity</code> caused a double
+            flash. Fix: removed <code>SplashActivity</code>, made
+            <code>MainActivity</code> the launcher, customized the system splash
+            via <code>values-v31/styles.xml</code>.
+          </p>
         </div>
 
         <div class="doc-til">
           <div class="doc-til__tags">
             <span class="doc-til__tag doc-til__tag--bug">Bug</span>
           </div>
-          <h3 class="doc-til__heading">ProGuard/R8 crashes on release builds</h3>
-          <p>R8 obfuscates Java classes, renaming native module package classes and stripping <code>@ReactModule</code> annotations. Fix: add <code>-keep</code> rules in <code>proguard-rules.pro</code> for <strong>every</strong> native module library. Debug builds don't run ProGuard, so these crashes only appear in production.</p>
+          <h3 class="doc-til__heading">
+            ProGuard/R8 crashes on release builds
+          </h3>
+          <p>
+            R8 obfuscates Java classes, renaming native module package classes
+            and stripping <code>@ReactModule</code> annotations. Fix: add
+            <code>-keep</code> rules in <code>proguard-rules.pro</code> for
+            <strong>every</strong> native module library. Debug builds don't run
+            ProGuard, so these crashes only appear in production.
+          </p>
         </div>
 
         <div class="doc-til">
           <div class="doc-til__tags">
             <span class="doc-til__tag doc-til__tag--fix">Fix</span>
           </div>
-          <h3 class="doc-til__heading">In-app update stuck in DEVELOPER_TRIGGERED</h3>
-          <p>The library had two bugs: <code>checkNeedsUpdate()</code> returned <code>shouldUpdate: false</code> for <code>DEVELOPER_TRIGGERED</code> state, and <code>startUpdate()</code> rejected it. Patched via <code>pnpm patch</code> at both JS and Java levels. <code>DEVELOPER_TRIGGERED</code> is a legitimate update state, not an error.</p>
+          <h3 class="doc-til__heading">
+            In-app update stuck in DEVELOPER_TRIGGERED
+          </h3>
+          <p>
+            The library had two bugs: <code>checkNeedsUpdate()</code> returned
+            <code>shouldUpdate: false</code> for
+            <code>DEVELOPER_TRIGGERED</code> state, and
+            <code>startUpdate()</code> rejected it. Patched via
+            <code>pnpm patch</code> at both JS and Java levels.
+            <code>DEVELOPER_TRIGGERED</code> is a legitimate update state, not
+            an error.
+          </p>
         </div>
 
         <div class="doc-til">
           <div class="doc-til__tags">
             <span class="doc-til__tag doc-til__tag--fix">Fix</span>
           </div>
-          <h3 class="doc-til__heading">Flexible update downloaded but never installed</h3>
-          <p>Must call <code>installUpdate()</code> after download completes. Old code was fire-and-forget. Fix: register <code>addStatusUpdateListener</code> <strong>before</strong> <code>startUpdate()</code>, call <code>installUpdate()</code> on <code>DOWNLOADED</code> status. The listener must come first — callbacks can fire synchronously for already-completed states.</p>
+          <h3 class="doc-til__heading">
+            Flexible update downloaded but never installed
+          </h3>
+          <p>
+            Must call <code>installUpdate()</code> after download completes. Old
+            code was fire-and-forget. Fix: register
+            <code>addStatusUpdateListener</code> <strong>before</strong>
+            <code>startUpdate()</code>, call <code>installUpdate()</code> on
+            <code>DOWNLOADED</code> status. The listener must come first —
+            callbacks can fire synchronously for already-completed states.
+          </p>
         </div>
 
         <div class="doc-til">
           <div class="doc-til__tags">
             <span class="doc-til__tag doc-til__tag--fix">Fix</span>
           </div>
-          <h3 class="doc-til__heading">Release APK signed with debug certificate</h3>
-          <p>React Native's starter template defaults release builds to <code>signingConfigs.debug</code>. Must change to <code>signingConfigs.release</code> with env-var-based credential injection.</p>
+          <h3 class="doc-til__heading">
+            Release APK signed with debug certificate
+          </h3>
+          <p>
+            React Native's starter template defaults release builds to
+            <code>signingConfigs.debug</code>. Must change to
+            <code>signingConfigs.release</code> with env-var-based credential
+            injection.
+          </p>
         </div>
 
         <div class="doc-til">
@@ -553,7 +1014,15 @@ TrackPlayer.<span class="syn-fn">registerPlaybackService</span>(() =&gt; <span c
             <span class="doc-til__tag doc-til__tag--arch">Arch</span>
           </div>
           <h3 class="doc-til__heading">Metadata: ID3 + MP4 dual path</h3>
-          <p><code>id3-parser</code> only handles MP3. M4A/MP4 files store metadata in MP4 atoms. Custom parser walks <code>moov→udta→meta→ilst</code>. Key gotcha: <code>meta</code> is a "full box" with a 4-byte header before children; <code>udta</code> is not. MP4 <code>data</code> atom type indicator is the first byte, not a uint32. Artwork saved as <code>file://</code> URI.</p>
+          <p>
+            <code>id3-parser</code> only handles MP3. M4A/MP4 files store
+            metadata in MP4 atoms. Custom parser walks
+            <code>moov→udta→meta→ilst</code>. Key gotcha: <code>meta</code> is a
+            "full box" with a 4-byte header before children;
+            <code>udta</code> is not. MP4 <code>data</code> atom type indicator
+            is the first byte, not a uint32. Artwork saved as
+            <code>file://</code> URI.
+          </p>
         </div>
 
         <div class="doc-til">
@@ -561,7 +1030,13 @@ TrackPlayer.<span class="syn-fn">registerPlaybackService</span>(() =&gt; <span c
             <span class="doc-til__tag doc-til__tag--arch">Arch</span>
           </div>
           <h3 class="doc-til__heading">Hermes: no window global</h3>
-          <p>Hermes doesn't define <code>window</code>. Accessing an undeclared variable throws <code>ReferenceError</code>. RN 0.85's DevTools setup hit this. Fix: <code>typeof window === 'undefined'</code> guard, persisted via <code>pnpm patch</code>.</p>
+          <p>
+            Hermes doesn't define <code>window</code>. Accessing an undeclared
+            variable throws <code>ReferenceError</code>. RN 0.85's DevTools
+            setup hit this. Fix:
+            <code>typeof window === 'undefined'</code> guard, persisted via
+            <code>pnpm patch</code>.
+          </p>
         </div>
 
         <div class="doc-til">
@@ -569,7 +1044,11 @@ TrackPlayer.<span class="syn-fn">registerPlaybackService</span>(() =&gt; <span c
             <span class="doc-til__tag doc-til__tag--fix">Fix</span>
           </div>
           <h3 class="doc-til__heading">APK size: 56 MB → 14 MB</h3>
-          <p>Building for all 4 CPU architectures packs 4 copies of every native library. ABI splitting targeting only <code>arm64-v8a</code> reduces APK size by 75%. Modern phones (2015+) all use arm64.</p>
+          <p>
+            Building for all 4 CPU architectures packs 4 copies of every native
+            library. ABI splitting targeting only <code>arm64-v8a</code> reduces
+            APK size by 75%. Modern phones (2015+) all use arm64.
+          </p>
         </div>
 
         <div class="doc-til">
@@ -577,7 +1056,12 @@ TrackPlayer.<span class="syn-fn">registerPlaybackService</span>(() =&gt; <span c
             <span class="doc-til__tag doc-til__tag--bug">Bug</span>
           </div>
           <h3 class="doc-til__heading">versionCode must be unique</h3>
-          <p>Google Play rejects uploads with duplicate <code>versionCode</code>. Only <code>versionName</code> was bumped; <code>versionCode</code> stayed at 1. Both must be bumped for every upload. Automated via <code>scripts/bump-android-version.sh</code>.</p>
+          <p>
+            Google Play rejects uploads with duplicate <code>versionCode</code>.
+            Only <code>versionName</code> was bumped;
+            <code>versionCode</code> stayed at 1. Both must be bumped for every
+            upload. Automated via <code>scripts/bump-android-version.sh</code>.
+          </p>
         </div>
 
         <div class="doc-til">
@@ -585,15 +1069,19 @@ TrackPlayer.<span class="syn-fn">registerPlaybackService</span>(() =&gt; <span c
             <span class="doc-til__tag doc-til__tag--arch">Arch</span>
           </div>
           <h3 class="doc-til__heading">Java 17 required for RN 0.85</h3>
-          <p>React Native's New Architecture is sensitive to Java version. Java 25 throws <code>restricted method</code> errors. Pin Gradle to OpenJDK 17 via <code>org.gradle.java.home</code> in <code>gradle.properties</code>. System default Java can stay at 25 — only the Android build needs 17.</p>
+          <p>
+            React Native's New Architecture is sensitive to Java version. Java
+            25 throws <code>restricted method</code> errors. Pin Gradle to
+            OpenJDK 17 via <code>org.gradle.java.home</code> in
+            <code>gradle.properties</code>. System default Java can stay at 25 —
+            only the Android build needs 17.
+          </p>
         </div>
       </article>
-
     </main>
 
     <!-- Ft6 · Letter close footer -->
     <footer class="footer">
-      <p class="footer__close">— Ashik, Dad &amp; Developer. 2026.</p>
       <nav class="footer__links" aria-label="Footer navigation">
         <a href="/">Home</a>
         <a href="/privacy">Privacy</a>
@@ -608,7 +1096,10 @@ TrackPlayer.<span class="syn-fn">registerPlaybackService</span>(() =&gt; <span c
       tabs.forEach(tab => {
         tab.addEventListener('click', () => {
           const section = tab.dataset.section;
-          tabs.forEach(t => { t.classList.remove('is-active'); t.setAttribute('aria-selected', 'false'); });
+          tabs.forEach(t => {
+            t.classList.remove('is-active');
+            t.setAttribute('aria-selected', 'false');
+          });
           sections.forEach(s => s.classList.remove('is-active'));
           tab.classList.add('is-active');
           tab.setAttribute('aria-selected', 'true');
@@ -617,7 +1108,8 @@ TrackPlayer.<span class="syn-fn">registerPlaybackService</span>(() =&gt; <span c
           const tabsEl = document.querySelector('.doc-tabs');
           if (tabsEl) {
             const rect = tabsEl.getBoundingClientRect();
-            if (rect.top < 0) window.scrollBy({ top: rect.top - 72, behavior: 'smooth' });
+            if (rect.top < 0)
+              window.scrollBy({ top: rect.top - 72, behavior: 'smooth' });
           }
         });
       });

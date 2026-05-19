@@ -130,14 +130,6 @@ img {
   box-shadow: 0 1px 3px oklch(20% 0.01 75 / 0.08);
 }
 
-.letter-salutation {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: var(--text-lg);
-  color: var(--color-muted);
-  margin-bottom: var(--space-xs);
-}
-
 .letter-headline {
   font-family: var(--font-display);
   font-size: var(--text-display);
