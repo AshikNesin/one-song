@@ -4,6 +4,74 @@ A running log of bugs, fixes, and lessons from building One Song.
 
 ---
 
+## 2026-06-06 — iOS Artwork and Metadata Not Showing in Player
+
+### Problem
+The in-app player showed a placeholder music-note icon (🎵) instead of the song's embedded artwork. Title and artist were also missing — showing only the fallback "Unknown Song / Unknown Artist".
+
+### Root Cause
+Multiple iOS-specific issues in the file-copy + metadata-extraction pipeline:
+
+**1. `keepLocalCopy()` returns percent-encoded file URIs on iOS**
+
+`@react-native-documents/picker`'s `keepLocalCopy()` on iOS returns the copied file path via `NSURL.absoluteString`, which percent-encodes path characters like spaces (`%20`). Example: `file:///.../My%20Song.mp3`.
+
+Our `MetadataAdapter.ts` stripped the `file://` prefix but left the `%20` intact, producing `/.../My%20Song.mp3`. `react-native-fs`'s native iOS `read()` uses `NSFileManager fileExistsAtPath:`, which expects literal spaces — not percent-encoding. This caused `ENOENT`, metadata extraction failed silently, and `song.artwork` stayed `undefined`.
+
+Android returns plain unencoded paths, so it never hit this.
+
+**2. `react-native-fs` native module issues on iOS with New Architecture**
+
+Even after fixing percent-encoding, `react-native-fs`'s native module had compatibility issues with React Native's New Architecture (Fabric / TurboModules) on iOS. The `read()` and `readFile()` calls would hang or fail intermittently in debug builds, making metadata extraction unreliable.
+
+**3. `react-native-track-player` v5 alpha `Metadata.swift` can't load local artwork**
+
+The library's `Metadata.swift` uses `URLSession.shared.dataTask` for ALL artwork URLs — but `URLSession` does **not** support `file://` URLs on iOS. So even after the automatic now-playing setup, any metadata refresh path (including internal library flows) failed for local artwork.
+
+**4. Audio session category not set before activation**
+
+`TrackPlayer.swift`'s `configureAudioSession()` called `activateSession()` (which does `setActive(true)`) **before** `setCategory()`. On iOS the recommended order is `setCategory()` first, then `setActive(true)`. This can prevent the Now Playing info center from registering properly.
+
+### Fix
+
+**Final approach — eliminated the problematic native dependencies entirely:**
+
+1. **Removed `keepLocalCopy()`** from `SongIntake.ts` — stopped copying files to app cache (the source of URI encoding issues)
+2. **Use the original picked file URI directly** for both playback (`song.url`) and metadata extraction
+3. **Replaced `react-native-fs` with `fetch()` + `FileReader`** in `MetadataAdapter.ts` for reading file bytes:
+   ```typescript
+   const response = await fetch(fileUri);
+   const blob = await response.blob();
+   const arrayBuffer = await readBlobAsArrayBuffer(blob); // FileReader
+   const bytes = new Uint8Array(arrayBuffer);
+   ```
+   `fetch('file:///...')` and `fetch('content://...')` are core React Native features, stable across old and new architecture on both platforms.
+4. **Return artwork as `data:` URIs** instead of writing to disk:
+   ```typescript
+   return `data:${artwork.mime};base64,${artwork.base64}`;
+   ```
+   Works directly in React Native `<Image>` and iOS `URLSession` (TrackPlayer uses it internally). No disk writes, no `react-native-fs writeFile()`.
+5. **Deleted `react-native-track-player` native patch** — the `fetch()` + `data:` URI approach bypasses the library's local-artwork-loading bug entirely
+6. **Reverted all previous workarounds** — path normalization, percent-decoding, Swift patches, `iosCategory` options — none were needed after switching to `fetch()`
+7. **Kept `ios/OneSong/Info.plist` `UIBackgroundModes` with `audio`** — still required for background audio and Now Playing info center
+
+### Trade-offs
+- **No file copy** — if the original file is deleted or moved, the stored URI becomes invalid. The existing error handling in `Playback.ts` catches `loadSong` failures and navigates to onboarding.
+- **No disk caching** — `data:` URIs are held in memory. For the single-song use case, this is negligible.
+
+### Verification
+- On iOS, pick a song with spaces in the filename. The artwork, title, and artist appear correctly in the player.
+- On Android, behavior is unchanged.
+- All 91 tests pass.
+
+### Lesson
+- **When a chain of native dependencies keeps breaking, eliminate the chain.** `fetch()` + `FileReader` + `data:` URIs are core Web APIs supported by React Native on both platforms — they bypass all native-module compatibility issues.
+- **Percent-encoding in file URIs is a silent killer.** `NSURL.absoluteString` encodes special characters, but `NSFileManager` expects literal paths. Always `decodeURI()` after stripping `file://`, or avoid file URIs entirely.
+- **Native patches are fragile.** Patching `node_modules` requires careful patch management (`pnpm patch`, `patch-package`). Every reinstall, update, or CI run can silently break patches. Pure-JS solutions survive all of that.
+- **`fetch()` with `file://` and `content://` is a reliable cross-platform file reader in React Native.** It works on both old and new architecture, on both iOS and Android, without any additional dependencies.
+
+---
+
 ## 2026-06-06 — iOS Document Picker Doesn't Show M4A Files
 
 ### Problem
