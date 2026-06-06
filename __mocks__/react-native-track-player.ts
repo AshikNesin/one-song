@@ -2,6 +2,7 @@ export const Event = {
   PlaybackState: 'playback-state',
   RemotePlay: 'remote-play',
   RemotePause: 'remote-pause',
+  RemoteSeek: 'remote-seek',
   RemoteDuck: 'remote-duck',
 };
 

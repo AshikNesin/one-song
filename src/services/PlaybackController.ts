@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { PlaybackState, getState, subscribe, init, togglePlay, seek, startPolling, stopPolling, handleAudioFocus, handleRemotePlay, handleRemotePause } from '@/services/Playback';
-import { useAudioFocus, useRemotePlayPause } from '@/services/AudioService';
+import { PlaybackState, getState, subscribe, init, togglePlay, seek, startPolling, stopPolling, handleAudioFocus, handleRemotePlay, handleRemotePause, handleRemoteSeek } from '@/services/Playback';
+import { useAudioFocus, useRemotePlayPause, useRemoteSeek } from '@/services/AudioService';
 
 export function usePlaybackController() {
   const [state, setState] = useState<PlaybackState>(getState());
@@ -30,6 +30,10 @@ export function usePlaybackController() {
       await handleRemotePause();
     },
   );
+
+  useRemoteSeek(async (position: number) => {
+    await handleRemoteSeek(position);
+  });
 
   return {
     ...state,

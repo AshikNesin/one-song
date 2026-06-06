@@ -12,6 +12,7 @@ jest.mock('@/services/AudioService', () => ({
   seekTo: jest.fn().mockResolvedValue(undefined),
   useAudioFocus: jest.fn(),
   useRemotePlayPause: jest.fn(),
+  useRemoteSeek: jest.fn(),
 }));
 
 jest.mock('../../src/services/SleepTimer', () => ({
