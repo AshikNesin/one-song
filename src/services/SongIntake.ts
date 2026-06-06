@@ -21,7 +21,7 @@ export async function intake(): Promise<Song | IntakeError> {
 
   try {
     const result = await pick({
-      type: ['audio/*'],
+      type: ['audio/*', 'public.mpeg-4-audio', 'public.audio'],
     });
 
     if (result.length === 0) {

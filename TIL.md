@@ -4,6 +4,114 @@ A running log of bugs, fixes, and lessons from building One Song.
 
 ---
 
+## 2026-06-06 — iOS Build: Module Map Not Found + No Such Module 'React'
+
+### Problem
+
+Building for a physical iOS device failed with four errors:
+
+```
+Module map file '.../DerivedData/.../SwiftAudioEx/SwiftAudioEx.modulemap' not found
+Module map file '.../DerivedData/.../react-native-document-picker/react_native_document_picker.modulemap' not found
+Module map file '.../DerivedData/.../react-native-track-player/react_native_track_player.modulemap' not found
+No such module 'React' (in AppDelegate.swift)
+```
+
+The initial attempt to fix by deleting `Pods/`, `Podfile.lock`, and `DerivedData` followed by `pod install` did not resolve the errors.
+
+### Root Cause
+
+Two separate issues:
+
+**1. `xcode-select` pointed to CommandLineTools instead of Xcode.app**
+
+```bash
+xcode-select -p
+# /Library/Developer/CommandLineTools  ← WRONG
+```
+
+The active developer directory was set to standalone command-line tools, not the full Xcode.app installation. This meant:
+- `xcodebuild` couldn't run at all (`requires Xcode, but active developer directory is CommandLineTools`)
+- CocoaPods couldn't compile native modules properly during `pod install`
+- Module maps for third-party pods (SwiftAudioEx, react-native-track-player, etc.) were never generated in DerivedData
+- The `React` framework itself couldn't be found by the Swift compiler
+
+This is the root cause of all four "module map not found" and "No such module 'React'" errors. The pods were installed on disk (in `ios/Pods/Target Support Files/`), but the build system couldn't compile them without the full Xcode toolchain.
+
+**2. Missing root `index.js` with broken import paths in `src/index.js`**
+
+After fixing the `xcode-select` issue, a second error appeared:
+
+```
+ResourceNotFoundError: The resource '/Users/ashiknesin/Code/one-song/index.js' was not found.
+```
+
+React Native's iOS build script (`Bundle React Native code and images`) expects `index.js` at the project root as the entry point. The project only had `src/index.js`, and it contained two broken import paths:
+
+- `import App from './src/App'` — from `src/index.js`, this resolves to `src/src/App` (wrong)
+- `import { name as appName } from './app.json'` — `app.json` is at the project root, not in `src/`
+
+### Fix
+
+**1. Switch `xcode-select` to Xcode.app:**
+
+```bash
+sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+```
+
+**2. Create root `index.js` that delegates to `src/index.js`:**
+
+```javascript
+// index.js (project root)
+import './src/index';
+```
+
+**3. Fix import paths in `src/index.js`:**
+
+```javascript
+// Before (broken)
+import App from './src/App';
+import { name as appName } from './app.json';
+
+// After (fixed)
+import App from '@/App';
+import { name as appName } from '../app.json';
+```
+
+### Verification
+
+```bash
+xcode-select -p
+# /Applications/Xcode.app/Contents/Developer ✓
+
+cd ios && xcodebuild -workspace OneSong.xcworkspace -scheme OneSong -configuration Debug -destination 'generic/platform=iOS' -sdk iphoneos build
+# ** BUILD SUCCEEDED **
+```
+
+Also created `scripts/clean-ios.sh` (runnable via `pnpm clean:ios`) for future iOS cache issues:
+
+```bash
+#!/bin/bash
+set -e
+PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+echo "🗑️  Removing iOS Pods and Podfile.lock..."
+rm -rf "$PROJECT_DIR/ios/Pods" "$PROJECT_DIR/ios/Podfile.lock"
+echo "🗑️  Removing Xcode DerivedData..."
+rm -rf ~/Library/Developer/Xcode/DerivedData/OneSong-*
+echo "📦  Reinstalling pods..."
+cd "$PROJECT_DIR/ios" && pod install
+echo "✅  iOS clean complete! Run 'pnpm ios' to build."
+```
+
+### Lesson
+
+- **`xcode-select -p` should be the first diagnostic for any "module not found" iOS build error.** If it points to `/Library/Developer/CommandLineTools` instead of `/Applications/Xcode.app/Contents/Developer`, CocoaPods and the build system can't compile native modules at all. No amount of cache clearing fixes this.
+- **React Native's iOS build script hardcodes `index.js` as the entry point.** If your entry file lives elsewhere (e.g., `src/index.js`), you need a root `index.js` that re-exports it.
+- **Import paths are relative to the file's location, not the project root.** `src/index.js` importing `./src/App` resolves to `src/src/App`. Use `@/` aliases or correct relative paths (`../app.json` for root files).
+- **The `xcode-select` issue can appear silently.** `pod install` may succeed without errors even when the wrong developer tools are active — the failure only shows up at build time.
+
+---
+
 ## 2026-05-03 — Patched sp-react-native-in-app-updates to Fix DEVELOPER_TRIGGERED
 
 ### Problem
