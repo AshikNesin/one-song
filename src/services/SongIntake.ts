@@ -1,5 +1,5 @@
 import { Linking } from 'react-native';
-import { pick, keepLocalCopy } from '@react-native-documents/picker';
+import { pick } from '@react-native-documents/picker';
 import { Song } from '@/types';
 import { DEFAULT_SONG_TITLE, DEFAULT_ARTIST } from '@/utils/constants';
 import { parseFilename } from '@/utils/metadata';
@@ -9,8 +9,7 @@ import * as Storage from '@/services/StorageService';
 
 export type IntakeError =
   | { type: 'permission_denied'; blocked: boolean }
-  | { type: 'pick_failed' }
-  | { type: 'copy_failed' };
+  | { type: 'pick_failed' };
 
 export async function intake(): Promise<Song | IntakeError> {
   const hasPermission = await requestStoragePermission();
@@ -30,24 +29,15 @@ export async function intake(): Promise<Song | IntakeError> {
 
     const file = result[0];
 
-    const localCopy = await keepLocalCopy({
-      files: [{ uri: file.uri, fileName: file.name ?? 'song.mp3' }],
-      destination: 'cachesDirectory',
-    });
-
-    if (localCopy[0].status === 'error') {
-      return { type: 'copy_failed' };
-    }
-
-    const metadata = await extractMetadata(localCopy[0].localUri);
+    const metadata = await extractMetadata(file.uri);
     const parsedFilename = parseFilename(file.name ?? '');
 
     const song: Song = {
-      id: localCopy[0].localUri,
+      id: file.uri,
       title: metadata.title || parsedFilename.title || file.name || DEFAULT_SONG_TITLE,
       artist: metadata.artist || parsedFilename.artist || DEFAULT_ARTIST,
       artwork: metadata.artwork,
-      url: localCopy[0].localUri,
+      url: file.uri,
       duration: 0,
     };
 
