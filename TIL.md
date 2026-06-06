@@ -4,6 +4,52 @@ A running log of bugs, fixes, and lessons from building One Song.
 
 ---
 
+## 2026-06-06 — iOS Document Picker Doesn't Show M4A Files
+
+### Problem
+
+On iOS, the document picker in the onboarding screen didn't show `.m4a` files. MP3 files appeared fine, but M4A/AAC files were invisible in the picker.
+
+### Root Cause
+
+`@react-native-documents/picker` was configured with only `audio/*` as the type filter:
+
+```typescript
+const result = await pick({
+  type: ['audio/*'],
+});
+```
+
+iOS uses **UTIs (Uniform Type Identifiers)**, not MIME types, to filter files in the document picker. While Android understands `audio/*` as a MIME type wildcard that matches all audio formats, iOS maps it to a limited set of UTIs — and `public.mpeg-4-audio` (the UTI for `.m4a`) isn't included in that mapping.
+
+The result: M4A files are silently filtered out of the picker UI with no error or indication.
+
+### Fix
+
+Added explicit iOS UTIs alongside the MIME type:
+
+```typescript
+const result = await pick({
+  type: ['audio/*', 'public.mpeg-4-audio', 'public.audio'],
+});
+```
+
+- **`public.mpeg-4-audio`** — iOS UTI for `.m4a` files (the missing one)
+- **`public.audio`** — broad UTI for all audio types (catch-all for WAV, AAC, FLAC, etc.)
+- **`audio/*`** — kept for Android compatibility
+
+### Verification
+
+On iOS, the document picker now shows `.m4a` files alongside `.mp3` files. Android behavior is unchanged.
+
+### Lesson
+
+- **iOS document picker uses UTIs, not MIME types.** `audio/*` works on Android but doesn't cover all audio formats on iOS. Explicit UTIs are needed for formats like M4A (`public.mpeg-4-audio`).
+- **Common iOS audio UTIs:** `public.mp3`, `public.mpeg-4-audio` (M4A/AAC), `public.aiff-audio`, `public.audio` (all audio). See [Apple's UTI reference](https://developer.apple.com/library/archive/documentation/Miscellaneous/Reference/UTIRef/Articles/System-DeclaredUniformTypeIdentifiers.html).
+- **Silent filtering is the default behavior.** The picker won't error or warn when a UTI is missing — files just don't appear. Always test with the specific file formats your app supports.
+
+---
+
 ## 2026-06-06 — iOS Build: Module Map Not Found + No Such Module 'React'
 
 ### Problem
