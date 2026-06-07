@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { pick } from '@react-native-documents/picker';
+import { pick, keepLocalCopy } from '@react-native-documents/picker';
+import { Platform } from 'react-native';
 import {
   intake,
   complete,
@@ -23,11 +24,13 @@ jest.mock('@/utils/metadata', () => ({
 describe('SongIntake', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (keepLocalCopy as jest.Mock).mockResolvedValue([{ status: 'success', localUri: 'file:///cache/song.mp3' }]);
     mockParseFilename.mockImplementation((filename: string) => {
       const nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
       return { title: nameWithoutExt || undefined };
     });
     (extractMetadata as jest.Mock).mockResolvedValue({});
+    Platform.OS = 'android';
   });
 
   describe('intake', () => {
@@ -67,7 +70,30 @@ describe('SongIntake', () => {
       expect('id' in result).toBe(true);
       if ('id' in result) {
         expect(result.title).toBe('test');
-        // Android uses keepLocalCopy, so URL should be the local copy URI
+        expect(result.url).toBe('file:///cache/song.mp3');
+      }
+    });
+
+    it('returns copy_failed when keepLocalCopy fails', async () => {
+      (requestStoragePermission as jest.Mock).mockResolvedValue(true);
+      (pick as jest.Mock).mockResolvedValue([{ uri: 'content:///test.mp3', name: 'test.mp3' }]);
+      (keepLocalCopy as jest.Mock).mockResolvedValue([{ status: 'error' }]);
+
+      const result = await intake();
+
+      expect(result).toEqual({ type: 'copy_failed' });
+    });
+
+    it('uses keepLocalCopy on iOS too', async () => {
+      const { Platform } = require('react-native');
+      Platform.OS = 'ios';
+      (requestStoragePermission as jest.Mock).mockResolvedValue(true);
+      (pick as jest.Mock).mockResolvedValue([{ uri: 'file:///test.mp3', name: 'test.mp3' }]);
+
+      const result = await intake();
+
+      expect('id' in result).toBe(true);
+      if ('id' in result) {
         expect(result.url).toBe('file:///cache/song.mp3');
       }
     });

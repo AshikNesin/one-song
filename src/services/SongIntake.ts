@@ -1,4 +1,4 @@
-import { Linking, Platform } from 'react-native';
+import { Linking } from 'react-native';
 import { pick, keepLocalCopy } from '@react-native-documents/picker';
 import { Song } from '@/types';
 import { DEFAULT_SONG_TITLE, DEFAULT_ARTIST } from '@/utils/constants';
@@ -30,23 +30,19 @@ export async function intake(): Promise<Song | IntakeError> {
 
     const file = result[0];
 
-    // Android's document picker returns a content:// URI that may lose permission
-    // across app restarts. Use keepLocalCopy to get a persistent file:// URI.
-    // iOS returns a file:// URI directly, so no copy is needed.
-    let playbackUri = file.uri;
+    // Both Android and iOS benefit from keepLocalCopy:
+    // - Android: content:// URIs lose permission across app restarts
+    // - iOS: ensures a persistent file:// URI in the app cache
+    const localCopy = await keepLocalCopy({
+      files: [{ uri: file.uri, fileName: file.name ?? 'song.mp3' }],
+      destination: 'cachesDirectory',
+    });
 
-    if (Platform.OS === 'android') {
-      const localCopy = await keepLocalCopy({
-        files: [{ uri: file.uri, fileName: file.name ?? 'song.mp3' }],
-        destination: 'cachesDirectory',
-      });
-
-      if (localCopy[0].status === 'error') {
-        return { type: 'copy_failed' };
-      }
-
-      playbackUri = localCopy[0].localUri;
+    if (localCopy[0].status === 'error') {
+      return { type: 'copy_failed' };
     }
+
+    const playbackUri = localCopy[0].localUri;
 
     const metadata = await extractMetadata(playbackUri);
     const parsedFilename = parseFilename(file.name ?? '');

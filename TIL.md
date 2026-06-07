@@ -4,6 +4,55 @@ A running log of bugs, fixes, and lessons from building One Song.
 
 ---
 
+## 2026-06-07 — Restored keepLocalCopy for iOS
+
+### Context
+
+Earlier, `keepLocalCopy()` was removed for iOS because it returned percent-encoded file URIs (e.g., `file:///.../My%20Song.mp3`). The old `MetadataAdapter.ts` used `react-native-fs`, which couldn't handle percent-encoded paths — `NSFileManager fileExistsAtPath:` expects literal spaces, not `%20`. This caused `ENOENT`, metadata extraction failed silently, and the player showed "Unknown Song" with no artwork.
+
+The fix at the time was to use the raw document picker URI directly on iOS and remove `keepLocalCopy()` entirely.
+
+### Why Restore It Now
+
+The metadata pipeline was later rewritten to use `fetch()` + `FileReader` instead of `react-native-fs`. `fetch()` handles percent-encoded `file://` URIs correctly on both platforms. This eliminates the original root cause.
+
+Using `keepLocalCopy()` on iOS provides the same benefits as Android:
+- The file is copied to the app cache directory
+- The resulting `file://` URI is fully controlled by the app
+- No dependency on the original file's location or permissions
+- Survives app restarts reliably
+
+### Code Change
+
+Removed the `Platform.OS === 'android'` guard in `SongIntake.ts`:
+
+```typescript
+// Before
+if (Platform.OS === 'android') {
+  const localCopy = await keepLocalCopy({...});
+  ...
+}
+
+// After
+const localCopy = await keepLocalCopy({
+  files: [{ uri: file.uri, fileName: file.name ?? 'song.mp3' }],
+  destination: 'cachesDirectory',
+});
+
+if (localCopy[0].status === 'error') {
+  return { type: 'copy_failed' };
+}
+
+const playbackUri = localCopy[0].localUri;
+```
+
+### Verification
+
+- All 94 tests pass
+- iOS test added: verifies `keepLocalCopy` is called and the local URI is used
+
+---
+
 ## 2026-06-07 — Auto-play on Start Broken on Android After Removing keepLocalCopy
 
 ### Problem
