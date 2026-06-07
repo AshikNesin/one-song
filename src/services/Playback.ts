@@ -158,7 +158,5 @@ export async function handleRemotePause(): Promise<void> {
 }
 
 export async function handleRemoteSeek(position: number): Promise<void> {
-  await seekTo(position);
-  state = { ...state, position };
-  notify();
+  await seek(position);
 }

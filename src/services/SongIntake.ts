@@ -32,10 +32,10 @@ export async function intake(): Promise<Song | IntakeError> {
 
     // Both Android and iOS benefit from keepLocalCopy:
     // - Android: content:// URIs lose permission across app restarts
-    // - iOS: ensures a persistent file:// URI in the app cache
+    // - iOS: ensures a persistent file:// URI that won't be purged by the OS
     const localCopy = await keepLocalCopy({
       files: [{ uri: file.uri, fileName: file.name ?? 'song.mp3' }],
-      destination: 'cachesDirectory',
+      destination: 'documentDirectory',
     });
 
     if (localCopy[0].status === 'error') {

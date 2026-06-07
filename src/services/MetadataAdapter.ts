@@ -1,8 +1,8 @@
 import { Buffer } from 'buffer';
+import * as RNFS from 'react-native-fs';
 import {
   parseId3Metadata,
   parseMp4Metadata,
-  getImageExtension,
 } from '@/utils/metadata';
 
 interface SongMetadata {
@@ -11,28 +11,21 @@ interface SongMetadata {
   artwork?: string;
 }
 
-function readBlobAsArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as ArrayBuffer);
-    reader.onerror = reject;
-    reader.readAsArrayBuffer(blob);
-  });
+function filePathFromUri(uri: string): string {
+  return decodeURIComponent(uri.replace(/^file:\/\//, ''));
 }
 
 async function fetchFileBytes(uri: string, limitBytes?: number): Promise<Uint8Array> {
-  const response = await fetch(uri);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch file: ${response.status}`);
+  const path = filePathFromUri(uri);
+  if (limitBytes !== undefined) {
+    const base64 = await RNFS.read(path, limitBytes, 0, 'base64');
+    return Buffer.from(base64, 'base64');
   }
-  const blob = await response.blob();
-  const slice = limitBytes !== undefined ? blob.slice(0, limitBytes) : blob;
-  const arrayBuffer = await readBlobAsArrayBuffer(slice);
-  return new Uint8Array(arrayBuffer);
+  const base64 = await RNFS.readFile(path, 'base64');
+  return Buffer.from(base64, 'base64');
 }
 
 async function writeArtworkToCache(artwork: { mime: string; base64: string }): Promise<string> {
-  const ext = getImageExtension(artwork.mime);
   return `data:${artwork.mime};base64,${artwork.base64}`;
 }
 
