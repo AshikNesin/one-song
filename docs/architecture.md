@@ -12,7 +12,7 @@ The app listens to audio focus events via `react-native-track-player`. When a ph
 
 The app copies the picked file into the app's document directory and stores the local URI. Metadata (title, artist, artwork) is read from the file — Artwork is returned as a `data:` URI so it works in both the in-app `<Image>` and the platform media notification / Now Playing center without disk caching.
 
-If the original file is deleted, moved, or the app loses persistent URI permission after reinstall, playback fails on the next app launch. The existing error handling in `Playback.ts` detects the failure, clears the stored song, and navigates to the onboarding screen so the user can pick a new song.
+Since the app keeps its own copy, deleting or moving the original file has no effect on playback. If the app is uninstalled and reinstalled, the document directory is wiped and playback will fail on next launch. The existing error handling in `Playback.ts` detects the failure, clears the stored song, and navigates to the onboarding screen so the user can pick a new song.
 
 ## Sleep Timer
 
