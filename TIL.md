@@ -4,6 +4,109 @@ A running log of bugs, fixes, and lessons from building One Song.
 
 ---
 
+## 2026-06-07 — Auto-play on Start Broken on Android After Removing keepLocalCopy
+
+### Problem
+
+On the `feat/ios-mvp` branch, the "Auto-play on launch" setting stopped working on Android. When the app was killed and relaunched, instead of auto-playing the saved song, it fell through to the error handler in `Playback.init()` and navigated back to onboarding.
+
+The same flow worked perfectly on iOS and on the `main` branch.
+
+### Root Cause
+
+On `main`, `SongIntake.ts` uses `keepLocalCopy()` from `@react-native-documents/picker` to copy the picked audio file into the app's cache directory. This produces a persistent `file://` URI that `react-native-track-player` can access reliably across app restarts.
+
+On `feat/ios-mvp`, `keepLocalCopy()` was removed entirely (to fix iOS-specific issues with percent-encoded URIs and `react-native-fs` compatibility). The raw document picker URI is now stored directly as `song.url`.
+
+This works on iOS because iOS's document picker returns a `file://` URI that remains valid. But on **Android**, the picker returns a **`content://` URI** (e.g., `content://com.android.providers.media.documents/document/audio%3A123`). These URIs require persistent URI permissions via `takePersistableUriPermission()`, which `@react-native-documents/picker` does not automatically grant. After the app is killed and relaunched, the `content://` URI becomes inaccessible — `TrackPlayer.add()` fails (or silently fails to buffer), the `catch` block in `init()` clears the song data, and the user is sent to onboarding.
+
+### Fix
+
+Restored `keepLocalCopy()` for Android only, while keeping the direct URI approach for iOS:
+
+```typescript
+import { Platform } from 'react-native';
+import { pick, keepLocalCopy } from '@react-native-documents/picker';
+
+// In intake():
+let playbackUri = file.uri;
+
+if (Platform.OS === 'android') {
+  const localCopy = await keepLocalCopy({
+    files: [{ uri: file.uri, fileName: file.name ?? 'song.mp3' }],
+    destination: 'cachesDirectory',
+  });
+
+  if (localCopy[0].status === 'error') {
+    return { type: 'copy_failed' };
+  }
+
+  playbackUri = localCopy[0].localUri;
+}
+```
+
+- **Android:** `keepLocalCopy()` copies the file to cache → returns a `file://` URI → survives app restarts
+- **iOS:** Uses the picker's `file://` URI directly → no copy needed (avoids the percent-encoding issues from the earlier fix)
+
+### Verification
+
+- Picked a song on Android → killed the app → relaunched → song auto-played correctly
+- iOS behavior unchanged (auto-play still works)
+- All 92 tests pass (updated mock for `keepLocalCopy` and adjusted test assertions)
+
+### Lesson
+
+- **Android's `content://` URIs are not persistent across app restarts.** The document picker returns a content provider URI that requires explicit permission grants. Without `takePersistableUriPermission()`, the URI becomes invalid after the app is killed. Use `keepLocalCopy()` to convert to a reliable `file://` URI.
+- **iOS document picker returns `file://` URIs directly.** No copy needed — the URI is already a filesystem path.
+- **When making cross-platform changes, test the full lifecycle (pick → kill → relaunch → auto-play) on both platforms.** The direct URI approach "works" on both platforms at pick time but fails on Android at restore time.
+- **Platform-specific branches (`Platform.OS`) are appropriate when the underlying OS APIs behave fundamentally differently.** Don't force a single code path when one platform's document provider uses content URIs and the other uses file URIs.
+
+---
+
+## 2026-06-07 — Android App Installs on Emulator Instead of Physical Device
+
+### Problem
+
+Running `pnpm android` installed and launched the app on an Android emulator instead of the connected physical device, even though the phone was plugged in via USB.
+
+### Root Cause
+
+USB Debugging was not enabled on the physical device. Without USB Debugging enabled in Developer Options, `adb devices` doesn't list the phone as a valid target. React Native CLI (`react-native run-android`) picks the **first available device** it finds — if an emulator is running and the physical device isn't visible to ADB, the emulator gets selected automatically.
+
+### Fix
+
+Enable USB Debugging on the Android device:
+
+1. Open **Settings** → **About Phone**
+2. Tap **Build Number** 7 times until "You are now a developer!" appears
+3. Go back → **System** → **Developer Options**
+4. Enable **USB Debugging**
+5. When prompted on the phone, allow the computer's RSA key
+
+Verify the device is now visible:
+
+```bash
+adb devices
+```
+
+Both the emulator and the physical device should appear. If you want to target the physical device specifically, either close the emulator or use:
+
+```bash
+npx react-native run-android --deviceId <YOUR_DEVICE_ID>
+```
+
+### Verification
+
+After enabling USB Debugging, `adb devices` listed the physical device. Running `pnpm android` installed and launched the app on the phone instead of the emulator.
+
+### Lesson
+
+- **USB Debugging is required for ADB to see a physical device.** Without it, `adb devices` won't list the phone at all — it's invisible to the build system, not just deprioritized.
+- **React Native CLI picks the first available device.** If both an emulator and a physical device are connected, it may pick either one. Close the emulator or use `--deviceId` to be explicit.
+- **Some USB cables are charge-only.** If `adb devices` still shows nothing after enabling USB Debugging, try a different cable — data cables are required for ADB communication.
+
+---
+
 ## 2026-06-06 — iOS Artwork and Metadata Not Showing in Player
 
 ### Problem

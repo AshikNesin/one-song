@@ -1,5 +1,5 @@
-import { Linking } from 'react-native';
-import { pick } from '@react-native-documents/picker';
+import { Linking, Platform } from 'react-native';
+import { pick, keepLocalCopy } from '@react-native-documents/picker';
 import { Song } from '@/types';
 import { DEFAULT_SONG_TITLE, DEFAULT_ARTIST } from '@/utils/constants';
 import { parseFilename } from '@/utils/metadata';
@@ -9,7 +9,8 @@ import * as Storage from '@/services/StorageService';
 
 export type IntakeError =
   | { type: 'permission_denied'; blocked: boolean }
-  | { type: 'pick_failed' };
+  | { type: 'pick_failed' }
+  | { type: 'copy_failed' };
 
 export async function intake(): Promise<Song | IntakeError> {
   const hasPermission = await requestStoragePermission();
@@ -29,15 +30,33 @@ export async function intake(): Promise<Song | IntakeError> {
 
     const file = result[0];
 
-    const metadata = await extractMetadata(file.uri);
+    // Android's document picker returns a content:// URI that may lose permission
+    // across app restarts. Use keepLocalCopy to get a persistent file:// URI.
+    // iOS returns a file:// URI directly, so no copy is needed.
+    let playbackUri = file.uri;
+
+    if (Platform.OS === 'android') {
+      const localCopy = await keepLocalCopy({
+        files: [{ uri: file.uri, fileName: file.name ?? 'song.mp3' }],
+        destination: 'cachesDirectory',
+      });
+
+      if (localCopy[0].status === 'error') {
+        return { type: 'copy_failed' };
+      }
+
+      playbackUri = localCopy[0].localUri;
+    }
+
+    const metadata = await extractMetadata(playbackUri);
     const parsedFilename = parseFilename(file.name ?? '');
 
     const song: Song = {
-      id: file.uri,
+      id: playbackUri,
       title: metadata.title || parsedFilename.title || file.name || DEFAULT_SONG_TITLE,
       artist: metadata.artist || parsedFilename.artist || DEFAULT_ARTIST,
       artwork: metadata.artwork,
-      url: file.uri,
+      url: playbackUri,
       duration: 0,
     };
 

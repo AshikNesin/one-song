@@ -60,20 +60,21 @@ describe('SongIntake', () => {
 
     it('returns song on success', async () => {
       (requestStoragePermission as jest.Mock).mockResolvedValue(true);
-      (pick as jest.Mock).mockResolvedValue([{ uri: 'file:///test.mp3', name: 'test.mp3' }]);
+      (pick as jest.Mock).mockResolvedValue([{ uri: 'content:///test.mp3', name: 'test.mp3' }]);
 
       const result = await intake();
 
       expect('id' in result).toBe(true);
       if ('id' in result) {
         expect(result.title).toBe('test');
-        expect(result.url).toBe('file:///test.mp3');
+        // Android uses keepLocalCopy, so URL should be the local copy URI
+        expect(result.url).toBe('file:///cache/song.mp3');
       }
     });
 
     it('uses default title when file name is missing', async () => {
       (requestStoragePermission as jest.Mock).mockResolvedValue(true);
-      (pick as jest.Mock).mockResolvedValue([{ uri: 'file:///test.mp3' }]);
+      (pick as jest.Mock).mockResolvedValue([{ uri: 'content:///test.mp3' }]);
 
       const result = await intake();
 
