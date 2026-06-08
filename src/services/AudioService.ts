@@ -26,6 +26,7 @@ export async function setupPlayer(): Promise<void> {
   await TrackPlayer.updateOptions({
     capabilities: [Capability.Play, Capability.Pause, Capability.SeekTo],
     notificationCapabilities: [Capability.Play, Capability.Pause, Capability.SeekTo],
+    progressUpdateEventInterval: 1,
     android: {
       appKilledPlaybackBehavior: AppKilledPlaybackBehavior.StopPlaybackAndRemoveNotification,
     },

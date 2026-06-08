@@ -1,16 +1,38 @@
 import * as Storage from '@/services/StorageService';
 
 let activeTimerId: ReturnType<typeof setTimeout> | null = null;
+let expiresAt: number | null = null;
+let expireCallback: (() => void) | null = null;
+
+function expire(): void {
+  if (activeTimerId) {
+    clearTimeout(activeTimerId);
+    activeTimerId = null;
+  }
+  expiresAt = null;
+  const callback = expireCallback;
+  expireCallback = null;
+  callback?.();
+}
+
+export function checkExpiry(): void {
+  if (expiresAt !== null && Date.now() >= expiresAt) {
+    expire();
+  }
+}
 
 export async function setTimer(minutes: number | null, onExpire?: () => void): Promise<void> {
   if (activeTimerId) {
     clearTimeout(activeTimerId);
     activeTimerId = null;
   }
+  expiresAt = null;
+  expireCallback = null;
+
   if (minutes && minutes > 0) {
-    activeTimerId = setTimeout(() => {
-      onExpire?.();
-    }, minutes * 60 * 1000);
+    expiresAt = Date.now() + minutes * 60 * 1000;
+    expireCallback = onExpire ?? null;
+    activeTimerId = setTimeout(expire, minutes * 60 * 1000);
   }
 }
 
@@ -19,6 +41,8 @@ export async function clearTimer(): Promise<void> {
     clearTimeout(activeTimerId);
     activeTimerId = null;
   }
+  expiresAt = null;
+  expireCallback = null;
 }
 
 export async function loadDefaultTimer(): Promise<number | null> {

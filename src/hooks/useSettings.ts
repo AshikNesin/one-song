@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { getSong, clearSongData } from '@/services/SongIntake';
 import { getAutoPlayEnabled, saveAutoPlayEnabled } from '@/services/Playback';
 import * as Storage from '@/services/StorageService';
+import { pause } from '@/services/AudioService';
 import { useSleepTimer } from './useSleepTimer';
 
 export interface SettingsState {
@@ -27,7 +28,7 @@ export function useSettings(): { state: SettingsState; actions: SettingsActions 
   }, []);
 
   const setTimerPreset = useCallback(async (minutes: number | null) => {
-    await sleepTimer.selectPreset(minutes);
+    await sleepTimer.selectPreset(minutes, pause);
   }, [sleepTimer]);
 
   const toggleAutoPlay = useCallback(async (enabled: boolean) => {

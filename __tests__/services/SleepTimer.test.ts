@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   setTimer,
   clearTimer,
+  checkExpiry,
   loadDefaultTimer,
   saveDefaultTimer,
   restoreTimer,
@@ -47,6 +48,55 @@ describe('SleepTimer', () => {
       await clearTimer();
       jest.advanceTimersByTime(70000);
       expect(mockOnExpire).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('checkExpiry', () => {
+    it('does nothing when no timer is active', () => {
+      checkExpiry();
+      expect(mockOnExpire).not.toHaveBeenCalled();
+    });
+
+    it('does nothing before expiry time', async () => {
+      const now = Date.now();
+      jest.spyOn(Date, 'now').mockReturnValue(now);
+      await setTimer(1, mockOnExpire);
+      jest.spyOn(Date, 'now').mockReturnValue(now + 30000);
+      checkExpiry();
+      expect(mockOnExpire).not.toHaveBeenCalled();
+      jest.restoreAllMocks();
+    });
+
+    it('fires callback when expiry time is reached', async () => {
+      const now = Date.now();
+      jest.spyOn(Date, 'now').mockReturnValue(now);
+      await setTimer(1, mockOnExpire);
+      jest.spyOn(Date, 'now').mockReturnValue(now + 60001);
+      checkExpiry();
+      expect(mockOnExpire).toHaveBeenCalledTimes(1);
+      jest.restoreAllMocks();
+    });
+
+    it('is idempotent - does not fire twice', async () => {
+      const now = Date.now();
+      jest.spyOn(Date, 'now').mockReturnValue(now);
+      await setTimer(1, mockOnExpire);
+      jest.spyOn(Date, 'now').mockReturnValue(now + 60001);
+      checkExpiry();
+      checkExpiry();
+      expect(mockOnExpire).toHaveBeenCalledTimes(1);
+      jest.restoreAllMocks();
+    });
+
+    it('does not fire after clearTimer', async () => {
+      const now = Date.now();
+      jest.spyOn(Date, 'now').mockReturnValue(now);
+      await setTimer(1, mockOnExpire);
+      await clearTimer();
+      jest.spyOn(Date, 'now').mockReturnValue(now + 60001);
+      checkExpiry();
+      expect(mockOnExpire).not.toHaveBeenCalled();
+      jest.restoreAllMocks();
     });
   });
 

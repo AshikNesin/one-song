@@ -32,6 +32,11 @@ export const StyleSheet = {
 
 export const useColorScheme = jest.fn().mockReturnValue('dark');
 
+export const AppState = {
+  addEventListener: jest.fn().mockReturnValue({ remove: jest.fn() }),
+  currentState: 'active',
+};
+
 export default {
   NativeModules,
   Platform,
@@ -46,4 +51,5 @@ export default {
   StatusBar,
   StyleSheet,
   useColorScheme,
+  AppState,
 };

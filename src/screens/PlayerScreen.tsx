@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, NavigationProp, CommonActions } from '@react-navigation/native';
 import { RootStackParamList } from '@/types/navigation';
 import { usePlaybackController } from '@/services/PlaybackController';
@@ -9,6 +10,7 @@ import SleepTimerButton from '@/components/SleepTimerButton';
 
 export default function PlayerScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const insets = useSafeAreaInsets();
   const { isPlaying, position, duration, isReady, hasSong, song, initError, togglePlay, seek } =
     usePlaybackController();
 
@@ -40,7 +42,7 @@ export default function PlayerScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: Math.max(48, insets.top), paddingBottom: Math.max(40, insets.bottom + 16) }]}>
       <View style={styles.topBar}>
         <View style={styles.topSpacer} />
         <Pressable
