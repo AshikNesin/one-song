@@ -68,7 +68,7 @@ export async function init(): Promise<void> {
   if (savedSong) {
     try {
       await loadSong(savedSong);
-      await restoreTimer(pause);
+      await restoreTimer();
       const autoPlay = await getAutoPlayEnabled();
       if (autoPlay) {
         await play();

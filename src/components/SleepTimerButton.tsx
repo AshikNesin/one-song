@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSleepTimer } from '@/hooks/useSleepTimer';
-import { pause } from '@/services/AudioService';
 import TimerPresetPicker from '@/components/TimerPresetPicker';
 
 export default function SleepTimerButton() {
@@ -11,7 +10,7 @@ export default function SleepTimerButton() {
   const label = currentMinutes ? `Timer: ${currentMinutes}m` : 'Sleep Timer';
 
   const handleSelect = async (minutes: number | null) => {
-    await selectPreset(minutes, pause);
+    await selectPreset(minutes);
     setVisible(false);
   };
 
