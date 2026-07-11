@@ -8,7 +8,7 @@ import {
 
 export interface UseSleepTimerResult {
   currentMinutes: number | null;
-  selectPreset: (minutes: number | null, onExpire?: () => void) => Promise<void>;
+  selectPreset: (minutes: number | null) => Promise<void>;
   clear: () => Promise<void>;
 }
 
@@ -42,12 +42,12 @@ export function useSleepTimer(): UseSleepTimerResult {
     };
   }, []);
 
-  const selectPreset = useCallback(async (minutes: number | null, onExpire?: () => void) => {
+  const selectPreset = useCallback(async (minutes: number | null) => {
     notifyListeners(minutes);
     await saveDefaultTimer(minutes);
     await clearTimer();
-    if (minutes && minutes > 0 && onExpire) {
-      await setTimer(minutes, onExpire);
+    if (minutes && minutes > 0) {
+      await setTimer(minutes);
     }
   }, []);
 

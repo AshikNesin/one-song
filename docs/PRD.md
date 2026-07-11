@@ -17,12 +17,9 @@ And it has a minimal setting page
 - No streaming, no bundled default songs
 
 ## File Handling
-When a song is selected, the app **copies the file into its own cache directory** using `keepLocalCopy()`. The app plays this cached copy, not the original file. This means:
-- Renaming, moving, or deleting the original file does not affect playback
-- The app continues to work even if the original file is no longer accessible
-- The trade-off is extra storage used for the duplicate copy
+When a song is selected, the app stores the original picked file URI directly. Metadata (title, artist, artwork) is extracted in-memory using `fetch()` + `FileReader` — no file copy or native file-system dependencies. Artwork is returned as a `data:` URI so it renders in both the in-app player and the platform media notification / Now Playing center without disk caching.
 
-This prevents `SecurityException` when the original file is moved or when the app loses persistent URI permission after reinstall.
+If the original file is deleted, moved, or the app loses persistent URI permission after reinstall, playback fails on the next app launch. The app detects the failure and navigates to the onboarding screen so the user can pick a new song.
 
 ## App Launch Behavior
 - First launch: Show onboarding screen to select song and grant permissions

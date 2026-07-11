@@ -68,7 +68,7 @@ export async function init(): Promise<void> {
   if (savedSong) {
     try {
       await loadSong(savedSong);
-      await restoreTimer(pause);
+      await restoreTimer();
       const autoPlay = await getAutoPlayEnabled();
       if (autoPlay) {
         await play();
@@ -155,4 +155,8 @@ export async function handleRemotePause(): Promise<void> {
   await pause();
   state = { ...state, isPlaying: false };
   notify();
+}
+
+export async function handleRemoteSeek(position: number): Promise<void> {
+  await seek(position);
 }

@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { pick, keepLocalCopy } from '@react-native-documents/picker';
+import { Platform } from 'react-native';
 import {
   intake,
   complete,
@@ -23,11 +24,13 @@ jest.mock('@/utils/metadata', () => ({
 describe('SongIntake', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (keepLocalCopy as jest.Mock).mockResolvedValue([{ status: 'success', localUri: 'file:///cache/song.mp3' }]);
     mockParseFilename.mockImplementation((filename: string) => {
       const nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
       return { title: nameWithoutExt || undefined };
     });
     (extractMetadata as jest.Mock).mockResolvedValue({});
+    Platform.OS = 'android';
   });
 
   describe('intake', () => {
@@ -58,9 +61,22 @@ describe('SongIntake', () => {
       expect(result).toEqual({ type: 'pick_failed' });
     });
 
-    it('returns copy_failed when local copy fails', async () => {
+    it('returns song on success', async () => {
       (requestStoragePermission as jest.Mock).mockResolvedValue(true);
-      (pick as jest.Mock).mockResolvedValue([{ uri: 'file:///test.mp3', name: 'test.mp3' }]);
+      (pick as jest.Mock).mockResolvedValue([{ uri: 'content:///test.mp3', name: 'test.mp3' }]);
+
+      const result = await intake();
+
+      expect('id' in result).toBe(true);
+      if ('id' in result) {
+        expect(result.title).toBe('test');
+        expect(result.url).toBe('file:///cache/song.mp3');
+      }
+    });
+
+    it('returns copy_failed when keepLocalCopy fails', async () => {
+      (requestStoragePermission as jest.Mock).mockResolvedValue(true);
+      (pick as jest.Mock).mockResolvedValue([{ uri: 'content:///test.mp3', name: 'test.mp3' }]);
       (keepLocalCopy as jest.Mock).mockResolvedValue([{ status: 'error' }]);
 
       const result = await intake();
@@ -68,24 +84,23 @@ describe('SongIntake', () => {
       expect(result).toEqual({ type: 'copy_failed' });
     });
 
-    it('returns song on success', async () => {
+    it('uses keepLocalCopy on iOS too', async () => {
+      const { Platform } = require('react-native');
+      Platform.OS = 'ios';
       (requestStoragePermission as jest.Mock).mockResolvedValue(true);
       (pick as jest.Mock).mockResolvedValue([{ uri: 'file:///test.mp3', name: 'test.mp3' }]);
-      (keepLocalCopy as jest.Mock).mockResolvedValue([{ status: 'success', localUri: 'file:///cache/test.mp3' }]);
 
       const result = await intake();
 
       expect('id' in result).toBe(true);
       if ('id' in result) {
-        expect(result.title).toBe('test');
-        expect(result.url).toBe('file:///cache/test.mp3');
+        expect(result.url).toBe('file:///cache/song.mp3');
       }
     });
 
     it('uses default title when file name is missing', async () => {
       (requestStoragePermission as jest.Mock).mockResolvedValue(true);
-      (pick as jest.Mock).mockResolvedValue([{ uri: 'file:///test.mp3' }]);
-      (keepLocalCopy as jest.Mock).mockResolvedValue([{ status: 'success', localUri: 'file:///cache/test.mp3' }]);
+      (pick as jest.Mock).mockResolvedValue([{ uri: 'content:///test.mp3' }]);
 
       const result = await intake();
 

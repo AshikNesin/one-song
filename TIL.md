@@ -4,6 +4,427 @@ A running log of bugs, fixes, and lessons from building One Song.
 
 ---
 
+## 2026-07-11 — iOS Build: Build Input Files Cannot Be Found (Stale pnpm virtual store hash in Pods.xcodeproj)
+
+### Symptom
+
+Xcode build fails with:
+
+```
+Build input files cannot be found:
+  '.../node_modules/.pnpm/react-native-track-player@5.0.0-alpha0_patch_hash=3f9335.../node_modules/react-native-track-player/ios/Models/Capabilities.swift'
+  (and ~11 other .swift files)
+```
+
+### Root Cause
+
+pnpm installs each package into a content-hash-named directory inside `node_modules/.pnpm/`. The hash includes the dependency graph (package version + patch hash + resolved peers). When `pnpm install` runs after a lockfile change, a package can move to a **new** hash-named directory, e.g.:
+
+- Old: `react-native-track-player@5.0.0-alpha0_patch_hash=3f9335...`
+- New: `react-native-track-player@5.0.0-alpha0_react-native@0.85.2_patch_hash=35d9e4e...`
+
+CocoaPods' generated project (`ios/Pods/Pods.xcodeproj/project.pbxproj`) hardcodes the **absolute** resolved path of every source file. If you change deps and don't re-run `pod install`, that file still points at the dead old path → the build can't find the Swift sources.
+
+Key: the Podfile and Podfile.lock only ever reference the relative `../node_modules/react-native-track-player`, so they stay correct. Only the generated Pods project goes stale. (This is why the app's own `.xcodeproj` is fine — it doesn't hardcode these paths.)
+
+### Fix
+
+Regenerate the Pods project so absolute paths are re-resolved through the current pnpm symlinks:
+
+```bash
+cd ios
+rm -rf Pods          # clean regen to avoid leftover stale entries
+pod install
+```
+
+### Notes / Gotchas
+
+- **Transient `pathname contains null byte` error:** `pod install` can intermittently throw this under pnpm (known CocoaPods bug — cocoapods/cocoapods#12866). Just re-run it; it succeeds on the next attempt.
+- **How to confirm the fix:** verify no stale hash remains and the new path is used:
+  ```bash
+  # should print 0
+  grep -c "3f9335..." ios/Pods/Pods.xcodeproj/project.pbxproj
+  # should print the current hash
+  grep -oE "react-native-track-player@5\.0\.0-alpha0[^\"' ]*" ios/Pods/Pods.xcodeproj/project.pbxproj | sort -u
+  ```
+- **Prevention:** always run `pod install` after `pnpm install` whenever a dependency (especially a native one) changed version or peer set. The build errors only happen when the two are out of sync.
+
+---
+
+## 2026-06-07 — Restored keepLocalCopy for iOS
+
+### Context
+
+Earlier, `keepLocalCopy()` was removed for iOS because it returned percent-encoded file URIs (e.g., `file:///.../My%20Song.mp3`). The old `MetadataAdapter.ts` used `react-native-fs`, which couldn't handle percent-encoded paths — `NSFileManager fileExistsAtPath:` expects literal spaces, not `%20`. This caused `ENOENT`, metadata extraction failed silently, and the player showed "Unknown Song" with no artwork.
+
+The fix at the time was to use the raw document picker URI directly on iOS and remove `keepLocalCopy()` entirely.
+
+### Why Restore It Now
+
+The metadata pipeline was later rewritten to use `fetch()` + `FileReader` instead of `react-native-fs`. `fetch()` handles percent-encoded `file://` URIs correctly on both platforms. This eliminates the original root cause.
+
+Using `keepLocalCopy()` on iOS provides the same benefits as Android:
+- The file is copied to the app cache directory
+- The resulting `file://` URI is fully controlled by the app
+- No dependency on the original file's location or permissions
+- Survives app restarts reliably
+
+### Code Change
+
+Removed the `Platform.OS === 'android'` guard in `SongIntake.ts`:
+
+```typescript
+// Before
+if (Platform.OS === 'android') {
+  const localCopy = await keepLocalCopy({...});
+  ...
+}
+
+// After
+const localCopy = await keepLocalCopy({
+  files: [{ uri: file.uri, fileName: file.name ?? 'song.mp3' }],
+  destination: 'cachesDirectory',
+});
+
+if (localCopy[0].status === 'error') {
+  return { type: 'copy_failed' };
+}
+
+const playbackUri = localCopy[0].localUri;
+```
+
+### Verification
+
+- All 94 tests pass
+- iOS test added: verifies `keepLocalCopy` is called and the local URI is used
+
+---
+
+## 2026-06-07 — Auto-play on Start Broken on Android After Removing keepLocalCopy
+
+### Problem
+
+On the `feat/ios-mvp` branch, the "Auto-play on launch" setting stopped working on Android. When the app was killed and relaunched, instead of auto-playing the saved song, it fell through to the error handler in `Playback.init()` and navigated back to onboarding.
+
+The same flow worked perfectly on iOS and on the `main` branch.
+
+### Root Cause
+
+On `main`, `SongIntake.ts` uses `keepLocalCopy()` from `@react-native-documents/picker` to copy the picked audio file into the app's cache directory. This produces a persistent `file://` URI that `react-native-track-player` can access reliably across app restarts.
+
+On `feat/ios-mvp`, `keepLocalCopy()` was removed entirely (to fix iOS-specific issues with percent-encoded URIs and `react-native-fs` compatibility). The raw document picker URI is now stored directly as `song.url`.
+
+This works on iOS because iOS's document picker returns a `file://` URI that remains valid. But on **Android**, the picker returns a **`content://` URI** (e.g., `content://com.android.providers.media.documents/document/audio%3A123`). These URIs require persistent URI permissions via `takePersistableUriPermission()`, which `@react-native-documents/picker` does not automatically grant. After the app is killed and relaunched, the `content://` URI becomes inaccessible — `TrackPlayer.add()` fails (or silently fails to buffer), the `catch` block in `init()` clears the song data, and the user is sent to onboarding.
+
+### Fix
+
+Restored `keepLocalCopy()` for Android only, while keeping the direct URI approach for iOS:
+
+```typescript
+import { Platform } from 'react-native';
+import { pick, keepLocalCopy } from '@react-native-documents/picker';
+
+// In intake():
+let playbackUri = file.uri;
+
+if (Platform.OS === 'android') {
+  const localCopy = await keepLocalCopy({
+    files: [{ uri: file.uri, fileName: file.name ?? 'song.mp3' }],
+    destination: 'cachesDirectory',
+  });
+
+  if (localCopy[0].status === 'error') {
+    return { type: 'copy_failed' };
+  }
+
+  playbackUri = localCopy[0].localUri;
+}
+```
+
+- **Android:** `keepLocalCopy()` copies the file to cache → returns a `file://` URI → survives app restarts
+- **iOS:** Uses the picker's `file://` URI directly → no copy needed (avoids the percent-encoding issues from the earlier fix)
+
+### Verification
+
+- Picked a song on Android → killed the app → relaunched → song auto-played correctly
+- iOS behavior unchanged (auto-play still works)
+- All 92 tests pass (updated mock for `keepLocalCopy` and adjusted test assertions)
+
+### Lesson
+
+- **Android's `content://` URIs are not persistent across app restarts.** The document picker returns a content provider URI that requires explicit permission grants. Without `takePersistableUriPermission()`, the URI becomes invalid after the app is killed. Use `keepLocalCopy()` to convert to a reliable `file://` URI.
+- **iOS document picker returns `file://` URIs directly.** No copy needed — the URI is already a filesystem path.
+- **When making cross-platform changes, test the full lifecycle (pick → kill → relaunch → auto-play) on both platforms.** The direct URI approach "works" on both platforms at pick time but fails on Android at restore time.
+- **Platform-specific branches (`Platform.OS`) are appropriate when the underlying OS APIs behave fundamentally differently.** Don't force a single code path when one platform's document provider uses content URIs and the other uses file URIs.
+
+---
+
+## 2026-06-07 — Android App Installs on Emulator Instead of Physical Device
+
+### Problem
+
+Running `pnpm android` installed and launched the app on an Android emulator instead of the connected physical device, even though the phone was plugged in via USB.
+
+### Root Cause
+
+USB Debugging was not enabled on the physical device. Without USB Debugging enabled in Developer Options, `adb devices` doesn't list the phone as a valid target. React Native CLI (`react-native run-android`) picks the **first available device** it finds — if an emulator is running and the physical device isn't visible to ADB, the emulator gets selected automatically.
+
+### Fix
+
+Enable USB Debugging on the Android device:
+
+1. Open **Settings** → **About Phone**
+2. Tap **Build Number** 7 times until "You are now a developer!" appears
+3. Go back → **System** → **Developer Options**
+4. Enable **USB Debugging**
+5. When prompted on the phone, allow the computer's RSA key
+
+Verify the device is now visible:
+
+```bash
+adb devices
+```
+
+Both the emulator and the physical device should appear. If you want to target the physical device specifically, either close the emulator or use:
+
+```bash
+npx react-native run-android --deviceId <YOUR_DEVICE_ID>
+```
+
+### Verification
+
+After enabling USB Debugging, `adb devices` listed the physical device. Running `pnpm android` installed and launched the app on the phone instead of the emulator.
+
+### Lesson
+
+- **USB Debugging is required for ADB to see a physical device.** Without it, `adb devices` won't list the phone at all — it's invisible to the build system, not just deprioritized.
+- **React Native CLI picks the first available device.** If both an emulator and a physical device are connected, it may pick either one. Close the emulator or use `--deviceId` to be explicit.
+- **Some USB cables are charge-only.** If `adb devices` still shows nothing after enabling USB Debugging, try a different cable — data cables are required for ADB communication.
+
+---
+
+## 2026-06-06 — iOS Artwork and Metadata Not Showing in Player
+
+### Problem
+The in-app player showed a placeholder music-note icon (🎵) instead of the song's embedded artwork. Title and artist were also missing — showing only the fallback "Unknown Song / Unknown Artist".
+
+### Root Cause
+Multiple iOS-specific issues in the file-copy + metadata-extraction pipeline:
+
+**1. `keepLocalCopy()` returns percent-encoded file URIs on iOS**
+
+`@react-native-documents/picker`'s `keepLocalCopy()` on iOS returns the copied file path via `NSURL.absoluteString`, which percent-encodes path characters like spaces (`%20`). Example: `file:///.../My%20Song.mp3`.
+
+Our `MetadataAdapter.ts` stripped the `file://` prefix but left the `%20` intact, producing `/.../My%20Song.mp3`. `react-native-fs`'s native iOS `read()` uses `NSFileManager fileExistsAtPath:`, which expects literal spaces — not percent-encoding. This caused `ENOENT`, metadata extraction failed silently, and `song.artwork` stayed `undefined`.
+
+Android returns plain unencoded paths, so it never hit this.
+
+**2. `react-native-fs` native module issues on iOS with New Architecture**
+
+Even after fixing percent-encoding, `react-native-fs`'s native module had compatibility issues with React Native's New Architecture (Fabric / TurboModules) on iOS. The `read()` and `readFile()` calls would hang or fail intermittently in debug builds, making metadata extraction unreliable.
+
+**3. `react-native-track-player` v5 alpha `Metadata.swift` can't load local artwork**
+
+The library's `Metadata.swift` uses `URLSession.shared.dataTask` for ALL artwork URLs — but `URLSession` does **not** support `file://` URLs on iOS. So even after the automatic now-playing setup, any metadata refresh path (including internal library flows) failed for local artwork.
+
+**4. Audio session category not set before activation**
+
+`TrackPlayer.swift`'s `configureAudioSession()` called `activateSession()` (which does `setActive(true)`) **before** `setCategory()`. On iOS the recommended order is `setCategory()` first, then `setActive(true)`. This can prevent the Now Playing info center from registering properly.
+
+### Fix
+
+**Final approach — eliminated the problematic native dependencies entirely:**
+
+1. **Removed `keepLocalCopy()`** from `SongIntake.ts` — stopped copying files to app cache (the source of URI encoding issues)
+2. **Use the original picked file URI directly** for both playback (`song.url`) and metadata extraction
+3. **Replaced `react-native-fs` with `fetch()` + `FileReader`** in `MetadataAdapter.ts` for reading file bytes:
+   ```typescript
+   const response = await fetch(fileUri);
+   const blob = await response.blob();
+   const arrayBuffer = await readBlobAsArrayBuffer(blob); // FileReader
+   const bytes = new Uint8Array(arrayBuffer);
+   ```
+   `fetch('file:///...')` and `fetch('content://...')` are core React Native features, stable across old and new architecture on both platforms.
+4. **Return artwork as `data:` URIs** instead of writing to disk:
+   ```typescript
+   return `data:${artwork.mime};base64,${artwork.base64}`;
+   ```
+   Works directly in React Native `<Image>` and iOS `URLSession` (TrackPlayer uses it internally). No disk writes, no `react-native-fs writeFile()`.
+5. **Deleted `react-native-track-player` native patch** — the `fetch()` + `data:` URI approach bypasses the library's local-artwork-loading bug entirely
+6. **Reverted all previous workarounds** — path normalization, percent-decoding, Swift patches, `iosCategory` options — none were needed after switching to `fetch()`
+7. **Kept `ios/OneSong/Info.plist` `UIBackgroundModes` with `audio`** — still required for background audio and Now Playing info center
+
+### Trade-offs
+- **No file copy** — if the original file is deleted or moved, the stored URI becomes invalid. The existing error handling in `Playback.ts` catches `loadSong` failures and navigates to onboarding.
+- **No disk caching** — `data:` URIs are held in memory. For the single-song use case, this is negligible.
+
+### Verification
+- On iOS, pick a song with spaces in the filename. The artwork, title, and artist appear correctly in the player.
+- On Android, behavior is unchanged.
+- All 91 tests pass.
+
+### Lesson
+- **When a chain of native dependencies keeps breaking, eliminate the chain.** `fetch()` + `FileReader` + `data:` URIs are core Web APIs supported by React Native on both platforms — they bypass all native-module compatibility issues.
+- **Percent-encoding in file URIs is a silent killer.** `NSURL.absoluteString` encodes special characters, but `NSFileManager` expects literal paths. Always `decodeURI()` after stripping `file://`, or avoid file URIs entirely.
+- **Native patches are fragile.** Patching `node_modules` requires careful patch management (`pnpm patch`, `patch-package`). Every reinstall, update, or CI run can silently break patches. Pure-JS solutions survive all of that.
+- **`fetch()` with `file://` and `content://` is a reliable cross-platform file reader in React Native.** It works on both old and new architecture, on both iOS and Android, without any additional dependencies.
+
+---
+
+## 2026-06-06 — iOS Document Picker Doesn't Show M4A Files
+
+### Problem
+
+On iOS, the document picker in the onboarding screen didn't show `.m4a` files. MP3 files appeared fine, but M4A/AAC files were invisible in the picker.
+
+### Root Cause
+
+`@react-native-documents/picker` was configured with only `audio/*` as the type filter:
+
+```typescript
+const result = await pick({
+  type: ['audio/*'],
+});
+```
+
+iOS uses **UTIs (Uniform Type Identifiers)**, not MIME types, to filter files in the document picker. While Android understands `audio/*` as a MIME type wildcard that matches all audio formats, iOS maps it to a limited set of UTIs — and `public.mpeg-4-audio` (the UTI for `.m4a`) isn't included in that mapping.
+
+The result: M4A files are silently filtered out of the picker UI with no error or indication.
+
+### Fix
+
+Added explicit iOS UTIs alongside the MIME type:
+
+```typescript
+const result = await pick({
+  type: ['audio/*', 'public.mpeg-4-audio', 'public.audio'],
+});
+```
+
+- **`public.mpeg-4-audio`** — iOS UTI for `.m4a` files (the missing one)
+- **`public.audio`** — broad UTI for all audio types (catch-all for WAV, AAC, FLAC, etc.)
+- **`audio/*`** — kept for Android compatibility
+
+### Verification
+
+On iOS, the document picker now shows `.m4a` files alongside `.mp3` files. Android behavior is unchanged.
+
+### Lesson
+
+- **iOS document picker uses UTIs, not MIME types.** `audio/*` works on Android but doesn't cover all audio formats on iOS. Explicit UTIs are needed for formats like M4A (`public.mpeg-4-audio`).
+- **Common iOS audio UTIs:** `public.mp3`, `public.mpeg-4-audio` (M4A/AAC), `public.aiff-audio`, `public.audio` (all audio). See [Apple's UTI reference](https://developer.apple.com/library/archive/documentation/Miscellaneous/Reference/UTIRef/Articles/System-DeclaredUniformTypeIdentifiers.html).
+- **Silent filtering is the default behavior.** The picker won't error or warn when a UTI is missing — files just don't appear. Always test with the specific file formats your app supports.
+
+---
+
+## 2026-06-06 — iOS Build: Module Map Not Found + No Such Module 'React'
+
+### Problem
+
+Building for a physical iOS device failed with four errors:
+
+```
+Module map file '.../DerivedData/.../SwiftAudioEx/SwiftAudioEx.modulemap' not found
+Module map file '.../DerivedData/.../react-native-document-picker/react_native_document_picker.modulemap' not found
+Module map file '.../DerivedData/.../react-native-track-player/react_native_track_player.modulemap' not found
+No such module 'React' (in AppDelegate.swift)
+```
+
+The initial attempt to fix by deleting `Pods/`, `Podfile.lock`, and `DerivedData` followed by `pod install` did not resolve the errors.
+
+### Root Cause
+
+Two separate issues:
+
+**1. `xcode-select` pointed to CommandLineTools instead of Xcode.app**
+
+```bash
+xcode-select -p
+# /Library/Developer/CommandLineTools  ← WRONG
+```
+
+The active developer directory was set to standalone command-line tools, not the full Xcode.app installation. This meant:
+- `xcodebuild` couldn't run at all (`requires Xcode, but active developer directory is CommandLineTools`)
+- CocoaPods couldn't compile native modules properly during `pod install`
+- Module maps for third-party pods (SwiftAudioEx, react-native-track-player, etc.) were never generated in DerivedData
+- The `React` framework itself couldn't be found by the Swift compiler
+
+This is the root cause of all four "module map not found" and "No such module 'React'" errors. The pods were installed on disk (in `ios/Pods/Target Support Files/`), but the build system couldn't compile them without the full Xcode toolchain.
+
+**2. Missing root `index.js` with broken import paths in `src/index.js`**
+
+After fixing the `xcode-select` issue, a second error appeared:
+
+```
+ResourceNotFoundError: The resource '/Users/ashiknesin/Code/one-song/index.js' was not found.
+```
+
+React Native's iOS build script (`Bundle React Native code and images`) expects `index.js` at the project root as the entry point. The project only had `src/index.js`, and it contained two broken import paths:
+
+- `import App from './src/App'` — from `src/index.js`, this resolves to `src/src/App` (wrong)
+- `import { name as appName } from './app.json'` — `app.json` is at the project root, not in `src/`
+
+### Fix
+
+**1. Switch `xcode-select` to Xcode.app:**
+
+```bash
+sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+```
+
+**2. Create root `index.js` that delegates to `src/index.js`:**
+
+```javascript
+// index.js (project root)
+import './src/index';
+```
+
+**3. Fix import paths in `src/index.js`:**
+
+```javascript
+// Before (broken)
+import App from './src/App';
+import { name as appName } from './app.json';
+
+// After (fixed)
+import App from '@/App';
+import { name as appName } from '../app.json';
+```
+
+### Verification
+
+```bash
+xcode-select -p
+# /Applications/Xcode.app/Contents/Developer ✓
+
+cd ios && xcodebuild -workspace OneSong.xcworkspace -scheme OneSong -configuration Debug -destination 'generic/platform=iOS' -sdk iphoneos build
+# ** BUILD SUCCEEDED **
+```
+
+Also created `scripts/clean-ios.sh` (runnable via `pnpm clean:ios`) for future iOS cache issues:
+
+```bash
+#!/bin/bash
+set -e
+PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+echo "🗑️  Removing iOS Pods and Podfile.lock..."
+rm -rf "$PROJECT_DIR/ios/Pods" "$PROJECT_DIR/ios/Podfile.lock"
+echo "🗑️  Removing Xcode DerivedData..."
+rm -rf ~/Library/Developer/Xcode/DerivedData/OneSong-*
+echo "📦  Reinstalling pods..."
+cd "$PROJECT_DIR/ios" && pod install
+echo "✅  iOS clean complete! Run 'pnpm ios' to build."
+```
+
+### Lesson
+
+- **`xcode-select -p` should be the first diagnostic for any "module not found" iOS build error.** If it points to `/Library/Developer/CommandLineTools` instead of `/Applications/Xcode.app/Contents/Developer`, CocoaPods and the build system can't compile native modules at all. No amount of cache clearing fixes this.
+- **React Native's iOS build script hardcodes `index.js` as the entry point.** If your entry file lives elsewhere (e.g., `src/index.js`), you need a root `index.js` that re-exports it.
+- **Import paths are relative to the file's location, not the project root.** `src/index.js` importing `./src/App` resolves to `src/src/App`. Use `@/` aliases or correct relative paths (`../app.json` for root files).
+- **The `xcode-select` issue can appear silently.** `pod install` may succeed without errors even when the wrong developer tools are active — the failure only shows up at build time.
+
+---
+
 ## 2026-05-03 — Patched sp-react-native-in-app-updates to Fix DEVELOPER_TRIGGERED
 
 ### Problem

@@ -25,7 +25,8 @@ export async function setupPlayer(): Promise<void> {
   }
   await TrackPlayer.updateOptions({
     capabilities: [Capability.Play, Capability.Pause, Capability.SeekTo],
-    notificationCapabilities: [Capability.Play, Capability.Pause],
+    notificationCapabilities: [Capability.Play, Capability.Pause, Capability.SeekTo],
+    progressUpdateEventInterval: 1,
     android: {
       appKilledPlaybackBehavior: AppKilledPlaybackBehavior.StopPlaybackAndRemoveNotification,
     },
@@ -77,6 +78,12 @@ export function useRemotePlayPause(
     } else if (event.type === Event.RemotePause) {
       onPause();
     }
+  });
+}
+
+export function useRemoteSeek(onSeek: (position: number) => void): void {
+  useTrackPlayerEvents([Event.RemoteSeek], async event => {
+    onSeek(event.position);
   });
 }
 

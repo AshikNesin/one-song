@@ -6,6 +6,7 @@
     "android": "scripts/run-android.sh",
     "android:release": "scripts/bump-android-version.sh && scripts/build-android-signed.sh",
     "clean": "scripts/clean.sh",
+    "clean:ios": "scripts/clean-ios.sh",
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "dev": "react-native start",

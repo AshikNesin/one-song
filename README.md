@@ -8,7 +8,7 @@
   </a>
 </p>
 
-A minimal Android music player that plays exactly one song — on repeat, with a sleep timer, and background playback.
+A minimal music player that plays exactly one song — on repeat, with a sleep timer, and background playback. Available on Android. iOS support is in active development.
 
 ## What It Is
 
@@ -43,7 +43,7 @@ One Song is intentionally simple. Pick one audio file from your device, and the 
 | State Persistence | AsyncStorage |
 | File Picker | @react-native-documents/picker |
 | Permissions | react-native-permissions |
-| Build System | Gradle (Android) |
+| Build System | Gradle (Android) · Xcode (iOS) |
 
 ## Getting Started
 
@@ -106,6 +106,57 @@ For a release build:
 pnpm react-native run-android --mode=release
 ```
 
+### iOS Development
+
+iOS support is in active development. You'll need a Mac with Xcode.
+
+#### Prerequisites
+
+- macOS with Xcode 16+ (from the Mac App Store)
+- CocoaPods (`brew install cocoapods` or `gem install cocoapods`)
+- An Apple ID (free or paid) for code signing
+
+#### 1. Install CocoaPods Dependencies
+
+```bash
+cd ios && pod install && cd ..
+```
+
+This only needs to be run once (or when native dependencies change).
+
+#### 2. Start Metro
+
+```bash
+pnpm dev
+```
+
+#### 3. Run on iOS Simulator
+
+```bash
+pnpm ios
+```
+
+This builds and launches the app in the default iOS Simulator. To pick a specific device:
+
+```bash
+pnpm react-native run-ios --simulator "iPhone 16 Pro"
+```
+
+#### 4. Run on Physical iPhone
+
+Open `ios/OneSong.xcworkspace` in Xcode:
+
+1. Select **OneSong** in the project navigator
+2. Go to **Signing & Capabilities** → select your team
+3. Connect your iPhone via USB and select it as the run target
+4. Press **Run** (▶) or use `pnpm react-native run-ios --device "Your iPhone"`
+
+#### Known iOS Caveats
+
+- File system APIs (`react-native-fs`, `@react-native-documents/picker`) need iOS-specific testing
+- Audio focus and background playback behavior may differ from Android
+- Some services (like `InAppUpdateService`) are Android-only and guarded by platform checks
+
 ## Project Structure
 
 ```
@@ -115,6 +166,12 @@ OneSong/
 │   │   ├── AndroidManifest.xml           # Permissions & services
 │   │   └── java/io/nesin/onesong/        # MainActivity.kt, MainApplication.kt
 │   └── ...
+├── ios/                                  # iOS native project
+│   ├── OneSong/
+│   │   ├── AppDelegate.swift             # App entry point
+│   │   ├── Info.plist                    # App config & permissions
+│   │   └── Images.xcassets/              # App icons & launch logo
+│   └── Podfile                           # CocoaPods dependencies
 ├── src/
 │   ├── types/
 │   │   ├── index.ts                      # TypeScript interfaces (Song, TimerPreset, etc.)

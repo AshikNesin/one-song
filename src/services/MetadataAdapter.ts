@@ -1,9 +1,8 @@
-import { read, readFile, writeFile, CachesDirectoryPath } from 'react-native-fs';
 import { Buffer } from 'buffer';
+import * as RNFS from 'react-native-fs';
 import {
   parseId3Metadata,
   parseMp4Metadata,
-  getImageExtension,
 } from '@/utils/metadata';
 
 interface SongMetadata {
@@ -12,19 +11,27 @@ interface SongMetadata {
   artwork?: string;
 }
 
-async function writeArtworkToCache(artwork: { mime: string; base64: string }): Promise<string> {
-  const ext = getImageExtension(artwork.mime);
-  const artworkFileName = `artwork-${Date.now()}.${ext}`;
-  const artworkPath = `${CachesDirectoryPath}/${artworkFileName}`;
-  await writeFile(artworkPath, artwork.base64, 'base64');
-  return `file://${artworkPath}`;
+function filePathFromUri(uri: string): string {
+  return decodeURIComponent(uri.replace(/^file:\/\//, ''));
 }
 
-async function tryId3(filePath: string): Promise<SongMetadata | null> {
+async function fetchFileBytes(uri: string, limitBytes?: number): Promise<Uint8Array> {
+  const path = filePathFromUri(uri);
+  if (limitBytes !== undefined) {
+    const base64 = await RNFS.read(path, limitBytes, 0, 'base64');
+    return Buffer.from(base64, 'base64');
+  }
+  const base64 = await RNFS.readFile(path, 'base64');
+  return Buffer.from(base64, 'base64');
+}
+
+async function writeArtworkToCache(artwork: { mime: string; base64: string }): Promise<string> {
+  return `data:${artwork.mime};base64,${artwork.base64}`;
+}
+
+async function tryId3(fileUri: string): Promise<SongMetadata | null> {
   const CHUNK_SIZE = 256 * 1024;
-  const base64Data = await read(filePath, CHUNK_SIZE, 0, 'base64');
-  const buffer = Buffer.from(base64Data, 'base64');
-  const bytes = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+  const bytes = await fetchFileBytes(fileUri, CHUNK_SIZE);
   const metadata = parseId3Metadata(bytes);
 
   if (!metadata.title && !metadata.artist && !metadata.artwork) {
@@ -40,11 +47,9 @@ async function tryId3(filePath: string): Promise<SongMetadata | null> {
   return result;
 }
 
-async function tryMp4(filePath: string): Promise<SongMetadata | null> {
-  const base64Data = await readFile(filePath, 'base64');
-  const buffer = Buffer.from(base64Data, 'base64');
-  const data = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
-  const metadata = parseMp4Metadata(data);
+async function tryMp4(fileUri: string): Promise<SongMetadata | null> {
+  const bytes = await fetchFileBytes(fileUri);
+  const metadata = parseMp4Metadata(bytes);
 
   if (!metadata.title && !metadata.artist && !metadata.artwork) {
     return null;
@@ -59,16 +64,16 @@ async function tryMp4(filePath: string): Promise<SongMetadata | null> {
   return result;
 }
 
-export async function extractMetadata(filePath: string): Promise<SongMetadata> {
+export async function extractMetadata(fileUri: string): Promise<SongMetadata> {
   try {
-    const id3Result = await tryId3(filePath);
+    const id3Result = await tryId3(fileUri);
     if (id3Result) return id3Result;
   } catch {
     // ID3 parsing failed, will try MP4
   }
 
   try {
-    const mp4Result = await tryMp4(filePath);
+    const mp4Result = await tryMp4(fileUri);
     if (mp4Result) return mp4Result;
   } catch {
     // MP4 parsing failed

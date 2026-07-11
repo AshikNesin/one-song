@@ -8,6 +8,7 @@ import {
   getProgress,
   getPlaybackState,
   useRemotePlayPause,
+  useRemoteSeek,
   useAudioFocus,
 } from '@/services/AudioService';
 
@@ -30,7 +31,12 @@ describe('AudioService', () => {
     it('sets up player with correct options', async () => {
       await setupPlayer();
       expect(TrackPlayer.setupPlayer).toHaveBeenCalled();
-      expect(TrackPlayer.updateOptions).toHaveBeenCalled();
+      expect(TrackPlayer.updateOptions).toHaveBeenCalledWith(
+        expect.objectContaining({
+          capabilities: expect.arrayContaining([3]),
+          notificationCapabilities: expect.arrayContaining([3]),
+        }),
+      );
       expect(TrackPlayer.setRepeatMode).toHaveBeenCalledWith(RepeatMode.Track);
     });
 
@@ -108,6 +114,18 @@ describe('AudioService', () => {
       useRemotePlayPause(onPlay, onPause);
       expect(useTrackPlayerEvents).toHaveBeenCalledWith(
         [Event.RemotePlay, Event.RemotePause],
+        expect.any(Function),
+      );
+    });
+  });
+
+  describe('useRemoteSeek', () => {
+    it('registers RemoteSeek event listener', () => {
+      const { useTrackPlayerEvents } = require('react-native-track-player');
+      const onSeek = jest.fn();
+      useRemoteSeek(onSeek);
+      expect(useTrackPlayerEvents).toHaveBeenCalledWith(
+        [Event.RemoteSeek],
         expect.any(Function),
       );
     });

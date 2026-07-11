@@ -4,6 +4,7 @@ const KEYS = {
   ONBOARDING_COMPLETE: '@onesong:onboarding_complete',
   SELECTED_SONG: '@onesong:selected_song',
   SLEEP_TIMER: '@onesong:sleep_timer',
+  SLEEP_TIMER_EXPIRES_AT: '@onesong:sleep_timer_expires_at',
   AUTOPLAY_ENABLED: '@onesong:autoplay_enabled',
 } as const;
 

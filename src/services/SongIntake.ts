@@ -21,7 +21,7 @@ export async function intake(): Promise<Song | IntakeError> {
 
   try {
     const result = await pick({
-      type: ['audio/*'],
+      type: ['audio/*', 'public.mpeg-4-audio', 'public.audio'],
     });
 
     if (result.length === 0) {
@@ -30,24 +30,29 @@ export async function intake(): Promise<Song | IntakeError> {
 
     const file = result[0];
 
+    // Both Android and iOS benefit from keepLocalCopy:
+    // - Android: content:// URIs lose permission across app restarts
+    // - iOS: ensures a persistent file:// URI that won't be purged by the OS
     const localCopy = await keepLocalCopy({
       files: [{ uri: file.uri, fileName: file.name ?? 'song.mp3' }],
-      destination: 'cachesDirectory',
+      destination: 'documentDirectory',
     });
 
     if (localCopy[0].status === 'error') {
       return { type: 'copy_failed' };
     }
 
-    const metadata = await extractMetadata(localCopy[0].localUri);
+    const playbackUri = localCopy[0].localUri;
+
+    const metadata = await extractMetadata(playbackUri);
     const parsedFilename = parseFilename(file.name ?? '');
 
     const song: Song = {
-      id: localCopy[0].localUri,
+      id: playbackUri,
       title: metadata.title || parsedFilename.title || file.name || DEFAULT_SONG_TITLE,
       artist: metadata.artist || parsedFilename.artist || DEFAULT_ARTIST,
       artwork: metadata.artwork,
-      url: localCopy[0].localUri,
+      url: playbackUri,
       duration: 0,
     };
 
