@@ -63,7 +63,7 @@ describe('SettingsScreen', () => {
     expect(mockSaveAutoPlayEnabled).toHaveBeenCalledWith(false);
   });
 
-  it('opens mail when feedback is pressed', async () => {
+  it('opens GitHub issues when feedback is pressed', async () => {
     let renderer: any;
     await ReactTestRenderer.act(async () => {
       renderer = ReactTestRenderer.create(
@@ -83,7 +83,7 @@ describe('SettingsScreen', () => {
       await ReactTestRenderer.act(async () => {
         feedbackButton.props.onPress();
       });
-      expect(Linking.openURL).toHaveBeenCalledWith('mailto:hi@nesin.io');
+      expect(Linking.openURL).toHaveBeenCalledWith('https://github.com/AshikNesin/one-song/issues/new');
     }
   });
 

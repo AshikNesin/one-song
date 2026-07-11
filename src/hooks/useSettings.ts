@@ -18,7 +18,8 @@ export interface SettingsActions {
 
 export function useSettings(): { state: SettingsState; actions: SettingsActions } {
   const [currentSong, setCurrentSong] = useState<string | null>(null);
-  const [autoPlay, setAutoPlay] = useState(true);
+  // Start false so the iOS Switch re-renders after loading; avoids an RN thumb-color bug when value starts true.
+  const [autoPlay, setAutoPlay] = useState(false);
   const sleepTimer = useSleepTimer();
 
   useEffect(() => {
