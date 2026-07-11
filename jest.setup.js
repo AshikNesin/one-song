@@ -17,6 +17,19 @@ jest.mock('@react-native-async-storage/async-storage');
 jest.mock('react-native-permissions');
 jest.mock('@react-native-documents/picker');
 jest.mock('react-native-safe-area-context');
+jest.mock('react-native-svg', () => {
+  const React = require('react');
+  const create = (tag) =>
+    React.forwardRef((props, ref) => React.createElement(tag, { ref, ...props }));
+  const Svg = create('svg');
+  return {
+    __esModule: true,
+    default: Svg,
+    Svg,
+    Circle: create('circle'),
+    Path: create('path'),
+  };
+});
 jest.mock('react-native-device-info', () => ({
   getBuildNumber: jest.fn().mockReturnValue('1'),
   getVersion: jest.fn().mockReturnValue('0.0.1'),

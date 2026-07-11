@@ -7,6 +7,7 @@ import { usePlaybackController } from '@/services/PlaybackController';
 import ProgressBar from '@/components/ProgressBar';
 import PlayPauseButton from '@/components/PlayPauseButton';
 import SleepTimerButton from '@/components/SleepTimerButton';
+import SettingsIcon from '@/components/SettingsIcon';
 
 export default function PlayerScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -48,7 +49,7 @@ export default function PlayerScreen() {
         <Pressable
           style={styles.settingsButton}
           onPress={() => navigation.navigate('Settings')}>
-          <Text style={styles.settingsIcon}>⚙</Text>
+          <SettingsIcon />
         </Pressable>
       </View>
 
@@ -103,10 +104,6 @@ const styles = StyleSheet.create({
   },
   settingsButton: {
     padding: 8,
-  },
-  settingsIcon: {
-    fontSize: 22,
-    color: '#999',
   },
   loadingContainer: {
     justifyContent: 'center',

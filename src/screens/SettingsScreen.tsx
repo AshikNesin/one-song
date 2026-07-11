@@ -97,7 +97,7 @@ export default function SettingsScreen() {
         <Section title="Feedback">
           <Pressable
             style={styles.row}
-            onPress={() => Linking.openURL('mailto:hi@nesin.io')}>
+            onPress={() => Linking.openURL('https://github.com/AshikNesin/one-song/issues/new')}>
             <Text style={styles.rowLabel}>Report a Bug or Share Feedback</Text>
             <Text style={styles.rowArrow}>›</Text>
           </Pressable>

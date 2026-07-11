@@ -15,3 +15,5 @@
 - Installing `buffer` as an explicit dependency is not a valid workaround for Metro bundler resolution issues with Node.js built-ins; the root cause is Metro's inability to polyfill them properly. Confidence: 0.85
 - Use `@/` path alias imports instead of relative paths when importing from within the project. Confidence: 0.85
 - Keep all application source code under `src/` directory, including entry point files (App.tsx, index.js) that React Native conventionally places at root. Confidence: 0.65
+- Use minimal SVG icons for UI iconography instead of custom-drawn View components or emoji text. Confidence: 0.65
+- Use Lucide icons (lucide.dev) as the preferred SVG icon source for UI icons. Confidence: 0.50
