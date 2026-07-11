@@ -4,6 +4,53 @@ A running log of bugs, fixes, and lessons from building One Song.
 
 ---
 
+## 2026-07-11 — iOS Build: Build Input Files Cannot Be Found (Stale pnpm virtual store hash in Pods.xcodeproj)
+
+### Symptom
+
+Xcode build fails with:
+
+```
+Build input files cannot be found:
+  '.../node_modules/.pnpm/react-native-track-player@5.0.0-alpha0_patch_hash=3f9335.../node_modules/react-native-track-player/ios/Models/Capabilities.swift'
+  (and ~11 other .swift files)
+```
+
+### Root Cause
+
+pnpm installs each package into a content-hash-named directory inside `node_modules/.pnpm/`. The hash includes the dependency graph (package version + patch hash + resolved peers). When `pnpm install` runs after a lockfile change, a package can move to a **new** hash-named directory, e.g.:
+
+- Old: `react-native-track-player@5.0.0-alpha0_patch_hash=3f9335...`
+- New: `react-native-track-player@5.0.0-alpha0_react-native@0.85.2_patch_hash=35d9e4e...`
+
+CocoaPods' generated project (`ios/Pods/Pods.xcodeproj/project.pbxproj`) hardcodes the **absolute** resolved path of every source file. If you change deps and don't re-run `pod install`, that file still points at the dead old path → the build can't find the Swift sources.
+
+Key: the Podfile and Podfile.lock only ever reference the relative `../node_modules/react-native-track-player`, so they stay correct. Only the generated Pods project goes stale. (This is why the app's own `.xcodeproj` is fine — it doesn't hardcode these paths.)
+
+### Fix
+
+Regenerate the Pods project so absolute paths are re-resolved through the current pnpm symlinks:
+
+```bash
+cd ios
+rm -rf Pods          # clean regen to avoid leftover stale entries
+pod install
+```
+
+### Notes / Gotchas
+
+- **Transient `pathname contains null byte` error:** `pod install` can intermittently throw this under pnpm (known CocoaPods bug — cocoapods/cocoapods#12866). Just re-run it; it succeeds on the next attempt.
+- **How to confirm the fix:** verify no stale hash remains and the new path is used:
+  ```bash
+  # should print 0
+  grep -c "3f9335..." ios/Pods/Pods.xcodeproj/project.pbxproj
+  # should print the current hash
+  grep -oE "react-native-track-player@5\.0\.0-alpha0[^\"' ]*" ios/Pods/Pods.xcodeproj/project.pbxproj | sort -u
+  ```
+- **Prevention:** always run `pod install` after `pnpm install` whenever a dependency (especially a native one) changed version or peer set. The build errors only happen when the two are out of sync.
+
+---
+
 ## 2026-06-07 — Restored keepLocalCopy for iOS
 
 ### Context
